@@ -1,4 +1,4 @@
-import { useSyncExternalStore, type AnchorHTMLAttributes, type MouseEvent } from 'react'
+import { useSyncExternalStore, type AnchorHTMLAttributes, type MouseEvent, type Ref } from 'react'
 
 // Небольшая маршрутизация на History API: маршрутов мало, отдельная библиотека не нужна.
 
@@ -31,6 +31,7 @@ export function usePath() {
 
 interface LinkProps extends Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'href'> {
   to: string
+  ref?: Ref<HTMLAnchorElement>
 }
 
 /** Ссылка внутри сайта: переход без перезагрузки страницы */

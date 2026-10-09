@@ -63,7 +63,7 @@ export function AppShell({ path }: { path: string }) {
       </aside>
 
       <main className="app__main">
-        {!section ? (
+        {path === '/app' ? null : !section ? (
           <div className="page">
             <p className="page__eyebrow">Ошибка 404</p>
             <h1 className="page__title">Такой страницы нет</h1>

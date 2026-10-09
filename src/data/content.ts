@@ -20,6 +20,7 @@ export interface NavLink {
 export const navLinks: NavLink[] = [
   { label: 'Возможности', href: '#features' },
   { label: 'Функции', href: '#functions' },
+  { label: 'Кабинет', href: '/app/car' },
 ]
 
 export interface Feature {
@@ -54,6 +55,8 @@ export interface AppFunction {
   /** Короткое название для оглавления на главном экране */
   short: string
   text: string
+  /** Раздел уже работает в приложении */
+  ready?: boolean
 }
 
 export const appFunctions: AppFunction[] = [
@@ -62,6 +65,7 @@ export const appFunctions: AppFunction[] = [
     icon: CarFront,
     title: 'Мой автомобиль',
     short: 'Автомобиль',
+    ready: true,
     text: 'Марка, модель, год выпуска, пробег и другие характеристики вашей машины — основа для всех остальных разделов.',
   },
   {

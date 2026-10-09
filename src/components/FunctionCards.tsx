@@ -1,4 +1,5 @@
 import { appFunctions } from '../data/content'
+import { Link } from '../router'
 import { Reveal } from './Reveal'
 import { SectionHeading } from './SectionHeading'
 import './FunctionCards.css'
@@ -11,18 +12,24 @@ export function FunctionCards() {
         <SectionHeading
           eyebrow="Функции"
           title="Пять разделов на всё владение автомобилем"
-          text="Сейчас приложение в разработке. Вот что появится в первой версии."
+          text="Первый раздел уже работает, остальные в разработке."
         />
 
         <ol className="functions">
-          {appFunctions.map(({ id, title, text }, i) => (
+          {appFunctions.map(({ id, title, text, ready }, i) => (
             <li className="functions__item" id={id} key={id}>
               <Reveal delay={i * 60}>
                 <article className="function-row">
                   <span className="function-row__index">0{i + 1}</span>
                   <h3 className="function-row__title">{title}</h3>
                   <p className="function-row__text">{text}</p>
-                  <span className="function-row__tag">Скоро</span>
+                  {ready ? (
+                    <Link className="function-row__tag function-row__tag--ready" to={`/app/${id}`}>
+                      Открыть
+                    </Link>
+                  ) : (
+                    <span className="function-row__tag">Скоро</span>
+                  )}
                 </article>
               </Reveal>
             </li>

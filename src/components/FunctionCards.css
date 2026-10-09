@@ -100,6 +100,20 @@
   vertical-align: 1px;
 }
 
+/* работающий раздел: ссылка в приложение с лаймовой точкой */
+.function-row__tag--ready {
+  color: var(--text);
+  transition: color 0.3s ease;
+}
+
+.function-row__tag--ready::before {
+  background: var(--lime);
+}
+
+.function-row__tag--ready:hover {
+  color: var(--lime);
+}
+
 @media (max-width: 900px) {
   .function-row {
     grid-template-columns: minmax(0, 1fr) auto;
