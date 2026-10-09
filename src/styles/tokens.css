@@ -2,12 +2,18 @@
 :root {
   color-scheme: dark;
 
-  --bg: #040404;
-  --bg-raised: #0b0b0b;
-  --surface: #080808;
-  --surface-hover: #0e0e0e;
-  --line: rgba(243, 243, 240, 0.12);
-  --line-strong: rgba(243, 243, 240, 0.22);
+  /* графит с холодным оттенком: три ступени глубины */
+  --bg: #0e1013;
+  --bg-raised: #15181d;
+  --bg-deep: #0a0b0e;
+  --surface: #121418;
+  --surface-hover: #181b20;
+  --line: rgba(226, 234, 243, 0.12);
+  --line-strong: rgba(226, 234, 243, 0.22);
+
+  /* студийный свет (стальной синий) и приглушённый бордовый для мелких деталей */
+  --steel-rgb: 96, 124, 153;
+  --burgundy-rgb: 124, 34, 46;
 
   --text: #f3f3f0;
   --text-muted: rgba(243, 243, 240, 0.62);

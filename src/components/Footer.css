@@ -1,5 +1,4 @@
 .footer {
-  margin-top: calc(var(--section-gap) / 2);
   padding-block: 40px;
   border-top: 1px solid var(--line);
 }

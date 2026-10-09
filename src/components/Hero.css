@@ -7,7 +7,7 @@
   min-height: 100svh;
   padding: var(--header-height) var(--gutter) 0;
   overflow: hidden;
-  background: var(--bg);
+  background: #000;
 }
 
 .hero__copy,
@@ -39,9 +39,9 @@
   z-index: -2;
   pointer-events: none;
   background:
-    linear-gradient(180deg, var(--bg) 0%, rgba(4, 4, 4, 0.55) 22%, transparent 44%),
-    linear-gradient(0deg, var(--bg) 3%, rgba(4, 4, 4, 0.72) 13%, transparent 30%),
-    radial-gradient(ellipse 78% 90% at 50% 58%, transparent 55%, rgba(4, 4, 4, 0.85) 100%);
+    linear-gradient(180deg, #000 0%, rgba(0, 0, 0, 0.55) 22%, transparent 44%),
+    linear-gradient(0deg, #000 3%, rgba(0, 0, 0, 0.72) 13%, transparent 30%),
+    radial-gradient(ellipse 78% 90% at 50% 58%, transparent 55%, rgba(0, 0, 0, 0.85) 100%);
 }
 
 /* Плёночное зерно */
@@ -53,6 +53,22 @@
   opacity: 0.11;
   mix-blend-mode: overlay;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Тонирование: чёрный поднимается до графита, сверху — холодный студийный свет,
+   у заднего фонаря — слабый бордовый отсвет. Фото остаётся чёрно-белым. */
+.hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  background:
+    radial-gradient(ellipse 55% 46% at 22% 0%, rgba(var(--steel-rgb), 0.3), transparent 70%),
+    radial-gradient(ellipse 42% 30% at 86% 100%, rgba(var(--steel-rgb), 0.2), transparent 70%),
+    radial-gradient(ellipse 20% 24% at 6% 60%, rgba(var(--burgundy-rgb), 0.34), transparent 70%),
+    var(--bg);
 }
 
 @keyframes hero-develop {
@@ -231,8 +247,15 @@
 
   .hero__shade {
     background:
-      linear-gradient(0deg, var(--bg) 20%, rgba(4, 4, 4, 0.5) 31%, transparent 41%),
-      linear-gradient(90deg, rgba(4, 4, 4, 0.7) 0%, transparent 30%);
+      linear-gradient(0deg, #000 20%, rgba(0, 0, 0, 0.5) 31%, transparent 41%),
+      linear-gradient(90deg, rgba(0, 0, 0, 0.7) 0%, transparent 30%);
+  }
+
+  .hero::after {
+    background:
+      radial-gradient(ellipse 90% 34% at 20% 0%, rgba(var(--steel-rgb), 0.3), transparent 70%),
+      radial-gradient(ellipse 80% 22% at 80% 62%, rgba(var(--steel-rgb), 0.16), transparent 70%),
+      var(--bg);
   }
 
   .hero__lead {
