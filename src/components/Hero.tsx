@@ -36,9 +36,9 @@ export function Hero() {
 
       <footer className="hero__foot">
         <ol className="hero__index">
-          {appFunctions.map(({ short }, i) => (
-            <li key={short}>
-              <a href="#functions">
+          {appFunctions.map(({ id, short }, i) => (
+            <li key={id}>
+              <a href={`#${id}`}>
                 <b>0{i + 1}</b>
                 {short}
               </a>

@@ -15,10 +15,10 @@ export function FunctionCards() {
         />
 
         <ol className="functions">
-          {appFunctions.map(({ title, text }, i) => (
-            <li key={title}>
+          {appFunctions.map(({ id, title, text }, i) => (
+            <li key={id}>
               <Reveal delay={i * 60}>
-                <article className="function-row">
+                <article className="function-row" id={id}>
                   <span className="function-row__index">0{i + 1}</span>
                   <h3 className="function-row__title">{title}</h3>
                   <p className="function-row__text">{text}</p>

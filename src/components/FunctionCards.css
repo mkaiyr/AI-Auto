@@ -18,6 +18,8 @@
   background: linear-gradient(90deg, rgba(var(--steel-rgb), 0.1), transparent 62%) no-repeat;
   background-size: 0% 100%;
   transition: background-size 0.8s var(--ease-out);
+  /* отступ сверху при переходе по ссылке с главного экрана */
+  scroll-margin-top: var(--header-height);
 }
 
 .function-row:hover {
@@ -38,7 +40,9 @@
   transition: transform 0.7s var(--ease-out);
 }
 
-.function-row:hover::before {
+/* строка, к которой перешли по ссылке, отмечена той же линией */
+.function-row:hover::before,
+.function-row:target::before {
   transform: scaleX(1);
 }
 
