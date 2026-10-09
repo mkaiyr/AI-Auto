@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { ArrowDownUp } from 'lucide-react'
 import { Link } from '../../router'
 import { useCar } from '../car/useCar'
@@ -24,6 +24,19 @@ export function HistoryPage() {
   const [order, setOrder] = useState<Order>('desc')
   const [confirmId, setConfirmId] = useState<string | null>(null)
   const [deleteError, setDeleteError] = useState<string | null>(null)
+  const [targetId, setTargetId] = useState<string | null>(null)
+
+  // переход из раздела «Расходы» по адресу /app/history#record-<id>:
+  // прокручиваем к записи и отмечаем её. Метка из адреса убирается, чтобы не срабатывать повторно
+  useEffect(() => {
+    if (status !== 'ready' || !window.location.hash.startsWith('#record-')) return
+    const id = window.location.hash.slice('#record-'.length)
+    const element = document.getElementById(`record-${id}`)
+    if (!element) return
+    setTargetId(id)
+    element.scrollIntoView({ block: 'start' })
+    window.history.replaceState(null, '', window.location.pathname)
+  }, [status, records.length])
 
   // по дате; записи одного дня — по пробегу, затем по времени создания
   const sorted = useMemo(() => {
@@ -142,7 +155,11 @@ export function HistoryPage() {
 
       <ol className="records">
         {sorted.map((record) => (
-          <li className="record" key={record.id}>
+          <li
+            className={record.id === targetId ? 'record record--target' : 'record'}
+            id={`record-${record.id}`}
+            key={record.id}
+          >
             <div className="record__head">
               <time className="record__date" dateTime={record.date}>
                 {formatDay(record.date)}

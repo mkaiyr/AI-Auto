@@ -1,4 +1,4 @@
-import { ENGINES_WITH_FUEL, ENGINE_LABELS, type CarInput, type EngineType } from './carStore'
+import { BODY_LABELS, ENGINES_WITH_FUEL, ENGINE_LABELS, type BodyType, type CarInput, type EngineType } from './carStore'
 
 /** Значения полей формы — всегда строки, как их вводит пользователь */
 export interface CarFormValues {
@@ -6,6 +6,7 @@ export interface CarFormValues {
   model: string
   year: string
   mileage: string
+  body: string
   engine: string
   fuel: string
 }
@@ -49,9 +50,10 @@ export function validateCar(values: CarFormValues): { errors: CarFormErrors; car
   else if (!/^\d+$/.test(mileageText)) errors.mileage = 'Пробег — целое число километров'
   else if (mileage > MAX_MILEAGE) errors.mileage = 'Слишком большой пробег — проверьте число'
 
+  const body = values.body in BODY_LABELS ? (values.body as BodyType) : null
   const engine = values.engine in ENGINE_LABELS ? (values.engine as EngineType) : null
   const fuel = engine && ENGINES_WITH_FUEL.includes(engine) && values.fuel !== '' ? values.fuel : null
 
   if (Object.keys(errors).length > 0) return { errors, car: null }
-  return { errors, car: { make, model, year, mileage, engine, fuel } }
+  return { errors, car: { make, model, year, mileage, body, engine, fuel } }
 }

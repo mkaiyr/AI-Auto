@@ -97,6 +97,13 @@ export function CarPage() {
     }
   }
 
+  // что ещё будет удалено вместе с профилем
+  const attached = [
+    photo && 'фотографией',
+    records.length > 0 &&
+      `историей обслуживания (${records.length} ${plural(records.length, ['запись', 'записи', 'записей'])})`,
+  ].filter(Boolean)
+
   return (
     <div className="page">
       <Eyebrow />
@@ -147,10 +154,8 @@ export function CarPage() {
             Удалить автомобиль?
           </p>
           <p className="confirm__text" id="confirm-text">
-            Профиль «{car.make} {car.model}»{photo && ', его фотография'} будет стёрт из этого браузера
-            {records.length > 0 &&
-              ` вместе с историей обслуживания (${records.length} ${plural(records.length, ['запись', 'записи', 'записей'])})`}
-            . Восстановить данные не получится.
+            Профиль «{car.make} {car.model}» будет стёрт из этого браузера
+            {attached.length > 0 && ` вместе с ${attached.join(' и ')}`}. Восстановить данные не получится.
           </p>
           {deleteError && (
             <p className="alert" role="alert">
