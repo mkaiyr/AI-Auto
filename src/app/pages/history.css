@@ -1,0 +1,209 @@
+/* История обслуживания: записи идут строками-хроникой, а не карточками */
+
+.history__bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px 24px;
+  margin-top: clamp(28px, 3.4vw, 44px);
+}
+
+.history__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 26px;
+}
+
+.history__meta,
+.history__sort,
+.record__date,
+.record__category,
+.record__figures dt,
+.record__figures dd,
+.record__actions button {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.history__meta {
+  color: var(--text-dim);
+}
+
+.history__sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border: 0;
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.history__sort svg {
+  color: var(--lime);
+}
+
+.history__sort:hover {
+  color: var(--text);
+}
+
+.records {
+  margin-top: clamp(24px, 3vw, 40px);
+  border-bottom: 1px solid var(--line);
+}
+
+.record {
+  display: grid;
+  grid-template-columns: 168px minmax(0, 1fr) auto;
+  grid-template-areas:
+    'head body figures'
+    'head foot foot';
+  column-gap: clamp(20px, 3vw, 44px);
+  padding-block: clamp(22px, 2.6vw, 32px);
+  border-top: 1px solid var(--line);
+}
+
+.record__head {
+  grid-area: head;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 0.55em;
+}
+
+.record__date {
+  color: var(--text-muted);
+}
+
+.record__category {
+  color: var(--text-dim);
+  line-height: 1.6;
+}
+
+.record__body {
+  grid-area: body;
+  min-width: 0;
+}
+
+.record__title {
+  font-size: clamp(1.5rem, 2.4vw, 2.1rem);
+  line-height: 1.05;
+  overflow-wrap: anywhere;
+}
+
+.record__comment {
+  max-width: 520px;
+  margin-top: 12px;
+  color: var(--text-muted);
+  font-size: 15px;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.record__figures {
+  grid-area: figures;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  margin: 0;
+  text-align: right;
+}
+
+/* подписи нужны экранным читалкам; глазами значения понятны по единицам */
+.record__figures dt {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.record__figures dd {
+  margin: 0;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.record__figures .record__cost {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-stretch: 87.5%;
+  font-size: clamp(1.4rem, 2.1vw, 1.85rem);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  text-transform: none;
+  color: var(--text);
+}
+
+.record__actions {
+  grid-area: foot;
+  display: flex;
+  gap: 24px;
+  margin-top: 16px;
+}
+
+.record__actions button {
+  padding: 6px 0;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition:
+    color 0.3s ease,
+    border-color 0.3s ease;
+}
+
+.record__actions button:hover {
+  border-color: var(--text);
+  color: var(--text);
+}
+
+.record__confirm {
+  grid-area: foot;
+  margin-top: 18px;
+}
+
+@media (max-width: 700px) {
+  .record {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'head'
+      'body'
+      'figures'
+      'foot';
+    row-gap: 14px;
+  }
+
+  .record__head {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 6px 16px;
+    padding-top: 0;
+  }
+
+  .record__figures {
+    flex-direction: row-reverse;
+    align-items: baseline;
+    justify-content: space-between;
+    text-align: left;
+  }
+
+  .record__actions,
+  .record__confirm {
+    margin-top: 4px;
+  }
+
+  .history__bar .btn {
+    flex: 1 1 100%;
+  }
+}
