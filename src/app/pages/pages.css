@@ -180,7 +180,8 @@
 }
 
 .field input,
-.field select {
+.field select,
+.field textarea {
   width: 100%;
   height: 50px;
   padding: 0;
@@ -198,18 +199,36 @@
   cursor: pointer;
 }
 
+.field textarea {
+  display: block;
+  height: auto;
+  min-height: 96px;
+  padding-block: 12px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+/* поле даты не должно распирать колонку на узких экранах */
+.field input[type='date'] {
+  min-width: 0;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
 .field option {
   background: var(--bg-raised);
   color: var(--text);
 }
 
 .field input:hover,
-.field select:hover {
+.field select:hover,
+.field textarea:hover {
   border-color: var(--text-muted);
 }
 
 .field input:focus-visible,
-.field select:focus-visible {
+.field select:focus-visible,
+.field textarea:focus-visible {
   outline: none;
   border-color: var(--lime);
   box-shadow: 0 1px 0 var(--lime);

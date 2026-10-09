@@ -3,6 +3,7 @@ import { ArrowLeft } from 'lucide-react'
 import { appFunctions } from '../data/content'
 import { Link, navigate } from '../router'
 import { CarPage } from './pages/CarPage'
+import { HistoryPage } from './pages/HistoryPage'
 import { SoonPage } from './pages/SoonPage'
 import './AppShell.css'
 import './pages/pages.css'
@@ -75,6 +76,8 @@ export function AppShell({ path }: { path: string }) {
           </div>
         ) : section.id === 'car' ? (
           <CarPage />
+        ) : section.id === 'history' ? (
+          <HistoryPage />
         ) : (
           <SoonPage key={section.id} section={section} index={index} />
         )}

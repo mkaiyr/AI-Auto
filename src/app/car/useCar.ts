@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { localServiceRepository } from '../service/serviceStore'
 import { localCarRepository, type Car, type CarInput, type CarRepository } from './carStore'
 
 interface CarState {
@@ -36,6 +37,10 @@ export function useCar(repository: CarRepository = localCarRepository) {
   )
 
   const remove = useCallback(async () => {
+    // история обслуживания принадлежит автомобилю и удаляется вместе с ним
+    // (на сервере это будет каскадное удаление в базе данных)
+    const current = await repository.get()
+    if (current) await localServiceRepository.removeByCar(current.id)
     await repository.remove()
     setState({ status: 'ready', car: null, error: null })
   }, [repository])

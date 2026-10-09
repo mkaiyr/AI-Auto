@@ -80,6 +80,7 @@ export const appFunctions: AppFunction[] = [
     icon: ClipboardList,
     title: 'История обслуживания',
     short: 'История',
+    ready: true,
     text: 'Замена масла, ремонты и запчасти в хронологии: что делали, когда и на каком пробеге.',
   },
   {

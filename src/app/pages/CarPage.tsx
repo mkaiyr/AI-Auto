@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { ENGINE_LABELS } from '../car/carStore'
 import { useCar } from '../car/useCar'
+import { plural } from '../format'
+import { useServiceRecords } from '../service/useServiceRecords'
 import { CarForm } from './CarForm'
 
 type Mode = 'view' | 'form' | 'confirm-delete'
@@ -11,6 +13,7 @@ const formatDate = (iso: string) =>
 
 export function CarPage() {
   const { status, car, error, save, remove } = useCar()
+  const { records } = useServiceRecords(car?.id ?? null)
   const [mode, setMode] = useState<Mode>('view')
   const [deleteError, setDeleteError] = useState<string | null>(null)
 
@@ -118,7 +121,10 @@ export function CarPage() {
             Удалить автомобиль?
           </p>
           <p className="confirm__text" id="confirm-text">
-            Профиль «{car.make} {car.model}» будет стёрт из этого браузера. Восстановить его не получится.
+            Профиль «{car.make} {car.model}» будет стёрт из этого браузера
+            {records.length > 0 &&
+              ` вместе с историей обслуживания (${records.length} ${plural(records.length, ['запись', 'записи', 'записей'])})`}
+            . Восстановить данные не получится.
           </p>
           {deleteError && (
             <p className="alert" role="alert">
