@@ -300,6 +300,26 @@
   }
 }
 
+/* на узких экранах длинные значения («Электрический») не помещаются в полколонки */
+@media (max-width: 480px) {
+  .specs {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .spec {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px 0 18px;
+  }
+
+  .spec dd {
+    margin: 0;
+    text-align: right;
+  }
+}
+
 @media (max-width: 640px) {
   .form {
     grid-template-columns: minmax(0, 1fr);
