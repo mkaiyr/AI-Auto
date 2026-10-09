@@ -1,0 +1,124 @@
+/* Визуальный блок профиля: «студия» с фото автомобиля или силуэтом кузова */
+
+.car-visual {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: clamp(220px, 44vw, 520px);
+  max-height: 56svh;
+  margin: clamp(20px, 2.6vw, 32px) 0 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  /* свет сверху слева, тёмный пол снизу */
+  background:
+    radial-gradient(ellipse 70% 62% at 28% 0%, rgba(var(--steel-rgb), 0.24), transparent 70%),
+    linear-gradient(180deg, var(--bg-raised) 0%, var(--bg-raised) 58%, var(--bg-deep) 100%);
+}
+
+.car-visual img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.car-visual figcaption {
+  position: absolute;
+  inset: auto 16px 12px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  line-height: 1.6;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.silhouette {
+  width: min(82%, 680px);
+  height: auto;
+  margin-bottom: 4%;
+  overflow: visible;
+}
+
+.silhouette__body {
+  fill: rgba(var(--steel-rgb), 0.14);
+  stroke: rgba(243, 243, 240, 0.82);
+  stroke-width: 1.4;
+  stroke-linejoin: round;
+}
+
+.silhouette__line,
+.silhouette__ground {
+  fill: none;
+  stroke: rgba(243, 243, 240, 0.28);
+  stroke-width: 1;
+}
+
+.silhouette__wheel {
+  fill: var(--bg-deep);
+  stroke: rgba(243, 243, 240, 0.82);
+  stroke-width: 1.4;
+}
+
+.silhouette__hub {
+  fill: none;
+  stroke: rgba(243, 243, 240, 0.4);
+  stroke-width: 1;
+}
+
+.silhouette__tail,
+.silhouette__lamp {
+  stroke-width: 2.4;
+  stroke-linecap: round;
+}
+
+.silhouette__tail {
+  stroke: #b8434f;
+}
+
+.silhouette__lamp {
+  stroke: var(--lime);
+}
+
+/* ---------- Управление фотографией в форме ---------- */
+
+.photo .car-visual {
+  margin-top: 0;
+  height: clamp(190px, 34vw, 380px);
+}
+
+.photo__controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+/* настоящий input скрыт, но остаётся доступным с клавиатуры: кнопкой служит его label */
+.photo__input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.photo__upload:focus-within {
+  outline: 2px solid var(--lime);
+  outline-offset: 3px;
+}
+
+.photo__hint {
+  margin-top: 12px;
+  color: var(--text-dim);
+  font-size: 13px;
+}
+
+@media (max-width: 640px) {
+  .photo__controls .btn {
+    flex: 1 1 auto;
+  }
+}

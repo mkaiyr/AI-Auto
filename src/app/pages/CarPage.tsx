@@ -1,28 +1,35 @@
 import { useState } from 'react'
-import { ENGINE_LABELS } from '../car/carStore'
+import { BODY_LABELS, ENGINE_LABELS } from '../car/carStore'
+import { CarVisual } from '../car/CarVisual'
 import { useCar } from '../car/useCar'
-import { plural } from '../format'
+import { useCarPhoto } from '../car/useCarPhoto'
+import { formatNumber, plural } from '../format'
 import { useServiceRecords } from '../service/useServiceRecords'
 import { CarForm } from './CarForm'
 
 type Mode = 'view' | 'form' | 'confirm-delete'
 
-const formatNumber = (value: number) => new Intl.NumberFormat('ru-RU').format(value)
 const formatDate = (iso: string) =>
   new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(iso))
 
+const Eyebrow = () => (
+  <p className="page__eyebrow">
+    <b>01</b>Мой автомобиль
+  </p>
+)
+
 export function CarPage() {
   const { status, car, error, save, remove } = useCar()
+  const { photo, save: savePhoto, remove: removePhoto } = useCarPhoto(car?.id ?? null)
   const { records } = useServiceRecords(car?.id ?? null)
   const [mode, setMode] = useState<Mode>('view')
+  const [photoError, setPhotoError] = useState<string | null>(null)
   const [deleteError, setDeleteError] = useState<string | null>(null)
 
   if (status === 'loading') {
     return (
       <div className="page">
-        <p className="page__eyebrow">
-          <b>01</b>Мой автомобиль
-        </p>
+        <Eyebrow />
       </div>
     )
   }
@@ -30,14 +37,24 @@ export function CarPage() {
   if (mode === 'form') {
     return (
       <div className="page">
-        <p className="page__eyebrow">
-          <b>01</b>Мой автомобиль
-        </p>
+        <Eyebrow />
         <h1 className="page__title">{car ? 'Изменить данные' : 'Новый автомобиль'}</h1>
         <CarForm
           initial={car}
-          onSubmit={async (input) => {
-            await save(input)
+          initialPhoto={photo}
+          onSubmit={async (input, change) => {
+            // сначала профиль: он маленький и сохраняется надёжно. Фото — отдельным шагом,
+            // его сбой не затрагивает ни профиль, ни прежнюю фотографию
+            const saved = await save(input)
+            setPhotoError(null)
+            try {
+              if (change.type === 'set') await savePhoto(saved.id, change.dataUrl)
+              else if (change.type === 'remove') await removePhoto(saved.id)
+            } catch {
+              setPhotoError(
+                'Данные автомобиля сохранены, но фотографию сохранить не удалось: в хранилище браузера не хватает места. Попробуйте другое изображение.',
+              )
+            }
             setMode('view')
           }}
           onCancel={() => setMode('view')}
@@ -49,13 +66,11 @@ export function CarPage() {
   if (!car) {
     return (
       <div className="page">
-        <p className="page__eyebrow">
-          <b>01</b>Мой автомобиль
-        </p>
+        <Eyebrow />
         <h1 className="page__title">Автомобиль ещё не добавлен</h1>
         <p className="page__lead">
-          Укажите марку, модель, год и пробег. На этот профиль будут опираться остальные разделы: диагностика,
-          история обслуживания, расходы и напоминания.
+          Укажите марку, модель, год и пробег, добавьте фото или выберите тип кузова. На этот профиль опираются
+          остальные разделы: история обслуживания, расходы, а позже — диагностика и напоминания.
         </p>
         {error && (
           <p className="alert" role="alert">
@@ -75,6 +90,7 @@ export function CarPage() {
     try {
       await remove()
       setDeleteError(null)
+      setPhotoError(null)
       setMode('view')
     } catch {
       setDeleteError('Не удалось удалить данные: хранилище браузера недоступно.')
@@ -83,9 +99,15 @@ export function CarPage() {
 
   return (
     <div className="page">
-      <p className="page__eyebrow">
-        <b>01</b>Мой автомобиль
-      </p>
+      <Eyebrow />
+      <CarVisual photo={photo} body={car.body} alt={`${car.make} ${car.model}`} />
+
+      {photoError && (
+        <p className="alert" role="alert">
+          {photoError}
+        </p>
+      )}
+
       <h1 className="page__title">
         {car.make} {car.model}
       </h1>
@@ -100,6 +122,10 @@ export function CarPage() {
           <dd>
             {formatNumber(car.mileage)} <small>км</small>
           </dd>
+        </div>
+        <div className="spec">
+          <dt>Кузов</dt>
+          <dd className={car.body ? undefined : 'spec__empty'}>{car.body ? BODY_LABELS[car.body] : 'Не указан'}</dd>
         </div>
         <div className="spec">
           <dt>Двигатель</dt>
@@ -121,7 +147,7 @@ export function CarPage() {
             Удалить автомобиль?
           </p>
           <p className="confirm__text" id="confirm-text">
-            Профиль «{car.make} {car.model}» будет стёрт из этого браузера
+            Профиль «{car.make} {car.model}»{photo && ', его фотография'} будет стёрт из этого браузера
             {records.length > 0 &&
               ` вместе с историей обслуживания (${records.length} ${plural(records.length, ['запись', 'записи', 'записей'])})`}
             . Восстановить данные не получится.
