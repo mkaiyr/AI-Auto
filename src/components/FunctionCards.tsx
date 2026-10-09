@@ -3,34 +3,31 @@ import { Reveal } from './Reveal'
 import { SectionHeading } from './SectionHeading'
 import './FunctionCards.css'
 
+/** Разделы приложения — строки оглавления, а не карточки */
 export function FunctionCards() {
   return (
     <section className="section" id="functions">
       <div className="container">
         <SectionHeading
           eyebrow="Функции"
-          title="Пять разделов, которые закрывают всё владение автомобилем"
+          title="Пять разделов на всё владение автомобилем"
           text="Сейчас приложение в разработке. Вот что появится в первой версии."
         />
 
-        <ul className="function-grid">
-          {appFunctions.map(({ icon: Icon, title, text, featured }, i) => (
-            <li className="function-grid__item" key={title}>
-              <Reveal className="function-grid__reveal" delay={(i % 3) * 90}>
-                <article className={`function-card ${featured ? 'function-card--featured' : ''}`}>
-                  <div className="function-card__top">
-                    <span className="function-card__icon">
-                      <Icon size={24} strokeWidth={1.7} aria-hidden="true" />
-                    </span>
-                    <span className="function-card__tag">Скоро</span>
-                  </div>
-                  <h3 className="function-card__title">{title}</h3>
-                  <p className="function-card__text">{text}</p>
+        <ol className="functions">
+          {appFunctions.map(({ title, text }, i) => (
+            <li key={title}>
+              <Reveal delay={i * 60}>
+                <article className="function-row">
+                  <span className="function-row__index">0{i + 1}</span>
+                  <h3 className="function-row__title">{title}</h3>
+                  <p className="function-row__text">{text}</p>
+                  <span className="function-row__tag">Скоро</span>
                 </article>
               </Reveal>
             </li>
           ))}
-        </ul>
+        </ol>
       </div>
     </section>
   )

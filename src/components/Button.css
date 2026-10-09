@@ -1,50 +1,25 @@
+/* Текстовая ссылка с тонкой линией и стрелкой */
 .button {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 10px;
-  min-height: 52px;
-  padding: 0 26px;
-  border: 1px solid transparent;
-  border-radius: var(--radius-pill);
-  font-weight: 600;
+  gap: 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
   font-size: 15px;
+  font-weight: 500;
   white-space: nowrap;
-  transition:
-    transform 0.3s var(--ease-out),
-    background-color 0.3s ease,
-    border-color 0.3s ease,
-    box-shadow 0.3s ease;
-}
-
-.button:active {
-  transform: scale(0.97);
+  transition: border-color 0.35s ease;
 }
 
 .button__icon {
-  transition: transform 0.3s var(--ease-out);
+  color: var(--lime);
+  transition: transform 0.45s var(--ease-out);
+}
+
+.button:hover {
+  border-color: var(--text);
 }
 
 .button:hover .button__icon {
-  transform: translateX(4px);
-}
-
-.button--primary {
-  background: var(--lime);
-  color: var(--lime-ink);
-}
-
-.button--primary:hover {
-  box-shadow: 0 10px 40px -8px var(--lime-glow);
-  transform: translateY(-2px);
-}
-
-.button--ghost {
-  border-color: var(--line-strong);
-  color: var(--text);
-}
-
-.button--ghost:hover {
-  border-color: var(--lime);
-  background: var(--lime-soft);
+  transform: translateX(6px);
 }

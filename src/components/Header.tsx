@@ -9,9 +9,7 @@ export function Header() {
 
   return (
     <header className="header" id="top">
-      <div className="container header__inner">
-        <Logo />
-
+      <div className="header__inner">
         <nav className={`header__nav ${menuOpen ? 'is-open' : ''}`} id="main-nav" aria-label="Основная навигация">
           <ul className="header__links">
             {navLinks.map((link) => (
@@ -22,11 +20,14 @@ export function Header() {
               </li>
             ))}
           </ul>
-          <span className="header__status">
-            <span className="header__status-dot" aria-hidden="true" />
-            В разработке
-          </span>
         </nav>
+
+        <Logo />
+
+        <span className="header__status">
+          <span className="header__status-dot" aria-hidden="true" />
+          В разработке
+        </span>
 
         <button
           className="header__toggle"
@@ -36,7 +37,7 @@ export function Header() {
           aria-controls="main-nav"
           onClick={() => setMenuOpen((open) => !open)}
         >
-          {menuOpen ? <X size={22} aria-hidden="true" /> : <Menu size={22} aria-hidden="true" />}
+          {menuOpen ? <X size={24} strokeWidth={1.25} aria-hidden="true" /> : <Menu size={24} strokeWidth={1.25} aria-hidden="true" />}
         </button>
       </div>
     </header>

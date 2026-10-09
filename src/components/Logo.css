@@ -1,21 +1,9 @@
 .logo {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.logo__mark {
-  width: 30px;
-  height: 30px;
-}
-
-.logo__text {
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 15px;
-  letter-spacing: 0.02em;
-}
-
-.logo__text span {
-  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.34em;
+  /* компенсация разрядки после последней буквы */
+  margin-right: -0.34em;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
