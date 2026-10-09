@@ -5,6 +5,13 @@ export const newId = (): string =>
 
 export const formatNumber = (value: number) => new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 2 }).format(value)
 
+/** Сумма в тенге: «45 000 ₸», а с тиынами — «45 000,50 ₸» */
+export const formatMoney = (value: number) =>
+  `${new Intl.NumberFormat('ru-RU', {
+    minimumFractionDigits: Number.isInteger(value) ? 0 : 2,
+    maximumFractionDigits: 2,
+  }).format(value)} ₸`
+
 /** Сегодняшняя дата по местному времени в формате ГГГГ-ММ-ДД */
 export function todayISO(): string {
   const now = new Date()

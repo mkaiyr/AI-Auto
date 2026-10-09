@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { ArrowDownUp } from 'lucide-react'
 import { Link } from '../../router'
 import { useCar } from '../car/useCar'
-import { formatDay, formatNumber, plural } from '../format'
+import { formatDay, formatMoney, formatNumber, plural } from '../format'
 import { CATEGORY_LABELS, type ServiceRecord } from '../service/serviceStore'
 import { useServiceRecords } from '../service/useServiceRecords'
 import { ServiceForm } from './ServiceForm'
@@ -158,7 +158,7 @@ export function HistoryPage() {
             <dl className="record__figures">
               <div>
                 <dt>Стоимость</dt>
-                <dd className="record__cost">{formatNumber(record.cost)} ₸</dd>
+                <dd className="record__cost">{formatMoney(record.cost)}</dd>
               </div>
               <div>
                 <dt>Пробег</dt>
