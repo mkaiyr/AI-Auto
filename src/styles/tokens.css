@@ -1,0 +1,35 @@
+/* Дизайн-токены: все цвета, шрифты и размеры меняются здесь */
+:root {
+  color-scheme: dark;
+
+  --bg: #14161a;
+  --bg-raised: #1b1e23;
+  --surface: #08090a;
+  --surface-hover: #0d0f10;
+  --line: rgba(255, 255, 255, 0.08);
+  --line-strong: rgba(255, 255, 255, 0.16);
+
+  --text: #f3f5f1;
+  --text-muted: #9ca39e;
+  --text-dim: #6b726d;
+
+  --lime: #c8ff2e;
+  --lime-soft: rgba(200, 255, 46, 0.12);
+  --lime-glow: rgba(200, 255, 46, 0.22);
+  --lime-ink: #0c1200;
+
+  --font-display: 'Unbounded', 'Manrope', system-ui, sans-serif;
+  --font-body: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-pill: 999px;
+
+  --container: 1180px;
+  --gutter: clamp(18px, 4vw, 40px);
+  --section-gap: clamp(72px, 11vw, 140px);
+  --header-height: 68px;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}

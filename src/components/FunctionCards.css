@@ -1,0 +1,163 @@
+.function-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 16px;
+}
+
+/* Первые две карточки крупные, остальные три — в ряд */
+.function-grid__item {
+  grid-column: span 2;
+}
+
+.function-grid__item:nth-child(-n + 2) {
+  grid-column: span 3;
+}
+
+.function-grid__reveal {
+  height: 100%;
+}
+
+.function-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 250px;
+  padding: clamp(22px, 2.6vw, 32px);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  overflow: hidden;
+  transition:
+    transform 0.45s var(--ease-out),
+    border-color 0.35s ease,
+    background-color 0.35s ease;
+}
+
+.function-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 100% 0%, var(--lime-soft), transparent 55%);
+  opacity: 0;
+  transition: opacity 0.45s ease;
+  pointer-events: none;
+}
+
+.function-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--line-strong);
+  background: var(--surface-hover);
+}
+
+.function-card:hover::after {
+  opacity: 1;
+}
+
+.function-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: auto;
+  padding-bottom: 40px;
+}
+
+.function-card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  color: var(--lime);
+  transition:
+    background-color 0.35s ease,
+    border-color 0.35s ease;
+}
+
+.function-card:hover .function-card__icon {
+  border-color: var(--lime);
+  background: var(--lime-soft);
+}
+
+.function-card__tag {
+  padding: 5px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  color: var(--text-dim);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+
+.function-card__title {
+  margin-bottom: 12px;
+  font-size: clamp(17px, 1.7vw, 20px);
+  line-height: 1.25;
+}
+
+.function-card__text {
+  max-width: 460px;
+  color: var(--text-muted);
+  font-size: 15px;
+}
+
+/* Акцентная карточка — диагностика */
+.function-card--featured {
+  border-color: rgba(200, 255, 46, 0.32);
+}
+
+.function-card--featured::after {
+  opacity: 1;
+}
+
+.function-card--featured .function-card__icon {
+  border-color: var(--lime);
+  background: var(--lime);
+  color: var(--lime-ink);
+}
+
+.function-card--featured:hover .function-card__icon {
+  background: var(--lime);
+}
+
+.function-card--featured .function-card__tag {
+  border-color: rgba(200, 255, 46, 0.32);
+  color: var(--lime);
+}
+
+@media (max-width: 900px) {
+  .function-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .function-grid__item,
+  .function-grid__item:nth-child(-n + 2) {
+    grid-column: span 1;
+  }
+
+  .function-grid__item:nth-child(2) {
+    grid-column: span 2;
+  }
+
+  .function-card {
+    min-height: 220px;
+  }
+}
+
+@media (max-width: 600px) {
+  .function-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .function-grid__item,
+  .function-grid__item:nth-child(-n + 2),
+  .function-grid__item:nth-child(2) {
+    grid-column: span 1;
+  }
+
+  .function-card {
+    min-height: 0;
+  }
+}

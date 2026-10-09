@@ -1,0 +1,24 @@
+.section-heading {
+  max-width: 720px;
+  margin-bottom: clamp(36px, 5vw, 60px);
+}
+
+.section-heading__eyebrow {
+  margin-bottom: 16px;
+  color: var(--lime);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.section-heading__title {
+  font-size: clamp(1.6rem, 3.4vw, 2.6rem);
+}
+
+.section-heading__text {
+  max-width: 560px;
+  margin-top: 18px;
+  color: var(--text-muted);
+  font-size: 17px;
+}
