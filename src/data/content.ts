@@ -7,7 +7,6 @@ import {
   ShieldCheck,
   Stethoscope,
   Wallet,
-  Wrench,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -50,41 +49,40 @@ export const features: Feature[] = [
 export interface AppFunction {
   icon: LucideIcon
   title: string
+  /** Короткое название для оглавления на главном экране */
+  short: string
   text: string
-  /** Крупная карточка с лаймовым акцентом */
-  featured?: boolean
 }
 
 export const appFunctions: AppFunction[] = [
   {
     icon: CarFront,
     title: 'Профиль автомобиля',
+    short: 'Профиль',
     text: 'Марка, модель, год, пробег и ключевые характеристики вашей машины — основа для всех остальных разделов.',
   },
   {
     icon: Stethoscope,
     title: 'Диагностика по симптомам',
+    short: 'Диагностика',
     text: 'Опишите, что происходит с автомобилем, и получите список возможных неисправностей и подсказку, что проверить первым.',
-    featured: true,
   },
   {
     icon: ClipboardList,
     title: 'История обслуживания',
+    short: 'История',
     text: 'Все ТО и ремонты в хронологии: что делали, когда и на каком пробеге.',
   },
   {
     icon: Wallet,
     title: 'Расходы на автомобиль',
+    short: 'Расходы',
     text: 'Топливо, сервис, страховка и запчасти — видно, сколько на самом деле стоит владение.',
   },
   {
     icon: BellRing,
     title: 'Напоминания',
+    short: 'Напоминания',
     text: 'Вовремя подскажем о плановом ТО и замене масла, фильтров и других расходников.',
   },
-]
-
-export const heroChips: { icon: LucideIcon; label: string }[] = [
-  { icon: Wrench, label: 'История обслуживания' },
-  { icon: BellRing, label: 'Напоминание о ТО' },
 ]

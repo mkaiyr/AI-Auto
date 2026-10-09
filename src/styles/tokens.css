@@ -2,34 +2,41 @@
 :root {
   color-scheme: dark;
 
-  --bg: #14161a;
-  --bg-raised: #1b1e23;
-  --surface: #08090a;
-  --surface-hover: #0d0f10;
-  --line: rgba(255, 255, 255, 0.08);
-  --line-strong: rgba(255, 255, 255, 0.16);
+  --bg: #040404;
+  --bg-raised: #0b0b0b;
+  --surface: #080808;
+  --surface-hover: #0e0e0e;
+  --line: rgba(243, 243, 240, 0.12);
+  --line-strong: rgba(243, 243, 240, 0.22);
 
-  --text: #f3f5f1;
-  --text-muted: #9ca39e;
-  --text-dim: #6b726d;
+  --text: #f3f3f0;
+  --text-muted: rgba(243, 243, 240, 0.62);
+  --text-dim: rgba(243, 243, 240, 0.38);
 
   --lime: #c8ff2e;
   --lime-soft: rgba(200, 255, 46, 0.12);
   --lime-glow: rgba(200, 255, 46, 0.22);
   --lime-ink: #0c1200;
 
-  --font-display: 'Unbounded', 'Manrope', system-ui, sans-serif;
-  --font-body: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Noto Serif Display', Georgia, 'Times New Roman', serif;
+  --font-body: 'Onest', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, Consolas, monospace;
 
   --radius-sm: 10px;
   --radius-md: 16px;
   --radius-lg: 24px;
   --radius-pill: 999px;
 
-  --container: 1180px;
-  --gutter: clamp(18px, 4vw, 40px);
-  --section-gap: clamp(72px, 11vw, 140px);
-  --header-height: 68px;
+  --container: 1808px;
+  --gutter: clamp(20px, 4vw, 56px);
+  --section-gap: clamp(80px, 12vw, 160px);
+  --header-height: 80px;
 
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (max-width: 900px) {
+  :root {
+    --header-height: 64px;
+  }
 }
