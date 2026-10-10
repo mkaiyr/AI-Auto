@@ -90,6 +90,7 @@ function readSource(source: 'account' | 'legacy', key: (base: string) => string)
     model: text(rawCar.model),
     year: text(rawCar.year),
     mileage: text(rawCar.mileage),
+    generation: text(rawCar.generation),
     body: text(rawCar.body),
     engine: text(rawCar.engine),
     fuel: text(rawCar.fuel),
