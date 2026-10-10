@@ -27,6 +27,7 @@ const MODELS: (ModelOption & { base: string })[] = [
     downloadMb: 280,
     memoryMb: 950,
     note: 'Для слабых устройств и медленного интернета. Качество ответов низкое: часто ошибается и путается.',
+    compact: true,
   },
 ]
 

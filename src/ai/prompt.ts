@@ -33,6 +33,20 @@ const SYSTEM_PROMPT = `Ты — ИИ-помощник сайта AI Auto для 
 - Личный кабинет открывается после входа по адресу электронной почты и паролю.
 - Ты не можешь сам добавлять или менять записи на сайте — это делает пользователь в соответствующем разделе.`
 
+// Лёгкая модель с длинными инструкциями не справляется: при проверке она отвечала отказами даже на вопрос
+// о воздушном фильтре. Для неё инструкции сокращены до самого необходимого.
+const COMPACT_PROMPT = `Ты — помощник сайта AI Auto для владельцев автомобилей. Отвечай по-русски, в одном-четырёх предложениях.
+Не ставь диагноз и ничего не выдумывай. Если не знаешь — ответь «не знаю». Об автомобиле пользователя ты знаешь только то, что написано в блоке «Данные пользователя».
+
+Справка по обслуживанию (общие ориентиры):
+- масло в двигателе и масляный фильтр: каждые 7–15 тысяч км или раз в год;
+- воздушный и салонный фильтры: каждые 15–30 тысяч км;
+- свечи зажигания: 30–60 тысяч км; ремень ГРМ: 60–120 тысяч км;
+- охлаждающая жидкость: раз в 3–5 лет; аккумулятор служит 3–5 лет;
+- давление в шинах проверять раз в месяц.
+
+Сайт AI Auto: раздел «Автомобиль» — профиль машины; «История» — записи об обслуживании; «Расходы» — суммы по записям истории; «Напоминания» — пока не работает.`
+
 /** Сколько последних реплик передаётся модели: окно контекста у неё небольшое */
 const HISTORY_LIMIT = 8
 const MESSAGE_LIMIT = 1500
@@ -64,7 +78,9 @@ export function describeCar(car: Car, records: ServiceRecord[]): string {
 }
 
 /** Сообщения для модели: инструкции, данные пользователя (если он их дал) и последние реплики */
-export function buildMessages(history: ChatMessage[], carContext: string | null): ChatMessage[] {
-  const system = carContext ? `${SYSTEM_PROMPT}\n\nДанные пользователя (получены из его личного кабинета):\n${carContext}` : SYSTEM_PROMPT
-  return [{ role: 'system', content: system }, ...history.slice(-HISTORY_LIMIT).map((message) => ({ ...message, content: clip(message.content, MESSAGE_LIMIT) }))]
+export function buildMessages(history: ChatMessage[], carContext: string | null, compact = false): ChatMessage[] {
+  const base = compact ? COMPACT_PROMPT : SYSTEM_PROMPT
+  const system = carContext ? `${base}\n\nДанные пользователя (получены из его личного кабинета):\n${carContext}` : base
+  // лёгкой модели передаётся меньше прошлых реплик: длинную переписку она не удерживает
+  return [{ role: 'system', content: system }, ...history.slice(compact ? -4 : -HISTORY_LIMIT).map((message) => ({ ...message, content: clip(message.content, MESSAGE_LIMIT) }))]
 }

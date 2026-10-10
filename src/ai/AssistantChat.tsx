@@ -201,7 +201,7 @@ export function AssistantChat({ loadCarContext }: AssistantChatProps) {
       setTurns([...history, { role: 'assistant', content, symptom }])
     }
     try {
-      const answer = await provider.generate(buildMessages(forModel(history), car?.text ?? null), write)
+      const answer = await provider.generate(buildMessages(forModel(history), car?.text ?? null, selected.compact), write)
       if (!guarded) write(answer.trim() === '' ? 'Ответ не получен. Попробуйте переформулировать вопрос.' : answer)
       setSpeed(provider.speed())
     } catch (cause) {
