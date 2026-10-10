@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { AssistantPage } from './ai/AssistantPage'
 import { AppShell } from './app/AppShell'
 import { AuthLoading, AuthOffline, AuthPage, AuthUnavailable } from './auth/AuthPage'
 import { useAuth } from './auth/AuthProvider'
@@ -14,6 +15,8 @@ import { navigate, usePath } from './router'
 const LANDING_TITLE = 'AI Auto — всё о вашем автомобиле'
 const LOGIN_PATH = '/login'
 const RESET_PATH = '/reset-password'
+/** Публичная страница ИИ-помощника: открывается без входа */
+const ASSISTANT_PATH = '/assistant'
 const DEFAULT_APP_PATH = '/app/car'
 const RETURN_KEY = 'ai-auto:return-to'
 
@@ -74,6 +77,7 @@ export default function App() {
     return state.status === 'signedOut' ? <AuthPage /> : <AuthLoading />
   }
 
+  if (path === ASSISTANT_PATH) return <AssistantPage />
   if (!isLanding) return <NotFoundPage />
 
   return (

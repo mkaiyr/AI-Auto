@@ -6,6 +6,7 @@ import { Link, navigate } from '../router'
 import { CarPage } from './pages/CarPage'
 import { ExpensesPage } from './pages/ExpensesPage'
 import { HistoryPage } from './pages/HistoryPage'
+import { AssistantSection } from './pages/AssistantSection'
 import { SoonPage } from './pages/SoonPage'
 import './AppShell.css'
 import './pages/pages.css'
@@ -113,6 +114,8 @@ export function AppShell({ path }: { path: string }) {
           <HistoryPage />
         ) : section.id === 'expenses' ? (
           <ExpensesPage />
+        ) : section.id === 'diagnostics' ? (
+          <AssistantSection section={section} index={index} />
         ) : (
           <SoonPage key={section.id} section={section} index={index} />
         )}

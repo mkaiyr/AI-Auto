@@ -17,9 +17,11 @@ export interface NavLink {
   href: string
 }
 
+// href с «#» — якорь на главной странице, с «/» — отдельная страница сайта
 export const navLinks: NavLink[] = [
   { label: 'Возможности', href: '#features' },
   { label: 'Функции', href: '#functions' },
+  { label: 'ИИ-помощник', href: '/assistant' },
 ]
 
 export interface Feature {
@@ -70,9 +72,10 @@ export const appFunctions: AppFunction[] = [
   {
     id: 'diagnostics',
     icon: Stethoscope,
-    title: 'ИИ-диагностика',
-    short: 'Диагностика',
-    text: 'Опишите симптомы — получите структурированные рекомендации и предупреждение, если неисправность может быть опасной.',
+    title: 'ИИ-помощник',
+    short: 'Помощник',
+    ready: true,
+    text: 'Вопросы об обслуживании и типичных неисправностях — небольшой языковой модели прямо в браузере. Это не диагностика: при опасных признаках помощник отправит в сервис.',
   },
   {
     id: 'history',

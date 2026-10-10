@@ -18,9 +18,15 @@ export function Header() {
           <ul className="header__links">
             {navLinks.map((link) => (
               <li key={link.href}>
-                <a className="header__link" href={link.href} onClick={() => setMenuOpen(false)}>
-                  {link.label}
-                </a>
+                {link.href.startsWith('/') ? (
+                  <Link className="header__link" to={link.href} onClick={() => setMenuOpen(false)}>
+                    {link.label}
+                  </Link>
+                ) : (
+                  <a className="header__link" href={link.href} onClick={() => setMenuOpen(false)}>
+                    {link.label}
+                  </a>
+                )}
               </li>
             ))}
           </ul>
