@@ -268,7 +268,14 @@ export function CarForm({ initial, initialPhoto, onSubmit, onCancel }: CarFormPr
     ) : manual.make || catalogFailed ? (
       textField('make', 'Марка', {
         maxLength: 60,
-        after: catalog ? switchLink('Выбрать из каталога', () => selectMake('')) : <p className="field__hint">Каталог не загрузился — введите марку вручную.</p>,
+        after: catalog ? (
+          switchLink('Выбрать из каталога', () => {
+            patch({ make: '', model: '', generation: '', body: '' })
+            setManual({ make: false, model: false, generation: false })
+          })
+        ) : (
+          <p className="field__hint">Каталог не загрузился — введите марку вручную.</p>
+        ),
       })
     ) : (
       <Combobox
@@ -297,7 +304,12 @@ export function CarForm({ initial, initialPhoto, onSubmit, onCancel }: CarFormPr
     ) : manual.model || manual.make || catalogFailed ? (
       textField('model', 'Модель', {
         maxLength: 60,
-        after: make ? switchLink('Выбрать из каталога', () => selectModel('')) : null,
+        after: make
+          ? switchLink('Выбрать из каталога', () => {
+              patch({ model: '', generation: '' })
+              setManual((current) => ({ ...current, model: false, generation: false }))
+            })
+          : null,
       })
     ) : (
       <Combobox

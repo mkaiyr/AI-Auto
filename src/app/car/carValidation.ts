@@ -6,6 +6,7 @@ export interface CarFormValues {
   model: string
   year: string
   mileage: string
+  generation: string
   body: string
   engine: string
   fuel: string
@@ -22,6 +23,7 @@ export const maxYear = () => new Date().getFullYear() + 1
 
 function validateName(value: string): string | undefined {
   if (value === '') return 'Заполните это поле'
+  if (value.includes('·')) return 'Уберите символ «·» из названия'
   if (value.length > MAX_NAME_LENGTH) return `Не длиннее ${MAX_NAME_LENGTH} символов`
   return undefined
 }
@@ -50,10 +52,16 @@ export function validateCar(values: CarFormValues): { errors: CarFormErrors; car
   else if (!/^\d+$/.test(mileageText)) errors.mileage = 'Пробег — целое число километров'
   else if (mileage > MAX_MILEAGE) errors.mileage = 'Слишком большой пробег — проверьте число'
 
+  // Поколение хранится вместе с моделью в одном столбце длиной до 40 символов (см. carRemote.ts)
+  const generation = values.generation.replace(/\s+/g, ' ').replace(/·/g, '-').trim()
+  if (generation !== '' && !errors.model && model.length + generation.length + 3 > MAX_NAME_LENGTH) {
+    errors.generation = `Слишком длинно: вместе с моделью — не больше ${MAX_NAME_LENGTH - 3} символов`
+  }
+
   const body = values.body in BODY_LABELS ? (values.body as BodyType) : null
   const engine = values.engine in ENGINE_LABELS ? (values.engine as EngineType) : null
   const fuel = engine && ENGINES_WITH_FUEL.includes(engine) && values.fuel !== '' ? values.fuel : null
 
   if (Object.keys(errors).length > 0) return { errors, car: null }
-  return { errors, car: { make, model, year, mileage, body, engine, fuel } }
+  return { errors, car: { make, model, year, mileage, generation: generation === '' ? null : generation, body, engine, fuel } }
 }

@@ -49,6 +49,8 @@ export interface Car {
   model: string
   year: number
   mileage: number
+  /** Поколение или код кузова, например «XV70»; null — не указано */
+  generation: string | null
   /** Тип кузова; у профилей, сохранённых до появления поля, — null */
   body: BodyType | null
   engine: EngineType | null
@@ -69,7 +71,7 @@ export interface CarRepository {
 export const CAR_STORAGE_KEY = 'ai-auto:car:v1'
 
 /** Проверяет сохранённые данные. Идентификатора и кузова может не быть: они появились позже остальных полей */
-function isStoredCar(value: unknown): value is Omit<Car, 'id' | 'body'> & { id?: unknown; body?: unknown } {
+function isStoredCar(value: unknown): value is Omit<Car, 'id' | 'body' | 'generation'> & { id?: unknown; body?: unknown; generation?: unknown } {
   if (typeof value !== 'object' || value === null) return false
   const car = value as Record<string, unknown>
   return (
@@ -98,9 +100,10 @@ export function createLocalCarRepository(userId: string): CarRepository {
         const parsed: unknown = JSON.parse(raw)
         if (!isStoredCar(parsed)) return null
         const body = typeof parsed.body === 'string' && parsed.body in BODY_LABELS ? (parsed.body as BodyType) : null
-        if (typeof parsed.id === 'string') return { ...parsed, id: parsed.id, body }
+        const generation = typeof parsed.generation === 'string' && parsed.generation !== '' ? parsed.generation : null
+        if (typeof parsed.id === 'string') return { ...parsed, id: parsed.id, body, generation }
         // профиль сохранён до появления идентификатора — выдаём его один раз и запоминаем
-        const car: Car = { ...parsed, id: newId(), body }
+        const car: Car = { ...parsed, id: newId(), body, generation }
         window.localStorage.setItem(STORAGE_KEY, JSON.stringify(car))
         return car
       } catch {

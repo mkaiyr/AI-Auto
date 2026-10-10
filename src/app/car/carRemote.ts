@@ -19,10 +19,24 @@ interface CarRow {
   updated_at: string
 }
 
+// Отдельного столбца для поколения в таблице нет, и ради одного необязательного поля
+// схема базы не менялась. Поколение дописывается к модели через разделитель:
+// «Camry · XV70». Наружу хранилище отдаёт модель и поколение раздельно, поэтому
+// при появлении своего столбца изменится только этот файл.
+const GENERATION_SEPARATOR = ' · '
+
+function splitModel(stored: string): { model: string; generation: string | null } {
+  const index = stored.indexOf(GENERATION_SEPARATOR)
+  if (index === -1) return { model: stored, generation: null }
+  return { model: stored.slice(0, index), generation: stored.slice(index + GENERATION_SEPARATOR.length) || null }
+}
+
+const joinModel = (model: string, generation: string | null) => (generation ? `${model}${GENERATION_SEPARATOR}${generation}` : model)
+
 const toCar = (row: CarRow): Car => ({
   id: row.id,
   make: row.make,
-  model: row.model,
+  ...splitModel(row.model),
   year: row.year,
   mileage: row.mileage,
   body: row.body !== null && row.body in BODY_LABELS ? (row.body as BodyType) : null,
@@ -34,7 +48,7 @@ const toCar = (row: CarRow): Car => ({
 /** Поля автомобиля в том виде, в каком их хранит таблица */
 export const toCarFields = (input: CarInput) => ({
   make: input.make,
-  model: input.model,
+  model: joinModel(input.model, input.generation),
   year: input.year,
   mileage: input.mileage,
   body: input.body,

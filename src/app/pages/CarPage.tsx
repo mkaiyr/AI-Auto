@@ -131,6 +131,12 @@ export function CarPage() {
             {formatNumber(car.mileage)} <small>км</small>
           </dd>
         </div>
+        {car.generation && (
+          <div className="spec">
+            <dt>Поколение</dt>
+            <dd>{car.generation}</dd>
+          </div>
+        )}
         <div className="spec">
           <dt>Кузов</dt>
           <dd className={car.body ? undefined : 'spec__empty'}>{car.body ? BODY_LABELS[car.body] : 'Не указан'}</dd>
