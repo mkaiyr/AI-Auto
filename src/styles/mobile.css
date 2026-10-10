@@ -228,10 +228,7 @@ body {
      Главная страница
      ================================================================ */
 
-  /* Главный экран остаётся тёмным — это фотография. Он становится карточкой на светлой странице,
-     поэтому внутри него и в шапке поверх него действуют прежние тёмные переменные. */
-  .header,
-  .hero,
+  /* Фотография автомобиля в кабинете остаётся тёмной карточкой: внутри неё действуют прежние тёмные переменные */
   .car-visual {
     color-scheme: dark;
     --bg: #0e1013;
@@ -248,19 +245,15 @@ body {
   }
 
   .header {
-    top: calc(8px + env(safe-area-inset-top, 0px));
-    left: 8px;
-    right: 8px;
-  }
-
-  .header__inner {
-    padding-inline: 18px;
+    top: env(safe-area-inset-top, 0px);
   }
 
   .header__nav {
-    padding: 8px 18px 20px;
+    padding: 8px var(--gutter) 20px;
     border: 0;
-    border-radius: 0 0 28px 28px;
+    border-radius: 0 0 24px 24px;
+    background: var(--bg-raised);
+    box-shadow: 0 24px 40px -20px rgba(14, 16, 19, 0.3);
   }
 
   .header__cabinet--menu {
@@ -270,34 +263,91 @@ body {
     color: var(--lime-ink);
   }
 
+  /* Главный экран — светлый: заголовок и кнопка на фоне страницы, фотография — отдельная карточка под ними */
   .hero {
-    min-height: min(100svh - 16px, 760px);
-    margin: calc(8px + env(safe-area-inset-top, 0px)) 8px 0;
-    padding-inline: 18px;
-    border-radius: 28px;
+    grid-template-rows: auto auto auto auto auto;
+    min-height: 0;
+    padding-top: calc(var(--header-height) + env(safe-area-inset-top, 0px));
+    background: none;
+    overflow: visible;
+  }
+
+  /* затемнение, зерно и тонирование нужны только тёмному экрану */
+  .hero__shade,
+  .hero__grain,
+  .hero::after {
+    display: none;
+  }
+
+  .hero__eyebrow {
+    font-size: 10px;
   }
 
   .hero__title {
+    margin-top: 12px;
     font-size: clamp(2.6rem, 14.4vw, 4rem);
   }
 
-  .hero__lead {
-    font-size: 15px;
+  /* тёмные «чернила» вместо светлого градиента */
+  .hero__word,
+  .hero__accent {
+    background: none;
+    -webkit-text-fill-color: currentColor;
+    color: var(--text);
   }
 
-  /* кнопка главного экрана — заметная лаймовая плашка */
-  .hero__action {
+  .hero__line--accent {
+    margin-top: 0.02em;
+    text-align: left;
+  }
+
+  /* слово «наизусть» подчёркнуто лаймовым маркером */
+  .hero__accent {
+    padding: 0 0.12em 0.04em 0.04em;
+    background: linear-gradient(transparent 56%, var(--lime) 56%, var(--lime) 90%, transparent 90%);
+  }
+
+  .hero__lead {
+    grid-row: 2;
+    max-width: none;
     margin-top: 18px;
-    margin-bottom: 22px;
+    font-size: 16px;
+    line-height: 1.45;
+  }
+
+  /* кнопка главного экрана — заметная лаймовая плашка во всю ширину */
+  .hero__action {
+    grid-row: 3;
+    justify-self: stretch;
+    margin-top: 20px;
+    margin-bottom: 0;
   }
 
   .hero__action .button {
-    min-height: 52px;
+    display: flex;
+    justify-content: space-between;
+    min-height: 56px;
     padding: 0 22px;
     border: 0;
-    border-radius: 14px;
+    border-radius: 16px;
     background: var(--lime);
     color: var(--lime-ink);
+  }
+
+  /* фотография — карточка со скруглением, в общем потоке страницы */
+  .hero__photo {
+    position: static;
+    grid-row: 4;
+    z-index: auto;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 3;
+    margin-top: 20px;
+    border-radius: 24px;
+    object-position: 88% 50%;
+    -webkit-mask-image: none;
+    mask-image: none;
+    box-shadow: var(--card-shadow);
   }
 
   .hero__action .button__icon {
@@ -310,8 +360,11 @@ body {
   }
 
   .hero__foot {
+    grid-row: 5;
     min-height: 0;
-    padding-block: 12px 16px;
+    padding-block: 10px 0;
+    border-top: 0;
+    font-size: 9px;
   }
 
   .section {
@@ -598,6 +651,50 @@ body {
   .app__nav-link[aria-current='page'] .app__nav-icon {
     background: var(--lime);
     color: var(--lime-ink);
+  }
+
+  /* ---------- Знак раздела «ИИ-помощник»: буквы AI на подложке ---------- */
+
+  .ai-mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-style: normal;
+    line-height: 1;
+    letter-spacing: 0.04em;
+    /* компенсация разрядки после последней буквы */
+    text-indent: 0.04em;
+  }
+
+  /* в нижней панели: неактивный — тёмные буквы на бледно-лаймовой плашке, активный — на полной лаймовой */
+  .ai-mark.app__nav-icon {
+    width: 34px;
+    height: 24px;
+    margin-block: 2px;
+    padding: 0;
+    border-radius: 8px;
+    background: var(--lime-soft);
+    box-shadow: inset 0 0 0 1px rgba(14, 16, 19, 0.1);
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+
+  .app__nav-link[aria-current='page'] .ai-mark.app__nav-icon {
+    width: 48px;
+    height: 28px;
+    margin-block: 0;
+    border-radius: 999px;
+    box-shadow: none;
+  }
+
+  /* в списке разделов на главной */
+  .ai-mark.function-row__icon {
+    padding: 0;
+    background: var(--lime);
+    color: var(--lime-ink);
+    font-size: 17px;
   }
 
   .app__main {

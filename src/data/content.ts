@@ -5,10 +5,10 @@ import {
   Eye,
   Layers,
   ShieldCheck,
-  Stethoscope,
   Wallet,
   type LucideIcon,
 } from 'lucide-react'
+import { AiMark } from '../components/AiMark'
 
 // Все тексты главной страницы собраны здесь, чтобы их было легко менять.
 
@@ -56,7 +56,8 @@ export const features: Feature[] = [
 export interface AppFunction {
   /** Якорь строки в разделе «Функции»: на него ведут ссылки с главного экрана */
   id: string
-  icon: LucideIcon
+  /** Значок lucide или собственный знак раздела с теми же свойствами */
+  icon: LucideIcon | typeof AiMark
   title: string
   /** Короткое название для оглавления на главном экране */
   short: string
@@ -79,7 +80,7 @@ export const appFunctions: AppFunction[] = [
   },
   {
     id: 'diagnostics',
-    icon: Stethoscope,
+    icon: AiMark,
     title: 'ИИ-помощник',
     short: 'Помощник',
     ready: true,
