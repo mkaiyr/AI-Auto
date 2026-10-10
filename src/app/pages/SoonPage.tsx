@@ -13,7 +13,8 @@ export function SoonPage({ section, index }: { section: AppFunction; index: numb
         {section.title}
       </p>
       <h1 className="page__title">{section.title}</h1>
-      <p className="page__lead">{section.text}</p>
+      <p className="page__lead only-desktop">{section.text}</p>
+      <p className="page__lead only-mobile">{section.brief}</p>
 
       <div className="status">
         <p className="status__label">В разработке</p>
