@@ -28,8 +28,6 @@ jobs:
     name: Отладочный APK
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    # те же настройки Supabase, что у сборки сайта, могут лежать в окружении github-pages
-    environment: github-pages
     steps:
       - uses: actions/checkout@v4
 
@@ -46,18 +44,19 @@ jobs:
           java-version: 21
 
       # Адрес проекта Supabase и публичный ключ встраиваются в приложение при сборке — так же, как в сайт.
+      # Берутся только переменные репозитория (Settings → Secrets and variables → Actions → Variables).
       # Без них APK соберётся, но кабинет покажет «Supabase не настроен», поэтому сборка останавливается.
       # Секретный ключ (sb_secret_… или service_role) в приложение попасть не должен: он проверяется здесь
       # и ещё раз в самом приложении (src/lib/supabase.ts). Значения в журнал не выводятся.
       - name: Проверка настроек Supabase
         env:
-          SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL || secrets.VITE_SUPABASE_URL || vars.SUPABASE_URL || secrets.SUPABASE_URL }}
-          SUPABASE_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY || secrets.VITE_SUPABASE_ANON_KEY || vars.SUPABASE_ANON_KEY || secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          SUPABASE_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
         run: |
           echo "Адрес проекта найден: $([ -n "$SUPABASE_URL" ] && echo да || echo НЕТ)"
           echo "Публичный ключ найден: $([ -n "$SUPABASE_KEY" ] && echo да || echo НЕТ)"
           if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_KEY" ]; then
-            echo "::error::Не найдены VITE_SUPABASE_URL или VITE_SUPABASE_ANON_KEY. Они задаются там же, где для сборки сайта: Settings → Secrets and variables → Actions → Variables."
+            echo "::error::Не найдены VITE_SUPABASE_URL или VITE_SUPABASE_ANON_KEY. Добавьте их как переменные репозитория: Settings → Secrets and variables → Actions → вкладка Variables → New repository variable."
             exit 1
           fi
           case "$SUPABASE_KEY" in
@@ -86,8 +85,8 @@ jobs:
         run: npm run build
         env:
           VITE_BASE_PATH: /
-          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL || secrets.VITE_SUPABASE_URL || vars.SUPABASE_URL || secrets.SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY || secrets.VITE_SUPABASE_ANON_KEY || vars.SUPABASE_ANON_KEY || secrets.SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
 
       - name: Проверка сборки веб-приложения
         run: |
