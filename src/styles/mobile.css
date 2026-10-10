@@ -1176,4 +1176,14 @@ body {
     border-top: 1px solid var(--line);
     background: var(--bg);
   }
+
+  /* в закреплённой полосе кнопки стоят в один ряд, чтобы не закрывать форму */
+  .app__main .form > .actions .btn--primary {
+    flex: 2 1 0;
+  }
+
+  .app__main .form > .actions .btn:not(.btn--primary) {
+    flex: 1 1 0;
+    padding-inline: 12px;
+  }
 }
