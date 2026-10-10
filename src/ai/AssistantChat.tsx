@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react'
 import { Link } from '../router'
-import { buildMessages, DANGER_ANSWER, DANGER_NOTICE, isDangerTopic } from './prompt'
+import { buildMessages } from './prompt'
+import { classifyQuestion, SAFETY_ANSWER, SAFETY_NOTICE, type SafetyClass } from './safety'
 import { getAssistantProvider } from './providers'
 import { AssistantError, type ChatMessage, type Support } from './types'
 import './assistant.css'
@@ -22,8 +23,8 @@ interface AssistantChatProps {
 type Stage = 'checking' | 'unsupported' | 'idle' | 'loading' | 'ready'
 
 interface Turn extends ChatMessage {
-  /** вопрос затрагивает безопасность — над ответом показывается предупреждение */
-  danger?: boolean
+  /** вопрос затрагивает безопасность: ответ написан заранее, а не моделью, и помечен предупреждением */
+  safety?: Exclude<SafetyClass, 'none'>
 }
 
 const MODEL_KEY = 'ai-auto:assistant-model'
@@ -169,8 +170,9 @@ export function AssistantChat({ loadCarContext }: AssistantChatProps) {
     setDraft('')
     setError(null)
     // На вопросы о безопасности отвечает не модель, а заранее написанный текст: её догадка здесь опасна
-    if (isDangerTopic(question)) {
-      setTurns([...history, { role: 'assistant', content: DANGER_ANSWER, danger: true }])
+    const safety = classifyQuestion(question)
+    if (safety !== 'none') {
+      setTurns([...history, { role: 'assistant', content: SAFETY_ANSWER[safety], safety }])
       return
     }
     setTurns([...history, { role: 'assistant', content: '' }])
@@ -256,7 +258,17 @@ export function AssistantChat({ loadCarContext }: AssistantChatProps) {
               </label>
             ))}
           </fieldset>
-          {support?.ok && support.weak && <p className="ai__text">У этого устройства немного памяти — основная модель может не запуститься.</p>}
+          <p className="ai__text">
+            Запуск на вашем устройстве не гарантирован: это зависит от видеокарты, свободной памяти и места на диске. Если модель не запустится,
+            сайт сообщит причину.
+            {support?.ok && support.weak && ' У этого устройства немного памяти — основная модель, скорее всего, не запустится.'}
+            {support?.ok && support.storageMb !== null && (
+              <>
+                {' '}В хранилище браузера доступно около {support.storageMb} МБ
+                {cachedModel !== modelId && support.storageMb < selected.downloadMb ? ' — для выбранной модели этого мало.' : '.'}
+              </>
+            )}
+          </p>
           {error && (
             <p className="alert" role="alert">
               {error}
@@ -342,7 +354,7 @@ export function AssistantChat({ loadCarContext }: AssistantChatProps) {
                 </p>
               ) : (
                 <div key={index} className="ai__turn ai__turn--assistant">
-                  {turn.danger && <p className="ai__danger">{DANGER_NOTICE}</p>}
+                  {turn.safety && <p className="ai__danger">{SAFETY_NOTICE[turn.safety]}</p>}
                   <p>{turn.content === '' ? <span className="ai__typing">ИИ думает…</span> : plain(turn.content)}</p>
                 </div>
               ),

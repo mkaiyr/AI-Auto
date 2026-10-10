@@ -23,7 +23,13 @@ export interface ModelOption {
 
 /** Можно ли запустить провайдера на этом устройстве */
 export type Support =
-  | { ok: true; /** устройству лучше подойдёт лёгкая модель */ weak: boolean }
+  | {
+      ok: true
+      /** устройству лучше подойдёт лёгкая модель */
+      weak: boolean
+      /** сколько места осталось в хранилище браузера по его оценке, МБ; null — браузер не сообщает */
+      storageMb: number | null
+    }
   | { ok: false; reason: 'insecure' | 'no-webgpu' | 'no-adapter'; message: string }
 
 export interface LoadProgress {

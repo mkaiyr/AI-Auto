@@ -113,7 +113,7 @@ export const webllmProvider: AssistantProvider = {
     }
     // deviceMemory есть не во всех браузерах; без него считаем устройство обычным
     const memory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory
-    return { ok: true, weak: memory !== undefined && memory <= 4 }
+    return { ok: true, weak: memory !== undefined && memory <= 4, storageMb: await freeStorageMb() }
   },
 
   async load(modelId, onProgress) {
