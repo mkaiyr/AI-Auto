@@ -27,6 +27,10 @@ interface Turn extends ChatMessage {
 }
 
 const MODEL_KEY = 'ai-auto:assistant-model'
+/** Через сколько секунд без движения загрузки показывается подсказка, что она идёт медленно или прервалась */
+const STALL_SECONDS = 60
+/** Ниже этой скорости (токенов в секунду) ответ приходится ждать минутами */
+const SLOW_SPEED = 4
 const MAX_QUESTION = 1000
 
 /** Какая модель уже запускалась в этом браузере: её файлы, скорее всего, лежат в кеше */
@@ -63,6 +67,10 @@ export function AssistantChat({ loadCarContext }: AssistantChatProps) {
   const [generating, setGenerating] = useState(false)
   const [car, setCar] = useState<CarContext | null>(null)
   const [carState, setCarState] = useState<'off' | 'loading' | 'empty' | 'failed'>('off')
+  const [stalled, setStalled] = useState(false)
+  const [speed, setSpeed] = useState<number | null>(null)
+  /** когда загрузка в последний раз сдвинулась */
+  const lastProgress = useRef(0)
   /** номер текущей попытки загрузки: результат отменённой попытки игнорируется */
   const attempt = useRef(0)
   const log = useRef<HTMLDivElement>(null)
@@ -87,6 +95,16 @@ export function AssistantChat({ loadCarContext }: AssistantChatProps) {
     log.current?.scrollTo({ top: log.current.scrollHeight })
   }, [turns])
 
+  // Библиотека при обрыве связи не сообщает об ошибке, а молча повторяет попытки. Чтобы интерфейс
+  // не выглядел зависшим, после долгой паузы появляется пояснение; загрузку при этом никто не прерывает.
+  useEffect(() => {
+    if (stage !== 'loading') return
+    lastProgress.current = Date.now()
+    setStalled(false)
+    const timer = window.setInterval(() => setStalled(Date.now() - lastProgress.current > STALL_SECONDS * 1000), 5000)
+    return () => window.clearInterval(timer)
+  }, [stage])
+
   const selected = provider.models.find((model) => model.id === modelId) ?? provider.models[0]
 
   const start = async () => {
@@ -95,7 +113,11 @@ export function AssistantChat({ loadCarContext }: AssistantChatProps) {
     setProgress({ progress: 0, detail: '' })
     setStage('loading')
     try {
-      await provider.load(modelId, (report) => current === attempt.current && setProgress(report))
+      await provider.load(modelId, (report) => {
+        if (current !== attempt.current) return
+        lastProgress.current = Date.now()
+        setProgress(report)
+      })
       if (current !== attempt.current) return
       rememberModel(modelId)
       setCachedModel(modelId)
@@ -146,6 +168,7 @@ export function AssistantChat({ loadCarContext }: AssistantChatProps) {
     try {
       const answer = await provider.generate(buildMessages(history, car?.text ?? null), write)
       write(answer.trim() === '' ? 'Ответ не получен. Попробуйте переформулировать вопрос.' : answer)
+      setSpeed(provider.speed())
     } catch (cause) {
       setTurns(history)
       setDraft(question)
@@ -251,6 +274,12 @@ export function AssistantChat({ loadCarContext }: AssistantChatProps) {
             <span style={{ width: `${percent}%` }} />
           </div>
           <p className="ai__hint">{progress.detail || 'Подготовка…'}</p>
+          {stalled && (
+            <p className="alert" role="alert">
+              Загрузка не двигается больше минуты. Возможно, интернет медленный или соединение прервалось. Можно подождать ещё или отменить и
+              попробовать позже — уже скачанное сохранится.
+            </p>
+          )}
           <p className="ai__text">Вкладку можно не закрывать: скачанное сохраняется, прерванная загрузка продолжится с того же места.</p>
           <div className="actions">
             <button className="btn" type="button" onClick={cancelLoading}>
@@ -314,6 +343,12 @@ export function AssistantChat({ loadCarContext }: AssistantChatProps) {
               {error}
             </p>
           )}
+          {speed !== null && speed < SLOW_SPEED && !generating && (
+            <p className="ai__text">
+              На этом устройстве модель работает медленно: ответ занимает минуты. Быстрее будет на компьютере с отдельной видеокартой или на
+              более новом телефоне{selected.id !== provider.models[provider.models.length - 1].id ? '; можно также выбрать лёгкую модель' : ''}.
+            </p>
+          )}
 
           <form className="ai__form" onSubmit={send}>
             <label className="ai__label" htmlFor="ai-question">
@@ -340,7 +375,7 @@ export function AssistantChat({ loadCarContext }: AssistantChatProps) {
                 </button>
               )}
               <span className="ai__hint" aria-live="polite">
-                {generating ? 'ИИ печатает ответ…' : `Модель: ${selected.name.toLowerCase()}`}
+                {generating ? 'ИИ печатает ответ…' : `Модель: ${selected.name.toLowerCase()}${speed ? ` · ${speed.toFixed(1).replace('.', ',')} токена в секунду` : ''}`}
               </span>
               <button className="ai__link" type="button" onClick={() => setTurns([])} disabled={generating || turns.length === 0}>
                 Очистить переписку

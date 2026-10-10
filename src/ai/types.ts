@@ -47,6 +47,8 @@ export interface AssistantProvider {
   generate(messages: ChatMessage[], onText: (text: string) => void): Promise<string>
   /** Останавливает генерацию; generate завершается тем, что успело сгенерироваться */
   stop(): void
+  /** Скорость последнего ответа в токенах в секунду (токен — примерно полслова); null — ещё не измерена */
+  speed(): number | null
   /** Удаляет скачанные файлы модели из хранилища браузера */
   forget(modelId: string): Promise<void>
 }

@@ -42,6 +42,7 @@ let worker: Worker | null = null
 let loadedModel: string | null = null
 /** поддерживает ли видеокарта вычисления половинной точности: от этого зависит вариант файлов модели */
 let halfFloat = true
+let lastSpeed: number | null = null
 
 const fullId = (option: ModelOption & { base: string }) => `${option.base}-${halfFloat ? 'q4f16_1' : 'q4f32_1'}-MLC`
 const optionOf = (id: string) => MODELS.find((model) => model.id === id) ?? MODELS[0]
@@ -120,13 +121,16 @@ export const webllmProvider: AssistantProvider = {
     if (!engine) throw new AssistantError('Модель не загружена.')
     let text = ''
     try {
-      const stream = await engine.chat.completions.create({ messages, stream: true, temperature: 0.3, top_p: 0.9, max_tokens: 700 })
+      // ответ ограничен по длине: на слабых устройствах модель печатает несколько слов в секунду
+      const stream = await engine.chat.completions.create({ messages, stream: true, stream_options: { include_usage: true }, temperature: 0.3, top_p: 0.9, max_tokens: 400 })
       for await (const chunk of stream) {
         const piece = chunk.choices[0]?.delta?.content
         if (piece) {
           text += piece
           onText(text)
         }
+        const measured = chunk.usage?.extra?.decode_tokens_per_s
+        if (typeof measured === 'number' && Number.isFinite(measured)) lastSpeed = measured
       }
       return text
     } catch (error) {
@@ -139,6 +143,8 @@ export const webllmProvider: AssistantProvider = {
   stop() {
     engine?.interruptGenerate()
   },
+
+  speed: () => lastSpeed,
 
   async forget(modelId) {
     const model = fullId(optionOf(modelId))
