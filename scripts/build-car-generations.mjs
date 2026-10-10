@@ -720,7 +720,9 @@ for (const [key, model] of models) {
   const namesOther = (file) => {
     const text = file.replace(/_/g, ' ')
     if (ownNames.some((own) => own.length >= 2 && new RegExp(`(^|[^A-Za-z0-9])${escape(own)}`, 'i').test(text))) return null
-    return siblings.find((other) => !ownNames.some((own) => own.toLowerCase().includes(other.toLowerCase())) && new RegExp(`${escape(makeName)}[ -]+${escape(other)}([^A-Za-z0-9]|$)`, 'i').test(text)) ?? null
+    // тот же автомобиль под другим именем (Jazz = Fit, ix35 = Tucson) из проверенного списка ALIASES — не чужая модель
+    const sameCar = (other) => ALIASES[`${model.make}|${other}`]?.title === model.article
+    return siblings.find((other) => !sameCar(other) && !ownNames.some((own) => own.toLowerCase().includes(other.toLowerCase())) && new RegExp(`${escape(makeName)}[ -]+${escape(other)}([^A-Za-z0-9]|$)`, 'i').test(text)) ?? null
   }
   if (model.image && namesOther(model.image)) {
     log.otherModelPhotos.push(`${model.make} ${model.model} (общее фото модели) ← ${model.image}`)
