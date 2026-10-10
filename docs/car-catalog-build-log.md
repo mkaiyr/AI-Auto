@@ -11,7 +11,7 @@
 
 ## Рестайлинги, определённые по разделу статьи Википедии — 422
 
-Год взят из заголовка или первых фраз единственного раздела о рестайлинге и вручную не проверялся. В форме такой рестайлинг — необязательное уточнение «примерно с … года»: сам он никогда не подставляется, автоматически выбирается только поколение. Ещё у 1622 поколений рестайлинг в статье упомянут, но год однозначно не определяется — для них показывается предупреждение.
+Год взят из заголовка или первых фраз единственного раздела о рестайлинге и вручную не проверялся. В форме такой рестайлинг — необязательное уточнение «примерно с … года»: сам он никогда не подставляется, автоматически выбирается только поколение. Ещё у 1623 поколений рестайлинг в статье упомянут, но год однозначно не определяется — для них показывается предупреждение.
 
 - Acura MDX [YD3] 2013–2020: рестайлинг с 2017, фото обновлённой версии нет
 - Acura MDX [YD8/YE1] 2021–н.в.: рестайлинг с 2025, фото обновлённой версии нет
@@ -451,16 +451,13 @@
 - Haval H6 Coupe [пок. 1] 2015–2018 ← 2020 Haval H6 Coupe Blue Label.jpg
 - McLaren W1 [P18] 2026–н.в. ← 2024 McLaren W1 SP25.jpg
 
-## Отброшенные фотографии: названа другая модель — 182
+## Отброшенные фотографии: названа другая модель — 172
 
 Имя файла называет другую модель той же марки и не называет эту. Вместо снимка показывается общее фото модели или силуэт.
 
 - Aion V [пок. 1] ← 2021 GAC Aion V Plus front.jpg (названа модель V Plus)
-- Audi 80 [S2] ← Audi S2 Wikipedia.JPG (названа модель S2)
 - Audi 80 [8C] ← 1995 Audi RS2 Avant LC25.jpg (названа модель RS 2)
 - Audi A6 [4G] ← 2013 Audi A7 (4G) 3.0 TDI S line quattro sedan (2017-01-15) 01.jpg (названа модель A7)
-- Audi Coupe [S2] ← Audi S2 Wikipedia.JPG (названа модель S2)
-- Audi S8 [A8] ← 2018 Audi A8 50 TDi Quattro Automatic 3.0.jpg (названа модель A8)
 - BMW 3 серии [NA0/NA8/ZA0] ← BMW i3 50 xDrive First Edition (NA0) – f2 20082026.jpg (названа модель i3)
 - BMW X5 [G65/G78] ← BMW iX5 60 xDrive (G65) – f 20082026.jpg (названа модель iX5)
 - BYD Tang [BYD] ← BYD Datang 004.jpg (названа модель Datang)
@@ -476,7 +473,6 @@
 - Chevrolet Spark [M200/M250] ← 2007 Chevrolet Matiz SE 1.0 Front.jpg (названа модель Matiz)
 - Chevrolet Van [пок. 4] ← 2024 Chevrolet Express LT 3500 Extended, 12-29-2025.jpg (названа модель Express)
 - Chrysler Fifth Avenue [TP] ← 79-81 Chrysler New Yorker 5th Avenue.jpg (названа модель New Yorker)
-- Chrysler New Yorker [LHS] ← 2nd Chrysler LHS.jpg (названа модель LHS)
 - Dacia 1310 [CN2/CN3] ← 1994 Dacia 1410 (CN2) front view.jpg (названа модель 1410)
 - Daihatsu Boon [M300/AC10] ← Daihatsu Sirion front 20081202.jpg (названа модель Sirion)
 - Daihatsu Rugger (общее фото модели) ← Daihatsu Taft (front), Jakarta.jpg
@@ -509,7 +505,6 @@
 - Isuzu MU (общее фото модели) ← 2001-2003 Isuzu Rodeo.jpg
 - Isuzu MU [UCS55/UCS69GW] ← 1st-Isuzu-Rodeo.jpg (названа модель Rodeo)
 - Isuzu MU [UER25FW/UES25FW/UES73FW] ← Isuzu-Rodeo-Sport.jpg (названа модель Rodeo)
-- Isuzu MU-X [MU-7] ← ISUZU MU-7.jpg (названа модель MU-7)
 - Isuzu Piazza (общее фото модели) ← 1987 Isuzu Impulse RS Turbo in Pure White, front left, 11-05-2022.jpg
 - Jeep Wagoneer [XJ] ← Jeep Cherokee 2-door.jpg (названа модель Cherokee)
 - Jeep Wagoneer [ZJ] ← 1993-1995 Jeep Grand Cherokee -- 03-30-2012.JPG (названа модель Grand Cherokee)
@@ -524,7 +519,6 @@
 - Kia Sephia [JB] ← 2005-2009 Kia Rio (JB) hatchback 02.jpg (названа модель Rio)
 - Lamborghini Aventador [LPI] ← 2022 Lamborghini Countach.jpg (названа модель Countach)
 - Lincoln Z (общее фото модели) ← 2022 Chang'an-Lincoln Zephyr.jpg
-- Lotus Elise [340R] ← Lotus 340R-01.jpg (названа модель 340R)
 - Lynk & Co 02 [E335] ← Lynk & Co Z20 007.jpg (названа модель Z20)
 - Lynk & Co 10 (общее фото модели) ← Lynk & Co Z10 006.jpg
 - Lynk & Co 10 [E371] ← (CHN-Zhejiang) Private Lynk & Co Z10 浙AC6K811 2024-12-15.jpg (названа модель Z10)
@@ -545,8 +539,6 @@
 - Mazda Familia [CB] ← Mazda-Lantis.JPG (названа модель Lantis)
 - Mazda Luce [HC] ← 1987-1989 Mazda 929 (HC) sedan (2011-04-28) 01.jpg (названа модель 929)
 - Mazda Sentia [HD] ← Mazda 929 .jpg (названа модель 929)
-- McLaren 720S [750S] ← 2023 McLaren 750S 1.jpg (названа модель 750S)
-- Mercedes-Benz S-Класс [W111/W112] ← Mercedes-Benz W111 Ilmenau.jpg (названа модель W111)
 - MG 6 (общее фото модели) ← MG 6 Pro 004 (cropped).jpg
 - Mitsubishi Delica [пок. 2] ← 1984 Mitsubishi L300 campervan.jpg (названа модель L300)
 - Mitsubishi L200 [K50/K60/K70] ← Mitsubishi Strada 201.JPG (названа модель Strada)
@@ -557,7 +549,6 @@
 - Mitsubishi Montero Sport [K80/K90/PA] ← 1998-2000 Mitsubishi Challenger (PA) wagon 02.jpg (названа модель Challenger)
 - Mitsubishi Pajero iO (общее фото модели) ← Mitsubishi Pajero Pinin front 20100525.jpg
 - Mitsubishi Pajero Sport [K80/K90/PA] ← 1998-2000 Mitsubishi Challenger (PA) wagon 02.jpg (названа модель Challenger)
-- Mitsubishi RVR [ASX] ← Mitsubishi ASX (2019) IMG 6615.jpg (названа модель ASX)
 - Mitsubishi Triton [K50/K60/K70] ← Mitsubishi Strada 201.JPG (названа модель Strada)
 - Nissan 180SX [RS13U] ← Nissan 200SX Schaffen Diest 2019.jpg (названа модель 200SX)
 - Nissan 370Z (общее фото модели) ← 2012-2017 Nissan Fairlady Z.jpg
@@ -590,7 +581,6 @@
 - Oldsmobile 442 [пок. 5] ← 1970 Oldsmobile Cutlass Supreme Holiday Coupe, front right, 06-21-2023.jpg (названа модель Cutlass)
 - Ora Good Cat (общее фото модели) ← GWM Ora 03 – f 12102025.jpg
 - Ora Good Cat [ES11] ← GWM Ora 03 – f 12102025.jpg (названа модель 03)
-- Roewe D7 [M7] ← Roewe M7 005.jpg (названа модель M7)
 - SsangYong Rodius [пок. 2] ← 00 ssangyong korandoturismo 1.jpg (названа модель Korando Turismo)
 - Subaru XT (общее фото модели) ← 1985 Subaru Alcyone VR Turbo 4WD.jpg
 - Suzuki Celerio [пок. 1] ← 1994-1997 Suzuki Alto.jpg (названа модель Alto)
