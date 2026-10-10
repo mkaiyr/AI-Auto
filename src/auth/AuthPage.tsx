@@ -5,9 +5,9 @@ import { useAuth } from './AuthProvider'
 import '../app/pages/pages.css'
 import './auth.css'
 
-type Mode = 'signin' | 'signup'
+type Mode = 'signin' | 'signup' | 'forgot'
 
-const MIN_PASSWORD = 8
+export const MIN_PASSWORD = 8
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 /** Общий каркас экранов входа: логотип, ссылка на сайт и узкая колонка с содержимым */
@@ -28,7 +28,7 @@ export function AuthLayout({ children }: { children: ReactNode }) {
   )
 }
 
-/** Экран на время восстановления сессии и переходов */
+/** Экран на время проверки сессии и переходов */
 export function AuthLoading() {
   return (
     <AuthLayout>
@@ -52,18 +52,38 @@ export function AuthUnavailable({ message }: { message: string }) {
   )
 }
 
+/** Сессия есть, но сервер недоступен: подтвердить её нельзя, поэтому кабинет не открывается */
+export function AuthOffline({ message, onRetry }: { message: string; onRetry: () => void }) {
+  return (
+    <AuthLayout>
+      <p className="page__eyebrow">Кабинет</p>
+      <h1 className="page__title auth__title">Нет связи</h1>
+      <p className="alert" role="alert">
+        {message}
+      </p>
+      <div className="actions">
+        <button className="btn btn--primary" type="button" onClick={onRetry}>
+          Повторить
+        </button>
+      </div>
+    </AuthLayout>
+  )
+}
+
+const initialMode = (): Mode => (new URLSearchParams(window.location.search).get('mode') === 'forgot' ? 'forgot' : 'signin')
+
 export function AuthPage() {
-  const { signIn, signUp, resendConfirmation } = useAuth()
-  const [mode, setMode] = useState<Mode>('signin')
+  const { signIn, signUp, resendConfirmation, requestPasswordReset, linkError, clearLinkError } = useAuth()
+  const [mode, setMode] = useState<Mode>(initialMode)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [info, setInfo] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
-  /** почта, на которую отправлено письмо с подтверждением */
-  const [confirmEmail, setConfirmEmail] = useState<string | null>(null)
-  /** показать кнопку повторной отправки письма */
+  /** почта, на которую ушёл запрос письма, и вид письма */
+  const [sent, setSent] = useState<{ email: string; kind: 'confirm' | 'reset' } | null>(null)
+  /** показать кнопку повторной отправки письма с подтверждением */
   const [canResend, setCanResend] = useState(false)
 
   const switchMode = (next: Mode) => {
@@ -72,6 +92,7 @@ export function AuthPage() {
     setFormError(null)
     setInfo(null)
     setCanResend(false)
+    clearLinkError()
   }
 
   const validate = () => {
@@ -79,17 +100,21 @@ export function AuthPage() {
     const address = email.trim()
     if (address === '') next.email = 'Укажите почту'
     else if (!EMAIL_PATTERN.test(address)) next.email = 'Проверьте адрес: он должен выглядеть как name@example.com'
-    if (password === '') next.password = 'Укажите пароль'
-    else if (mode === 'signup' && password.length < MIN_PASSWORD) next.password = `Пароль — не короче ${MIN_PASSWORD} символов`
+    if (mode !== 'forgot') {
+      if (password === '') next.password = 'Укажите пароль'
+      else if (mode === 'signup' && password.length < MIN_PASSWORD) next.password = `Пароль — не короче ${MIN_PASSWORD} символов`
+    }
     setErrors(next)
     return Object.keys(next).length === 0
   }
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault()
+    if (busy) return
     setFormError(null)
     setInfo(null)
     setCanResend(false)
+    clearLinkError()
     if (!validate()) return
 
     const address = email.trim()
@@ -101,34 +126,51 @@ export function AuthPage() {
         setFormError(result.message)
         setCanResend(result.code === 'email_not_confirmed')
       }
-    } else {
+    } else if (mode === 'signup') {
       const result = await signUp(address, password)
       if (!result.ok) setFormError(result.message)
       else if (result.needsConfirmation) {
-        setConfirmEmail(address)
+        setSent({ email: address, kind: 'confirm' })
         setPassword('')
       }
+    } else {
+      const result = await requestPasswordReset(address)
+      if (result.ok) setSent({ email: address, kind: 'reset' })
+      else setFormError(result.message)
     }
     setBusy(false)
   }
 
   const handleResend = async () => {
+    if (busy) return
     setBusy(true)
     setFormError(null)
-    const result = await resendConfirmation((confirmEmail ?? email).trim())
-    if (result.ok) setInfo('Письмо отправлено ещё раз. Проверьте почту, включая папку «Спам».')
+    const result = await resendConfirmation((sent?.email ?? email).trim())
+    if (result.ok) setInfo('Запрос на повторную отправку принят. Проверьте почту, включая папку «Спам».')
     else setFormError(result.message)
     setBusy(false)
   }
 
-  if (confirmEmail) {
+  if (sent) {
+    const reset = sent.kind === 'reset'
     return (
       <AuthLayout>
-        <p className="page__eyebrow">Регистрация</p>
-        <h1 className="page__title auth__title">Подтвердите почту</h1>
+        <p className="page__eyebrow">{reset ? 'Восстановление пароля' : 'Регистрация'}</p>
+        <h1 className="page__title auth__title">Проверьте почту</h1>
+        {/* Текст одинаков для существующих и несуществующих аккаунтов. Доставку письма приложение подтвердить не может */}
         <p className="page__lead">
-          Мы отправили письмо на <b className="auth__email">{confirmEmail}</b>. Перейдите по ссылке из письма — после
-          этого можно будет войти. Пока почта не подтверждена, вход не выполнен.
+          {reset ? (
+            <>
+              Если аккаунт с адресом <b className="auth__email">{sent.email}</b> существует, на него отправлено письмо со
+              ссылкой для смены пароля. Письмо может идти несколько минут — проверьте и папку «Спам».
+            </>
+          ) : (
+            <>
+              Если адрес <b className="auth__email">{sent.email}</b> ещё не был зарегистрирован, на него отправлено письмо
+              со ссылкой для подтверждения. Пока почта не подтверждена, вход не выполнен. Если аккаунт у вас уже есть —
+              войдите или восстановите пароль.
+            </>
+          )}
         </p>
         {info && (
           <p className="auth__info" role="status">
@@ -145,26 +187,30 @@ export function AuthPage() {
             className="btn btn--primary"
             type="button"
             onClick={() => {
-              setConfirmEmail(null)
+              setSent(null)
               switchMode('signin')
             }}
           >
             Перейти ко входу
           </button>
-          <button className="btn" type="button" onClick={handleResend} disabled={busy}>
-            Отправить письмо ещё раз
-          </button>
+          {!reset && (
+            <button className="btn" type="button" onClick={handleResend} disabled={busy}>
+              Отправить письмо ещё раз
+            </button>
+          )}
         </div>
       </AuthLayout>
     )
   }
 
-  const signup = mode === 'signup'
+  const titles: Record<Mode, string> = { signin: 'Вход', signup: 'Регистрация', forgot: 'Восстановление пароля' }
+  const submitLabels: Record<Mode, string> = { signin: 'Войти', signup: 'Зарегистрироваться', forgot: 'Отправить ссылку' }
 
   return (
     <AuthLayout>
       <p className="page__eyebrow">Кабинет</p>
-      <h1 className="page__title auth__title">{signup ? 'Регистрация' : 'Вход'}</h1>
+      <h1 className="page__title auth__title">{titles[mode]}</h1>
+      {mode === 'forgot' && <p className="page__lead">Укажите почту аккаунта — мы отправим ссылку для установки нового пароля.</p>}
 
       <form className="form auth__form" onSubmit={handleSubmit} noValidate>
         <div className="field">
@@ -190,44 +236,46 @@ export function AuthPage() {
           )}
         </div>
 
-        <div className="field">
-          <label htmlFor="auth-password">
-            Пароль {signup && <span>не короче {MIN_PASSWORD} символов</span>}
-          </label>
-          <input
-            id="auth-password"
-            name="password"
-            type="password"
-            autoComplete={signup ? 'new-password' : 'current-password'}
-            value={password}
-            onChange={(event) => {
-              setPassword(event.target.value)
-              setErrors((current) => ({ ...current, password: undefined }))
-            }}
-            aria-invalid={errors.password ? true : undefined}
-            aria-describedby={errors.password ? 'auth-password-error' : undefined}
-          />
-          {errors.password && (
-            <p className="field__error" id="auth-password-error">
-              {errors.password}
-            </p>
-          )}
-        </div>
+        {mode !== 'forgot' && (
+          <div className="field">
+            <label htmlFor="auth-password">
+              Пароль {mode === 'signup' && <span>не короче {MIN_PASSWORD} символов</span>}
+            </label>
+            <input
+              id="auth-password"
+              name="password"
+              type="password"
+              autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
+              value={password}
+              onChange={(event) => {
+                setPassword(event.target.value)
+                setErrors((current) => ({ ...current, password: undefined }))
+              }}
+              aria-invalid={errors.password ? true : undefined}
+              aria-describedby={errors.password ? 'auth-password-error' : undefined}
+            />
+            {errors.password && (
+              <p className="field__error" id="auth-password-error">
+                {errors.password}
+              </p>
+            )}
+          </div>
+        )}
 
         {info && (
           <p className="auth__info" role="status">
             {info}
           </p>
         )}
-        {formError && (
+        {(formError ?? linkError) && (
           <p className="alert" role="alert">
-            {formError}
+            {formError ?? linkError}
           </p>
         )}
 
         <div className="actions">
           <button className="btn btn--primary" type="submit" disabled={busy}>
-            {signup ? 'Зарегистрироваться' : 'Войти'}
+            {busy ? 'Подождите…' : submitLabels[mode]}
           </button>
           {canResend && (
             <button className="btn" type="button" onClick={handleResend} disabled={busy}>
@@ -237,10 +285,17 @@ export function AuthPage() {
         </div>
       </form>
 
+      {mode === 'signin' && (
+        <p className="auth__switch">
+          <button type="button" onClick={() => switchMode('forgot')}>
+            Забыли пароль?
+          </button>
+        </p>
+      )}
       <p className="auth__switch">
-        {signup ? 'Уже есть аккаунт?' : 'Ещё нет аккаунта?'}{' '}
-        <button type="button" onClick={() => switchMode(signup ? 'signin' : 'signup')}>
-          {signup ? 'Войти' : 'Зарегистрироваться'}
+        {mode === 'signin' ? 'Ещё нет аккаунта?' : mode === 'signup' ? 'Уже есть аккаунт?' : 'Вспомнили пароль?'}{' '}
+        <button type="button" onClick={() => switchMode(mode === 'signin' ? 'signup' : 'signin')}>
+          {mode === 'signin' ? 'Зарегистрироваться' : 'Войти'}
         </button>
       </p>
     </AuthLayout>
