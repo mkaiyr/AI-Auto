@@ -85,15 +85,6 @@ const ALIASES = {
   'Kia|Optima': { title: 'Kia K5', only: ['MS', 'MG', 'TF', 'JF'] },
   'Kia|Quoris': { title: 'Kia K9', only: ['KH'] },
   'Kia|Sedona': { title: 'Kia Carnival' },
-  'Lada (ВАЗ)|2105': { title: 'Lada Riva' },
-  'Lada (ВАЗ)|2107': { title: 'Lada Riva' },
-  'Lada (ВАЗ)|2108': { title: 'Lada Samara' },
-  'Lada (ВАЗ)|2109': { title: 'Lada Samara' },
-  'Lada (ВАЗ)|21099': { title: 'Lada Samara' },
-  'Lada (ВАЗ)|2110': { title: 'Lada 110' },
-  'Lada (ВАЗ)|2113': { title: 'Lada Samara' },
-  'Lada (ВАЗ)|2114': { title: 'Lada Samara' },
-  'Lada (ВАЗ)|2115': { title: 'Lada Samara' },
   'Lada (ВАЗ)|2121 (4x4)': { title: 'Lada Niva' },
   'Lada (ВАЗ)|Niva Legend': { title: 'Lada Niva' },
   'Lada (ВАЗ)|Niva Travel': { title: 'Lada Niva Travel' },
@@ -703,7 +694,11 @@ for (const model of models.values()) {
     // поколение: o — номер (0 — не указан), c — коды [код, примечание о кузове],
     // f/t — годы выпуска по всем рынкам (t: 0 — выпускается), i — фотография [путь, автор, лицензия]
     g: model.generations.map((generation) => {
-      const row = { o: generation.ordinal, c: generation.codes, f: generation.from, t: generation.to ?? 0 }
+      // годы поколения не выходят за годы выпуска самой модели по каталогу (с запасом в один год):
+      // так отсекаются годы предшественников и ошибочно разобранные даты
+      const from = model.from ? Math.max(generation.from, model.from - 1) : generation.from
+      const to = model.to && model.to < THIS_YEAR ? Math.min(generation.to ?? model.to + 1, model.to + 1) : (generation.to ?? 0)
+      const row = { o: generation.ordinal, c: generation.codes, f: from, t: to }
       const image = generation.image && images.get(generation.image)
       if (image) row.i = image
       return row
