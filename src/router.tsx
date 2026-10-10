@@ -1,6 +1,16 @@
 import { useSyncExternalStore, type AnchorHTMLAttributes, type MouseEvent, type Ref } from 'react'
 
 // Небольшая маршрутизация на History API: маршрутов мало, отдельная библиотека не нужна.
+//
+// Сайт может лежать не в корне домена (на GitHub Pages — в папке с именем репозитория).
+// Маршруты в коде всегда пишутся от корня приложения («/app/car»), а префикс папки
+// добавляется и убирается только здесь.
+
+/** Префикс папки сайта без завершающего слэша: «» локально, «/site2» на GitHub Pages */
+const BASE = import.meta.env.BASE_URL.replace(/\/+$/, '')
+
+/** Полный адрес внутри сайта для маршрута приложения: «/app/car» → «/site2/app/car» */
+export const withBase = (to: string) => `${BASE}${to}`
 
 const listeners = new Set<() => void>()
 const notify = () => listeners.forEach((listener) => listener())
@@ -14,13 +24,17 @@ const subscribe = (listener: () => void) => {
   }
 }
 
-/** Текущий путь без завершающего слэша: «/app/car/» и «/app/car» — одно и то же */
-const getPath = () => window.location.pathname.replace(/\/+$/, '') || '/'
+/** Текущий маршрут без префикса папки и завершающего слэша: «/app/car/» и «/app/car» — одно и то же */
+const getPath = () => {
+  const { pathname } = window.location
+  const inner = BASE !== '' && (pathname === BASE || pathname.startsWith(`${BASE}/`)) ? pathname.slice(BASE.length) : pathname
+  return inner.replace(/\/+$/, '') || '/'
+}
 
 export function navigate(to: string, options: { replace?: boolean } = {}) {
   if (to === getPath()) return
-  if (options.replace) window.history.replaceState(null, '', to)
-  else window.history.pushState(null, '', to)
+  if (options.replace) window.history.replaceState(null, '', withBase(to))
+  else window.history.pushState(null, '', withBase(to))
   window.scrollTo({ top: 0, behavior: 'instant' })
   notify()
 }
@@ -44,5 +58,5 @@ export function Link({ to, onClick, ...rest }: LinkProps) {
     navigate(to)
   }
 
-  return <a href={to} onClick={handleClick} {...rest} />
+  return <a href={withBase(to)} onClick={handleClick} {...rest} />
 }

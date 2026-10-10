@@ -1,8 +1,12 @@
 import { useState } from 'react'
-import { Menu, X } from 'lucide-react'
+import { ArrowUpRight, Menu, X } from 'lucide-react'
 import { navLinks } from '../data/content'
+import { Link } from '../router'
 import { Logo } from './Logo'
 import './Header.css'
+
+/** Маршрут кабинета; без входа приложение само откроет страницу входа */
+const CABINET_PATH = '/app/car'
 
 export function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -20,14 +24,25 @@ export function Header() {
               </li>
             ))}
           </ul>
+          {/* на телефоне кнопка кабинета живёт внутри меню, чтобы не переполнять шапку */}
+          <Link className="header__cabinet header__cabinet--menu" to={CABINET_PATH} onClick={() => setMenuOpen(false)}>
+            Личный кабинет
+            <ArrowUpRight size={16} strokeWidth={1.75} aria-hidden="true" />
+          </Link>
         </nav>
 
         <Logo />
 
-        <span className="header__status">
-          <span className="header__status-dot" aria-hidden="true" />
-          В разработке
-        </span>
+        <div className="header__side">
+          <span className="header__status">
+            <span className="header__status-dot" aria-hidden="true" />
+            В разработке
+          </span>
+          <Link className="header__cabinet" to={CABINET_PATH}>
+            Личный кабинет
+            <ArrowUpRight size={16} strokeWidth={1.75} aria-hidden="true" />
+          </Link>
+        </div>
 
         <button
           className="header__toggle"
