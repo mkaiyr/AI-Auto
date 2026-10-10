@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { BODY_LABELS, type BodyType } from './carStore'
 import './car.css'
 
@@ -91,10 +92,13 @@ interface CarVisualProps {
 
 /** Главный визуальный блок профиля: фото автомобиля, а без него — силуэт выбранного кузова */
 export function CarVisual({ photo, body, alt }: CarVisualProps) {
-  if (photo) {
+  // адрес фото, которое не удалось загрузить (например, временная ссылка устарела в давно открытой вкладке)
+  const [failedPhoto, setFailedPhoto] = useState<string | null>(null)
+
+  if (photo && photo !== failedPhoto) {
     return (
       <figure className="car-visual car-visual--photo">
-        <img src={photo} alt={alt} />
+        <img src={photo} alt={alt} onError={() => setFailedPhoto(photo)} />
       </figure>
     )
   }
