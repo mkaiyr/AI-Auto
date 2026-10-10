@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
-import { localServiceRepository } from '../service/serviceStore'
-import { localCarPhotoRepository } from './carPhoto'
-import { localCarRepository, type Car, type CarInput, type CarRepository } from './carStore'
+import { useRepositories } from '../repositories'
+import type { Car, CarInput } from './carStore'
 
 interface CarState {
   status: 'loading' | 'ready'
@@ -10,9 +9,11 @@ interface CarState {
   error: string | null
 }
 
-/** Профиль автомобиля для страниц приложения. Источник данных подменяется через repository */
-export function useCar(repository: CarRepository = localCarRepository) {
+/** Профиль автомобиля текущего пользователя */
+export function useCar() {
+  const { car: repository, service, photo } = useRepositories()
   const [state, setState] = useState<CarState>({ status: 'loading', car: null, error: null })
+  const [version, setVersion] = useState(0)
 
   useEffect(() => {
     let alive = true
@@ -27,7 +28,10 @@ export function useCar(repository: CarRepository = localCarRepository) {
     return () => {
       alive = false
     }
-  }, [repository])
+  }, [repository, version])
+
+  /** Перечитать профиль из хранилища (после переноса старых данных в аккаунт) */
+  const reload = useCallback(() => setVersion((current) => current + 1), [])
 
   const save = useCallback(
     async (input: CarInput) => {
@@ -43,12 +47,12 @@ export function useCar(repository: CarRepository = localCarRepository) {
     // (на сервере это будет каскадное удаление в базе данных)
     const current = await repository.get()
     if (current) {
-      await localServiceRepository.removeByCar(current.id)
-      await localCarPhotoRepository.remove(current.id)
+      await service.removeByCar(current.id)
+      await photo.remove(current.id)
     }
     await repository.remove()
     setState({ status: 'ready', car: null, error: null })
-  }, [repository])
+  }, [repository, service, photo])
 
-  return { ...state, save, remove }
+  return { ...state, save, remove, reload }
 }
