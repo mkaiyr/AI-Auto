@@ -131,6 +131,14 @@ const ALIASES = {
   'УАЗ|Хантер': { title: 'UAZ Hunter' },
 }
 
+// Исправления, проверенные вручную, для случаев, когда карточка статьи объединяет разные автомобили.
+// split — код выделяется из общего поколения в отдельное со своими годами.
+const CORRECTIONS = {
+  // Almera G15 выпускалась только в России (АвтоВАЗ, 2012–2018). В статье она описана в одной
+  // карточке с японской Bluebird Sylphy G11 (2005–2012), из-за чего годы получались общими: 2005–2019.
+  'Nissan|Almera': { split: [{ code: 'G15', from: 2012, to: 2018 }] },
+}
+
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 // ---------- запросы к API с кешем ----------
@@ -295,11 +303,13 @@ function parseYears(value) {
   }
   if (from === null) return null
   // to: null — выпускается, undefined — год окончания в карточке не указан
-  return { from: min, to: open ? null : to === undefined && max === min ? undefined : max }
+  // Начало — первый год основной строки: более ранние годы в следующих строках обычно относятся
+  // к предшественнику или к другой модели. Окончание — самый поздний год по всем рынкам.
+  return { from, to: open ? null : to === undefined && max === from ? undefined : Math.max(max, from) }
 }
 
 const NOT_CODES = new Set(
-  'SUV LWB SWB JDM USA UK EU GT GTI GTS RS AMG MPV EV PHEV HEV BEV FWD AWD RWD CKD SKD II III IV VI VII VIII IX XL US UAE CIS LHD RHD TBA TBD CUV LCV SAV GM VW BMW KDM ASEAN FCEV CNG LPG MHEV DOHC SOHC CVT SE LE XLE LX EX GL GLS GLX SR SRT ST XR SV SL7 MK MKI MKII'.split(' '),
+  'GMT GMC VAZ GAZ UAZ SUV LWB SWB JDM USA UK EU GT GTI GTS RS AMG MPV EV PHEV HEV BEV FWD AWD RWD CKD SKD II III IV VI VII VIII IX XL US UAE CIS LHD RHD TBA TBD CUV LCV SAV GM VW BMW KDM ASEAN FCEV CNG LPG MHEV DOHC SOHC CVT SE LE XLE LX EX GL GLS GLX SR SRT ST XR SV SL7 MK MKI MKII'.split(' '),
 )
 
 function isCode(token) {
@@ -563,6 +573,21 @@ for (const [key, model] of models) {
     if (years) list.push(buildGeneration({ params: model.parsed.top, years, heading: '' }))
   }
 
+  // «M3» в статье о BMW M3, «CLS» в статье о CLS: название модели, попавшее в заголовки разделов,
+  // — не код кузова. Признак: «код» совпадает со словом из названия и повторяется в нескольких поколениях.
+  const titleWords = new Set(`${model.article} ${model.model}`.toUpperCase().split(/[\s()-]+/))
+  for (const generation of list) {
+    generation.codes = generation.codes.filter(([code]) => !(titleWords.has(code) && list.filter((other) => other.codes.some((item) => item[0] === code)).length > 1))
+  }
+
+  for (const fix of CORRECTIONS[key]?.split ?? []) {
+    const owner = list.find((generation) => generation.codes.length > 1 && generation.codes.some((item) => item[0] === fix.code))
+    if (!owner) continue
+    owner.codes = owner.codes.filter((item) => item[0] !== fix.code)
+    owner.to = Math.min(owner.to ?? fix.from, fix.from)
+    list.push({ ordinal: 0, codes: [[fix.code, '']], from: fix.from, to: fix.to, image: null })
+  }
+
   // одно и то же поколение не повторяется: совпадают коды или (без кодов) номер и год начала
   const unique = []
   for (const generation of list) {
@@ -589,7 +614,8 @@ for (const [key, model] of models) {
   unique.forEach((generation, index) => {
     if (generation.to !== undefined) return
     const next = unique.slice(index + 1).find((other) => other.from > generation.from)
-    generation.to = next ? next.from : model.to && model.to < THIS_YEAR ? Math.max(model.to, generation.from) : null
+    // плюс один год: старое поколение обычно ещё выпускается в год запуска следующего и сразу после него
+    generation.to = next ? Math.min(next.from + 1, THIS_YEAR) : model.to && model.to < THIS_YEAR ? Math.max(model.to, generation.from) : null
     generation.guessedEnd = true
   })
 
@@ -598,6 +624,16 @@ for (const [key, model] of models) {
   const only = ALIASES[key]?.only
   const kept = unique.filter((generation) => !only || generation.codes.some((code) => only.includes(code[0]))).filter((generation) => (!model.to || generation.from <= model.to + 1) && (!model.from || (generation.to ?? THIS_YEAR) >= model.from - 1))
   model.generations = kept
+
+  // Пропуск в нумерации (I, II, VIII…) означает, что часть поколений в статье не описана карточкой.
+  // Для такой модели единственный найденный вариант не обязательно верный — форма не подставляет его сама.
+  const numberedKept = kept.filter((generation) => generation.ordinal > 0).sort((a, b) => a.ordinal - b.ordinal)
+  model.partial = numberedKept.some((generation, index) => {
+    const previous = numberedKept[index - 1]
+    if (!previous || generation.ordinal - previous.ordinal <= 1) return false
+    const between = kept.filter((other) => other.ordinal === 0 && other.from >= previous.from && other.from <= generation.from).length
+    return between < generation.ordinal - previous.ordinal - 1
+  })
   model.image = imageName(model.parsed.top?.image)
   // без поколений модель остаётся в справочнике только ради фотографии
   if (kept.length === 0 && !((model.exact || (ALIASES[key] && !only)) && model.image)) {
@@ -645,9 +681,10 @@ for (let offset = 0; offset < fileList.length; offset += 50) {
       .replace(/&[a-z#0-9]+;/gi, ' ')
       .replace(/\s+/g, ' ')
       .trim()
-      .slice(0, 60)
+    // лицензии с указанием авторства без имени автора использовать нельзя: подпись была бы неполной
+    if (!author && !/^(CC0|Public domain|PDM)/i.test(licence)) continue
     const asked = (renamed.get(page.title) ?? page.title).replace(/^File:/, '')
-    const entry = [thumb, author || 'автор не указан', licence.replace(/^PDM.*/i, 'Public domain')]
+    const entry = [thumb, author.length > 80 ? author.slice(0, 79).trimEnd() + '…' : author || 'автор не указан', licence.replace(/^PDM.*/i, 'Public domain')]
     images.set(asked, entry)
     images.set(page.title.replace(/^File:/, ''), entry)
   }
@@ -674,6 +711,8 @@ for (const model of models.values()) {
   }
   const image = model.image && images.get(model.image)
   if (image) entry.i = image
+  // p — список поколений заведомо неполный
+  if (model.partial) entry.p = 1
   if (!byMake.has(model.make)) byMake.set(model.make, {})
   byMake.get(model.make)[model.model] = entry
 }

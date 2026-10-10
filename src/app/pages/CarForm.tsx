@@ -49,11 +49,12 @@ const parseYear = (value: string) => (/^\d{4}$/.test(value.trim()) ? Number(valu
  * при нескольких (переходный год, разные коды у кузовов) выбор остаётся за пользователем.
  * Без года ничего не подставляется: одного названия модели для этого недостаточно.
  */
-function suggestGeneration(options: GenerationOption[], year: string, current: string): string {
+function suggestGeneration(options: GenerationOption[], year: string, current: string, partial: boolean): string {
   const parsed = parseYear(year)
   const candidates = parsed === null ? options : optionsForYear(options, parsed)
   if (candidates.some((item) => item.value === current)) return current
-  return parsed !== null && candidates.length === 1 ? candidates[0].value : ''
+  // при неполном списке поколений единственный найденный вариант может быть не тем — выбирает пользователь
+  return parsed !== null && candidates.length === 1 && !partial ? candidates[0].value : ''
 }
 
 export function CarForm({ initial, initialPhoto, onSubmit, onCancel }: CarFormProps) {
@@ -114,6 +115,7 @@ export function CarForm({ initial, initialPhoto, onSubmit, onCancel }: CarFormPr
   const generations = useGenerations(manual.make || catalogFailed ? '' : values.make)
   const modelData = manual.model ? null : (generations?.[values.model] ?? null)
   const options = useMemo(() => generationOptions(modelData), [modelData])
+  const partial = modelData?.partial ?? false
   const generationsLoading = generations === null && values.model !== '' && !manual.model
   /** сохранённое значение, которого нет в списке: введено вручную или записано прежней версией справочника */
   const unlisted = values.generation !== '' && !options.some((item) => item.value === values.generation)
@@ -136,8 +138,9 @@ export function CarForm({ initial, initialPhoto, onSubmit, onCancel }: CarFormPr
 
   const selectModel = (model: string) => {
     if (model === values.model) return
-    const list = generationOptions(generations?.[model] ?? null)
-    patch({ model, ...generationPatch(list, suggestGeneration(list, values.year, '')) })
+    const next = generations?.[model] ?? null
+    const list = generationOptions(next)
+    patch({ model, ...generationPatch(list, suggestGeneration(list, values.year, '', next?.partial ?? false)) })
     setManual((current) => ({ ...current, model: false, generation: false }))
     setGenerationPicked(false)
     setGenerationDropped(false)
@@ -148,7 +151,7 @@ export function CarForm({ initial, initialPhoto, onSubmit, onCancel }: CarFormPr
     // Собственный выбор пользователя сохраняется, пока подходит к году. Подставленное формой
     // значение пересчитывается: в переходный год оно сбрасывается, чтобы выбор сделал человек.
     const keep = generationPicked ? values.generation : ''
-    const next = suggestGeneration(options, year, keep)
+    const next = suggestGeneration(options, year, keep, partial)
     patch({ year, ...generationPatch(options, next) })
     if (next !== keep) setGenerationPicked(false)
     setGenerationDropped(values.generation !== '' && next !== values.generation && parseYear(year) !== null)
@@ -157,7 +160,7 @@ export function CarForm({ initial, initialPhoto, onSubmit, onCancel }: CarFormPr
   // Справочник мог догрузиться уже после выбора модели и года — подсказка появляется, как только он готов
   useEffect(() => {
     if (!modelData || generationPicked || manual.generation || values.generation !== '') return
-    const suggested = suggestGeneration(options, values.year, '')
+    const suggested = suggestGeneration(options, values.year, '', partial)
     if (suggested) patch(generationPatch(options, suggested))
     // зависит только от появления данных модели: остальное меняют обработчики выше
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -385,9 +388,11 @@ export function CarForm({ initial, initialPhoto, onSubmit, onCancel }: CarFormPr
         : candidates.length === 0
           ? `Для ${year} года в справочнике нет поколения этой модели. Проверьте год или введите код вручную.`
           : candidates.length === 1
-            ? selected
-              ? 'Определено по году выпуска: в этом году выпускалось одно поколение.'
-              : 'В этом году выпускалось одно поколение — выберите его, если оно ваше.'
+            ? partial
+              ? 'В справочнике описаны не все поколения этой модели. Выберите вариант, только если он ваш, или введите код вручную.'
+              : selected
+                ? 'Определено по году выпуска: в этом году выпускалось одно поколение.'
+                : 'В этом году выпускалось одно поколение — выберите его, если оно ваше.'
             : sameGeneration
               ? 'Поколение определено по году. У разных кузовов разные коды — выберите свой.'
               : selected
@@ -405,7 +410,7 @@ export function CarForm({ initial, initialPhoto, onSubmit, onCancel }: CarFormPr
         options.length > 0
           ? switchLink('Подобрать по году выпуска', () => {
               setManual((current) => ({ ...current, generation: false }))
-              patch(generationPatch(options, suggestGeneration(options, values.year, '')))
+              patch(generationPatch(options, suggestGeneration(options, values.year, '', partial)))
               setGenerationPicked(false)
               setGenerationDropped(false)
             })

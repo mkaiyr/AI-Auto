@@ -42,6 +42,8 @@ export interface ModelGenerations {
   /** фотография модели в целом, без привязки к поколению */
   image: CarImage | null
   items: Generation[]
+  /** в источнике описаны не все поколения: единственный найденный вариант нельзя считать верным */
+  partial: boolean
 }
 
 /** Вариант в списке «Поколение / код кузова» */
@@ -67,6 +69,7 @@ interface RawGeneration {
 interface RawModel {
   s: string
   i?: RawImage
+  p?: number
   g: RawGeneration[]
 }
 
@@ -114,6 +117,7 @@ export function loadGenerations(make: string): Promise<MakeGenerations> {
           result[model] = {
             source: `https://en.wikipedia.org/wiki/${encodeURIComponent(raw.s)}`,
             image: toImage(raw.i),
+            partial: raw.p === 1,
             items: raw.g.map((row) => ({
               ordinal: row.o,
               codes: row.c.map(([code, note]) => ({ code, note })),
@@ -216,7 +220,7 @@ export function pickIllustration(model: ModelGenerations | null, generation: str
     const byYear = model.items.filter((item) => item.image && coversYear(item, year))
     // в переходный год ближе всего по времени поколение, которое началось позже остальных
     const nearest = byYear.sort((a, b) => b.from - a.from)[0]
-    if (nearest?.image) return { image: nearest.image, exact: byYear.length === 1 }
+    if (nearest?.image) return { image: nearest.image, exact: byYear.length === 1 && !model.partial }
   }
   return model.image ? { image: model.image, exact: false } : null
 }
