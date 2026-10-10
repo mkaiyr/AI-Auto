@@ -1,0 +1,63 @@
+# Публикация AI Auto на GitHub Pages.
+#
+# Запускается только вручную: вкладка Actions → «Публикация на GitHub Pages» → Run workflow.
+# Автоматический запуск при каждой отправке намеренно выключен: auto-push.ps1 создаёт
+# коммит каждые несколько секунд, и сборка запускалась бы десятки раз подряд.
+#
+# Перед первым запуском:
+#   1. Settings → Pages → Source: «GitHub Actions».
+#   2. Settings → Secrets and variables → Actions → вкладка Variables — добавить
+#      VITE_SUPABASE_URL и VITE_SUPABASE_ANON_KEY (публичный ключ, не service_role).
+
+name: Публикация на GitHub Pages
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Адрес сайта на GitHub Pages
+        id: pages
+        uses: actions/configure-pages@v5
+
+      - run: npm ci
+
+      - name: Сборка
+        run: npm run build
+        env:
+          # папка сайта берётся из имени репозитория, поэтому переименование ничего не ломает
+          VITE_BASE_PATH: ${{ steps.pages.outputs.base_path }}/
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

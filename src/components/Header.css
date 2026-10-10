@@ -56,8 +56,64 @@
   transform-origin: left;
 }
 
-.header__status {
+.header__side {
   justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 26px;
+}
+
+/* Кнопка кабинета: светлая плашка на тёмной шапке — самый контрастный элемент навигации */
+.header__cabinet {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 42px;
+  padding: 0 18px 0 20px;
+  border: 1px solid var(--text);
+  background: var(--text);
+  color: var(--bg);
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease,
+    color 0.3s ease,
+    transform 0.2s ease;
+}
+
+.header__cabinet svg {
+  transition: transform 0.45s var(--ease-out);
+}
+
+/* наведение: плашка становится прозрачной с холодной стальной рамкой */
+.header__cabinet:hover {
+  border-color: rgb(var(--steel-rgb));
+  background: rgba(var(--steel-rgb), 0.22);
+  color: var(--text);
+}
+
+.header__cabinet:hover svg {
+  transform: translate(2px, -2px);
+}
+
+.header__cabinet:focus-visible {
+  outline: 2px solid var(--lime);
+  outline-offset: 4px;
+  border-radius: 0;
+}
+
+.header__cabinet:active {
+  transform: scale(0.97);
+}
+
+/* копия кнопки для мобильного меню; на широких экранах скрыта */
+.header__cabinet--menu {
+  display: none;
+}
+
+.header__status {
   display: inline-flex;
   align-items: center;
   gap: 10px;
@@ -89,8 +145,16 @@
     grid-template-columns: 1fr auto;
   }
 
-  .header__status {
+  .header__side {
     display: none;
+  }
+
+  .header__cabinet--menu {
+    display: flex;
+    justify-content: space-between;
+    min-height: 50px;
+    margin-top: 22px;
+    font-size: 15px;
   }
 
   .header__toggle {

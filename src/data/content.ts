@@ -20,7 +20,6 @@ export interface NavLink {
 export const navLinks: NavLink[] = [
   { label: 'Возможности', href: '#features' },
   { label: 'Функции', href: '#functions' },
-  { label: 'Кабинет', href: '/app/car' },
 ]
 
 export interface Feature {

@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import type { User } from '@supabase/supabase-js'
 import { getSupabase, isSupabaseConfigured, SupabaseConfigError } from '../lib/supabase'
+import { withBase } from '../router'
 import { authErrorMessage } from './authErrors'
 
 export type AuthState =
@@ -32,7 +33,7 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null)
 
 /** Куда ведёт ссылка из письма с подтверждением */
-const confirmRedirect = () => `${window.location.origin}/app`
+const confirmRedirect = () => `${window.location.origin}${withBase('/app')}`
 
 function initialState(): AuthState {
   if (isSupabaseConfigured) return { status: 'loading' }
