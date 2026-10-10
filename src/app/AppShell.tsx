@@ -1,5 +1,6 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ArrowLeft } from 'lucide-react'
+import { useAuth } from '../auth/AuthProvider'
 import { appFunctions } from '../data/content'
 import { Link, navigate } from '../router'
 import { CarPage } from './pages/CarPage'
@@ -16,6 +17,16 @@ export function AppShell({ path }: { path: string }) {
   const index = appFunctions.findIndex((section) => sectionPath(section.id) === path)
   const section = appFunctions[index]
   const activeLink = useRef<HTMLAnchorElement>(null)
+  const { state, signOut } = useAuth()
+  const [signOutError, setSignOutError] = useState<string | null>(null)
+  const email = state.status === 'signedIn' ? (state.user.email ?? '') : ''
+
+  // после успешного выхода сессия исчезает, и приложение само открывает страницу входа
+  const handleSignOut = async () => {
+    setSignOutError(null)
+    const result = await signOut()
+    if (!result.ok) setSignOutError(result.message)
+  }
 
   useEffect(() => {
     if (path === '/app') navigate(sectionPath(appFunctions[0].id), { replace: true })
@@ -34,11 +45,23 @@ export function AppShell({ path }: { path: string }) {
           <Link className="app__logo" to="/" aria-label="AI Auto — на главную">
             AI Auto
           </Link>
-          <Link className="app__back" to="/">
-            <ArrowLeft size={14} strokeWidth={1.5} aria-hidden="true" />
-            На сайт
-          </Link>
+          <div className="app__top-links">
+            <Link className="app__back" to="/">
+              <ArrowLeft size={14} strokeWidth={1.5} aria-hidden="true" />
+              На сайт
+            </Link>
+            {/* на телефоне нижний блок аккаунта скрыт, поэтому выход продублирован в шапке */}
+            <button className="app__back app__signout app__signout--top" type="button" onClick={handleSignOut}>
+              Выйти
+            </button>
+          </div>
         </div>
+
+        {signOutError && (
+          <p className="app__signout-error" role="alert">
+            {signOutError}
+          </p>
+        )}
 
         <nav aria-label="Разделы приложения">
           <ol className="app__nav">
@@ -60,6 +83,15 @@ export function AppShell({ path }: { path: string }) {
             })}
           </ol>
         </nav>
+
+        <div className="app__account">
+          <span className="app__email" title={email}>
+            {email}
+          </span>
+          <button className="app__back app__signout" type="button" onClick={handleSignOut}>
+            Выйти
+          </button>
+        </div>
 
         <p className="app__storage">Данные хранятся только в этом браузере и не передаются на сервер.</p>
       </aside>

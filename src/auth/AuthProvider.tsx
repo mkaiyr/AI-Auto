@@ -12,7 +12,7 @@ export type AuthState =
   | { status: 'signedIn'; user: User }
 
 /** Результат действия: ok или текст ошибки для пользователя */
-export type AuthResult = { ok: true } | { ok: false; message: string }
+export type AuthResult = { ok: true } | { ok: false; message: string; code?: string }
 
 export type SignUpResult =
   /** сервер сразу выдал сессию (подтверждение почты отключено) */
@@ -74,7 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signIn = useCallback(async (email: string, password: string): Promise<AuthResult> => {
     try {
       const { error } = await getSupabase().auth.signInWithPassword({ email, password })
-      return error ? { ok: false, message: authErrorMessage(error) } : { ok: true }
+      return error ? { ok: false, message: authErrorMessage(error), code: error.code } : { ok: true }
     } catch (error) {
       return { ok: false, message: authErrorMessage(error) }
     }

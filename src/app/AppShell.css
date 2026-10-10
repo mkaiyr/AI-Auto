@@ -115,9 +115,51 @@
   color: var(--lime);
 }
 
-.app__storage {
+.app__top-links {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.app__signout {
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+/* на компьютере выход находится внизу колонки, рядом с почтой аккаунта */
+.app__signout--top {
+  display: none;
+}
+
+.app__signout-error {
+  margin-top: 14px;
+  color: #e59aa6;
+  font-size: 13px;
+}
+
+.app__account {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
   margin-top: auto;
   padding-top: 24px;
+}
+
+.app__email {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app__storage {
+  margin-top: 0;
+  padding-top: 14px;
   color: var(--text-dim);
   line-height: 1.7;
 }
@@ -190,7 +232,17 @@
     bottom: 0;
   }
 
-  .app__storage {
+  .app__storage,
+  .app__account {
     display: none;
+  }
+
+  .app__signout--top {
+    display: inline-flex;
+  }
+
+  .app__signout-error {
+    margin: 0;
+    padding: 0 20px 12px;
   }
 }

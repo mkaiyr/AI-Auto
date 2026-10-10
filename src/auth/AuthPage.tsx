@@ -99,7 +99,7 @@ export function AuthPage() {
       // при успехе экран сменится сам: появится сессия, и откроется кабинет
       if (!result.ok) {
         setFormError(result.message)
-        setCanResend(result.message.startsWith('Почта ещё не подтверждена'))
+        setCanResend(result.code === 'email_not_confirmed')
       }
     } else {
       const result = await signUp(address, password)
