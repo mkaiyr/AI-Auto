@@ -81,6 +81,11 @@ body {
   background: rgba(255, 255, 255, 0.12);
 }
 
+.panel button[aria-current] {
+  border-color: #c8ff2e;
+  color: #c8ff2e;
+}
+
 .panel :focus-visible,
 .notice :focus-visible {
   outline: 2px solid #c8ff2e;

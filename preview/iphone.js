@@ -142,7 +142,26 @@ async function open(route) {
   if (alive) app.src = ORIGIN + route
 }
 
+/**
+ * На iPhone полоса прокрутки не занимает места на экране. В настольном браузере она отнимает у страницы
+ * около 15 пикселей ширины, и вёрстка получается не той, что на телефоне. Поэтому полоса скрывается —
+ * только внутри рамки и только на время предпросмотра: файлы приложения при этом не меняются.
+ */
+function hideScrollbar() {
+  try {
+    const doc = app.contentDocument
+    if (!doc?.head || doc.getElementById('iphone-preview-scrollbar')) return
+    const style = doc.createElement('style')
+    style.id = 'iphone-preview-scrollbar'
+    style.textContent = 'html{scrollbar-width:none}html::-webkit-scrollbar{display:none}'
+    doc.head.append(style)
+  } catch {
+    // приложение с другого адреса: полоса прокрутки останется видимой
+  }
+}
+
 app.addEventListener('load', () => {
+  hideScrollbar()
   syncColors()
   showPath()
 })
