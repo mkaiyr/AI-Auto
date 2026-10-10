@@ -668,7 +668,7 @@ for (const [key, model] of models) {
         !(titleWords.has(code) && list.filter((other) => other.codes.some((item) => item[0] === code)).length > 1) &&
         // само название модели («CS75», «S60», «M3») и обозначения двигателя или версии
         !modelNames.has(squeezed(code)) &&
-        !/^(V6|V8|V10|V12|SS)$/.test(code),
+        !/^(V6|V8|V12|SS)$/.test(code),
     )
   }
 
@@ -751,7 +751,9 @@ for (const [key, model] of models) {
     model.image = null
   }
   for (const generation of kept) {
-    const other = generation.image && namesOther(generation.image)
+    const named = generation.image && namesOther(generation.image)
+    // «Mercedes-Benz W111» в карточке S-Класса: «другая модель» здесь — это сам код поколения
+    const other = named && !generation.codes.some((item) => item[0] === named) ? named : null
     if (other) {
       log.otherModelPhotos.push(`${model.make} ${model.model} [${generation.codes.map((item) => item[0]).join('/') || 'пок. ' + generation.ordinal}] ← ${generation.image} (названа модель ${other})`)
       generation.image = null
