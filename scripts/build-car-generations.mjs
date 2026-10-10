@@ -56,7 +56,6 @@ const MODEL_NAMES = [
 
 // Модели, статья о которых называется иначе. Проверено вручную: это тот же автомобиль.
 const ALIASES = {
-  'Daewoo|Nexia': 'Daewoo LeMans',
   'Lada (ВАЗ)|2121 (4x4)': 'Lada Niva',
   'Lada (ВАЗ)|Niva Legend': 'Lada Niva',
   'Lada (ВАЗ)|Niva Travel': 'Chevrolet Niva',
@@ -191,7 +190,7 @@ function plainLines(value) {
     .replace(/&nbsp;/g, ' ')
   // списки {{ubl|a|b}}, {{plainlist|* a * b}} → строки
   for (let pass = 0; pass < 4; pass++) {
-    text = text.replace(/\{\{\s*(?:ubl|unbulleted list|plainlist|plain list|flatlist|hlist|collapsible list|ublist)\s*\|([^{}]*)\}\}/gi, (_, items) => '\n' + items.replace(/\|/g, '\n') + '\n')
+    text = text.replace(/\{\{\s*(?:ubl|ublist|hlist|[a-z ]*list)\s*\|([^{}]*)\}\}/gi, (_, items) => '\n' + items.replace(/\|/g, '\n') + '\n')
     text = text.replace(/\{\{[^{}]*\}\}/g, ' ')
   }
   return text
@@ -207,7 +206,11 @@ function plainLines(value) {
 const YEAR = /\b(19[0-9]{2}|20[0-4][0-9])\b/g
 const OPEN_END = /present|to commence|ongoing|current/i
 
-/** Годы производства: основной выпуск (первая строка с годом) и крайние годы по всем рынкам */
+/**
+ * Годы производства по всем рынкам сразу: от самого раннего года до самого позднего.
+ * Широкий диапазон выбран намеренно: автомобиль мог быть выпущен на любом из заводов,
+ * и узкие «основные» годы исключили бы настоящие варианты.
+ */
 function parseYears(value) {
   let from = null
   let to
@@ -228,7 +231,8 @@ function parseYears(value) {
     max = max === null ? Math.max(...years) : Math.max(max, ...years)
   }
   if (from === null) return null
-  return { from: Math.min(from, min), to, max: open ? null : max }
+  // to: null — выпускается, undefined — год окончания в карточке не указан
+  return { from: min, to: open ? null : to === undefined && max === min ? undefined : max }
 }
 
 const NOT_CODES = new Set(
@@ -260,7 +264,9 @@ function bodyNote(text) {
   return notes.length === 1 ? notes[0] : notes.length > 1 && /gran coup/i.test(text) ? 'лифтбек' : notes.length > 1 ? notes[0] : ''
 }
 
-const words = (text) => text.split(/[\s,;/()]+| and | or /).filter(Boolean)
+// «W 210», «S 210» — тот же код, записанный через пробел
+const joinSpaced = (text) => text.replace(/\b([A-Z]{1,2}) (\d{2,3})\b/g, '$1$2')
+const words = (text) => joinSpaced(text).split(/[\s,;/()]+| and | or /).filter(Boolean)
 
 /** Коды из поля model_code: «F30 (sedan)», «A40<br>A50», «E120 / E130» */
 function codesFromField(value) {
@@ -295,9 +301,12 @@ const ORDINALS = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seven
 
 function ordinalOf(...texts) {
   for (const text of texts) {
-    const match = stripHeading(text ?? '').match(/\b(\w+)[- ]generation\b/i)
+    const plain = stripHeading(text ?? '')
+    const match = plain.match(/\b(\w+)[- ]generation\b/i)
     const index = match ? ORDINALS.indexOf(match[1].toLowerCase()) : -1
     if (index !== -1) return index + 1
+    const mark = plain.match(/\bMk\s?(\d{1,2})\b/)
+    if (mark) return Number(mark[1])
   }
   return 0
 }
@@ -348,13 +357,19 @@ function parseArticle(text) {
   return { top, generations, links }
 }
 
+/** Первый источник, в котором нашлись коды: от самого точного к самому общему */
+function firstCodes(...sources) {
+  for (const source of sources) {
+    const codes = codesFromTitle(source ?? '')
+    if (codes.length > 0) return codes
+  }
+  return []
+}
+
 function buildGeneration(source) {
   const { params, years } = source
   let codes = codesFromField(params.model_code)
-  if (codes.length === 0) {
-    const fromNames = [...codesFromTitle(source.heading ?? ''), ...codesFromTitle(params.name ?? ''), ...codesFromTitle(source.title ?? '')]
-    for (const [code, note] of fromNames) if (!codes.some((item) => item[0] === code)) codes.push([code, note])
-  }
+  if (codes.length === 0) codes = firstCodes(params.name, source.title, source.heading)
   if (codes.length > 0) {
     // «2-door coupé (C238)» в списке кузовов — отдельный код для этого кузова
     for (const line of plainLines(params.body_style)) {
@@ -373,22 +388,22 @@ function buildGeneration(source) {
     codes: codes.slice(0, 8),
     from: years.from,
     to: years.to,
-    max: years.max,
     image: imageName(params.image),
   }
 }
 
 // ---------- сопоставление моделей каталога со статьями ----------
 
-const normal = (text) => text.toLowerCase().replace(/\([^()]*\)/g, '').replace(/[^a-z0-9]/g, '')
+// сравнение названий: без регистра, знаков и диакритики («Škoda» = «Skoda»)
+const normal = (text) => text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\([^()]*\)/g, '').replace(/[^a-z0-9]/g, '')
 
 function titlesFor(make, model) {
   const alias = ALIASES[`${make}|${model}`]
   if (alias) return [alias]
   let name = model
   for (const [pattern, replacement] of MODEL_NAMES) name = name.replace(pattern, replacement)
-  if (/[а-яё]/i.test(name)) return []
-  name = name.replace(/\s*\([^()]*\)\s*$/, '').trim()
+  // «Cruze (HR)», «Passat (North America and China)» — отдельные автомобили, а не общая статья о модели
+  if (/[а-яё]/i.test(name) || /[()]/.test(name)) return []
   const makes = MAKE_NAMES[make] ?? [make.replace(/\s*\([^()]*\)\s*$/, '')]
   if (/[а-яё]/i.test(makes[0])) return []
   return makes.map((prefix) => (prefix.endsWith('-') ? prefix + name : `${prefix} ${name}`))
@@ -415,6 +430,11 @@ for (const item of wanted) {
   if (!exact && !ALIASES[key]) continue
   const parsed = parseArticle(article.text)
   if (!parsed.top && parsed.generations.length === 0) continue
+  // модель без разделов-поколений: единственное поколение описано общей карточкой
+  if (parsed.generations.length === 0 && parsed.links.length === 0 && parsed.top && codesFromField(parsed.top.model_code).length > 0) {
+    const years = parseYears(parsed.top.production) ?? parseYears(parsed.top.model_years)
+    if (years) parsed.generations.push({ heading: '', params: parsed.top, years })
+  }
   models.set(key, { ...item, article: article.title, exact: exact && !ALIASES[key], parsed })
 }
 
@@ -442,13 +462,18 @@ for (const [key, model] of models) {
     if (!link.accepted) continue
     const article = subArticles.get(link.target)
     if (!article) continue
-    const top = parseArticle(article.text).top
+    const sub = parseArticle(article.text)
+    const top = sub.top
     const years = top && (parseYears(top.production) ?? parseYears(top.model_years))
     if (!years) continue
     // «Mercedes-Benz W124» — код стоит прямо в названии статьи
     const tail = article.title.split(' ').pop()
     const title = isCode(tail) && /\d/.test(tail) ? `(${tail})` : article.title
     list.push(buildGeneration({ params: top, years, heading: link.heading, title }))
+    // в статье о поколении описано и следующее: «Volkswagen Passat (B7)» внутри статьи о B6
+    for (const inner of sub.generations) {
+      if (stripHeading(inner.params.name ?? '').startsWith(model.article + ' (')) list.push(buildGeneration({ ...inner, heading: '' }))
+    }
   }
 
   // одно и то же поколение не повторяется: совпадают коды или (без кодов) номер и год начала
@@ -456,6 +481,8 @@ for (const [key, model] of models) {
   for (const generation of list) {
     const id = generation.codes.length > 0 ? generation.codes.map((code) => code[0]).sort().join('/') : `${generation.ordinal}:${generation.from}`
     if (generation.codes.length === 0 && generation.ordinal === 0) continue
+    // анонсированные, но ещё не выпускаемые поколения
+    if (generation.from > THIS_YEAR) continue
     if (unique.some((other) => other.id === id || (generation.ordinal > 0 && other.ordinal === generation.ordinal && other.codes.length >= generation.codes.length))) continue
     unique.push({ ...generation, id })
   }
@@ -470,17 +497,18 @@ for (const [key, model] of models) {
   })
 
   // статья шире модели каталога (например, общая для нескольких названий) — оставляем годы самой модели
-  const kept = model.exact ? unique : unique.filter((generation) => (!model.to || generation.from <= model.to + 1) && (!model.from || (generation.max ?? generation.to ?? THIS_YEAR) >= model.from - 1))
-  if (kept.length === 0) {
+  const kept = model.exact ? unique : unique.filter((generation) => (!model.to || generation.from <= model.to + 1) && (!model.from || (generation.to ?? THIS_YEAR) >= model.from - 1))
+  model.generations = kept
+  model.image = imageName(model.parsed.top?.image)
+  // без поколений модель остаётся в справочнике только ради фотографии
+  if (kept.length === 0 && !(model.exact && model.image)) {
     models.delete(key)
     continue
   }
-  model.generations = kept
-  model.image = imageName(model.parsed.top?.image)
   generationCount += kept.length
   review.push(
     `${model.make} | ${model.model}  ←  ${model.article}\n` +
-      kept.map((g) => `    ${g.ordinal || '-'}  ${g.codes.map(([code, note]) => (note ? `${code}(${note})` : code)).join(' ') || '—'}  ${g.from}–${g.to ?? 'н.в.'}${g.max !== g.to && g.max !== null ? ` [до ${g.max}]` : ''}${g.guessedEnd ? ' ~' : ''}  ${g.image ?? ''}`).join('\n'),
+      kept.map((g) => `    ${g.ordinal || '-'}  ${g.codes.map(([code, note]) => (note ? `${code}(${note})` : code)).join(' ') || '—'}  ${g.from}–${g.to ?? 'н.в.'}${g.guessedEnd ? ' ~' : ''}  ${g.image ?? ''}`).join('\n'),
   )
 }
 
@@ -509,8 +537,9 @@ for (let offset = 0; offset < fileList.length; offset += 50) {
     if (!info || !/^image\/(jpeg|png)$/.test(info.mime) || info.width < 800 || info.height < 400) continue
     const licence = String(info.extmetadata?.LicenseShortName?.value ?? '').trim()
     if (!FREE_LICENCE.test(licence)) continue
-    const prefix = 'https://upload.wikimedia.org/wikipedia/commons/thumb/'
-    if (!info.thumburl?.startsWith(prefix) || !/\/960px-/.test(info.thumburl)) continue
+    // адрес уменьшенной копии: .../commons/thumb/<путь>/960px-<файл>; сохраняется только путь
+    const thumb = String(info.thumburl ?? '').split('?')[0].match(/\/wikipedia\/commons\/thumb\/(.+\/960px-[^/]+)$/)?.[1]
+    if (!thumb) continue
     const author = String(info.extmetadata?.Artist?.value ?? '')
       .replace(/<[^>]+>/g, ' ')
       .replace(/&amp;/g, '&')
@@ -519,7 +548,7 @@ for (let offset = 0; offset < fileList.length; offset += 50) {
       .trim()
       .slice(0, 60)
     const asked = (renamed.get(page.title) ?? page.title).replace(/^File:/, '')
-    const entry = [info.thumburl.slice(prefix.length), author || 'автор не указан', licence.replace(/^PDM.*/i, 'Public domain')]
+    const entry = [thumb, author || 'автор не указан', licence.replace(/^PDM.*/i, 'Public domain')]
     images.set(asked, entry)
     images.set(page.title.replace(/^File:/, ''), entry)
   }
@@ -535,12 +564,10 @@ for (const model of models.values()) {
   const entry = {
     // статья-источник
     s: model.article.replace(/ /g, '_'),
-    // поколение: o — номер (0 — не указан), c — коды [код, примечание о кузове], f/t — основные годы выпуска
-    // (t: 0 — выпускается), m — последний год выпуска на отдельных рынках, если он позже, i — фотография
+    // поколение: o — номер (0 — не указан), c — коды [код, примечание о кузове],
+    // f/t — годы выпуска по всем рынкам (t: 0 — выпускается), i — фотография [путь, автор, лицензия]
     g: model.generations.map((generation) => {
       const row = { o: generation.ordinal, c: generation.codes, f: generation.from, t: generation.to ?? 0 }
-      const last = generation.max ?? 0
-      if (generation.to != null && (generation.max === null || last > generation.to)) row.m = last
       const image = generation.image && images.get(generation.image)
       if (image) row.i = image
       return row
@@ -556,6 +583,7 @@ const index = {}
 let fileNumber = 0
 let withImages = 0
 let withCodes = 0
+let withGenerations = 0
 for (const [make, data] of [...byMake].sort((a, b) => a[0].localeCompare(b[0]))) {
   const file = `${String(++fileNumber).padStart(3, '0')}.json`
   index[make] = file
@@ -563,6 +591,7 @@ for (const [make, data] of [...byMake].sort((a, b) => a[0].localeCompare(b[0])))
   for (const entry of Object.values(data)) {
     if (entry.i || entry.g.some((row) => row.i)) withImages++
     if (entry.g.some((row) => row.c.length > 0)) withCodes++
+    if (entry.g.length > 0) withGenerations++
   }
 }
 writeFileSync(
@@ -576,4 +605,4 @@ writeFileSync(
   'utf8',
 )
 if (REVIEW) writeFileSync(REVIEW, review.join('\n\n'), 'utf8')
-console.log(`Готово: марок ${byMake.size}, моделей с поколениями ${models.size} (с кодами кузова — ${withCodes}, с фотографиями — ${withImages}), поколений ${generationCount}, фотографий ${new Set([...images.values()]).size}`)
+console.log(`Готово: марок ${byMake.size}, моделей ${models.size}: с поколениями — ${withGenerations}, с кодами кузова — ${withCodes}, с фотографиями — ${withImages};, поколений ${generationCount}, фотографий ${new Set([...images.values()]).size}`)
