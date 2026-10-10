@@ -55,6 +55,14 @@ function rememberModel(id: string | null) {
 }
 
 /**
+ * Реплики для модели. Готовые ответы на опасные темы и вопросы к ним в неё не передаются:
+ * маленькая модель начинает копировать такой текст в ответах на обычные вопросы.
+ */
+function forModel(turns: Turn[]): Turn[] {
+  return turns.filter((turn, index) => !turn.safety && !(turn.role === 'user' && turns[index + 1]?.safety))
+}
+
+/**
  * Модель размечает ответ звёздочками и решётками — в интерфейсе они только мешают.
  * Иероглифы, которые маленькая модель иногда вставляет посреди русского текста, тоже убираются.
  */
@@ -193,8 +201,8 @@ export function AssistantChat({ loadCarContext }: AssistantChatProps) {
       setTurns([...history, { role: 'assistant', content, symptom }])
     }
     try {
-      const answer = await provider.generate(buildMessages(history, car?.text ?? null), write)
-      write(answer.trim() === '' ? 'Ответ не получен. Попробуйте переформулировать вопрос.' : answer)
+      const answer = await provider.generate(buildMessages(forModel(history), car?.text ?? null), write)
+      if (!guarded) write(answer.trim() === '' ? 'Ответ не получен. Попробуйте переформулировать вопрос.' : answer)
       setSpeed(provider.speed())
     } catch (cause) {
       setTurns(history)
