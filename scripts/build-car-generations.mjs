@@ -337,11 +337,14 @@ function parseArticle(text) {
   const top = boxes.find((box) => box.heading === null)?.params ?? null
 
   const generations = []
+  /** разделы, у которых есть своя карточка с годами выпуска */
+  const described = new Set()
   for (const box of boxes) {
     if (!box.heading || SKIP_SECTION.test(stripHeading(box.heading.title))) continue
     const years = parseYears(box.params.production) ?? parseYears(box.params.model_years)
     if (!years) continue
     generations.push({ heading: box.heading.title, params: box.params, years })
+    described.add(box.heading.at)
   }
 
   // разделы без собственной карточки, которые ссылаются на отдельную статью о поколении
@@ -350,7 +353,7 @@ function parseArticle(text) {
     if (heading.level > 3 || SKIP_SECTION.test(stripHeading(heading.title))) return
     const end = headings[index + 1]?.at ?? text.length
     const body = text.slice(heading.at, end)
-    if (/\{\{\s*Infobox automobile/i.test(body)) return
+    if (described.has(heading.at)) return
     const target = body.match(/\{\{\s*(?:main|main article|see also|further)\s*\|\s*([^|{}]+?)\s*(?:\||\}\})/i)?.[1]
     if (target) links.push({ heading: heading.title, target: target.replace(/_/g, ' ').replace(/#.*$/, '').trim() })
   })
@@ -383,6 +386,7 @@ function buildGeneration(source) {
       }
     }
   }
+  codes = codes.filter(([code], index) => codes.findIndex((item) => item[0] === code) === index)
   return {
     ordinal: ordinalOf(params.name, source.heading, source.title),
     codes: codes.slice(0, 8),
@@ -451,6 +455,12 @@ for (const model of models.values()) {
     }
   }
 }
+// Статья, на которую ссылаются сразу несколько разделов одной модели, описывает не одно поколение,
+// а всю линейку — её общие годы и фото нельзя приписывать каждому поколению.
+for (const model of models.values()) {
+  const accepted = model.parsed.links.filter((link) => link.accepted)
+  for (const link of accepted) if (accepted.filter((other) => other.target === link.target).length > 1) link.accepted = false
+}
 const subArticles = await fetchArticles([...subTitles])
 
 console.log('3. Поколения')
@@ -488,6 +498,16 @@ for (const [key, model] of models) {
   }
   unique.sort((a, b) => a.from - b.from || a.ordinal - b.ordinal)
 
+  // «S6», «RS6» в статье об A6: спортивная версия, выпускавшаяся на протяжении нескольких поколений,
+  // сама поколением не является
+  const numbered = unique.some((generation) => generation.ordinal > 0)
+  for (let index = unique.length - 1; index >= 0; index--) {
+    const item = unique[index]
+    const end = item.to ?? THIS_YEAR
+    const spansOthers = unique.some((other) => other !== item && other.from > item.from && (other.to ?? THIS_YEAR) < end)
+    if (numbered && item.ordinal === 0 && spansOthers && end - item.from >= 20) unique.splice(index, 1)
+  }
+
   // год окончания, которого нет в карточке, — год начала следующего поколения или конец выпуска модели по каталогу
   unique.forEach((generation, index) => {
     if (generation.to !== undefined) return
@@ -496,8 +516,9 @@ for (const [key, model] of models) {
     generation.guessedEnd = true
   })
 
-  // статья шире модели каталога (например, общая для нескольких названий) — оставляем годы самой модели
-  const kept = model.exact ? unique : unique.filter((generation) => (!model.to || generation.from <= model.to + 1) && (!model.from || (generation.to ?? THIS_YEAR) >= model.from - 1))
+  // статья бывает шире модели каталога (предшественники, общая статья для нескольких названий) —
+  // остаются поколения, которые пересекаются с годами выпуска самой модели
+  const kept = unique.filter((generation) => (!model.to || generation.from <= model.to + 1) && (!model.from || (generation.to ?? THIS_YEAR) >= model.from - 1))
   model.generations = kept
   model.image = imageName(model.parsed.top?.image)
   // без поколений модель остаётся в справочнике только ради фотографии
