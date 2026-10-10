@@ -81,6 +81,38 @@
   text-decoration: underline;
 }
 
+/* На телефоне подпись не помещается поверх снимка, не закрывая автомобиль, — она уходит под него */
+@media (max-width: 600px) {
+  .car-visual.car-visual--catalog {
+    display: block;
+    height: auto;
+    max-height: none;
+  }
+
+  .car-visual--catalog .car-visual__catalog {
+    position: static;
+    display: block;
+    height: auto;
+    aspect-ratio: 16 / 10;
+  }
+
+  .car-visual--catalog .silhouette {
+    display: none;
+  }
+
+  .car-visual--catalog::after {
+    inset: 0 0 auto;
+    aspect-ratio: 16 / 10;
+    background: radial-gradient(120% 90% at 50% 45%, transparent 55%, rgba(8, 9, 11, 0.55) 100%);
+  }
+
+  .car-visual--catalog figcaption {
+    position: static;
+    padding: 10px 12px 12px;
+    border-top: 1px solid var(--line);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .car-visual .car-visual__catalog {
     transition: none;

@@ -390,7 +390,9 @@ export function CarForm({ initial, initialPhoto, onSubmit, onCancel }: CarFormPr
               : 'В этом году выпускалось одно поколение — выберите его, если оно ваше.'
             : sameGeneration
               ? 'Поколение определено по году. У разных кузовов разные коды — выберите свой.'
-              : `В ${year} году выпускалось несколько поколений — выберите своё.`
+              : selected
+                ? `В ${year} году выпускалось несколько поколений — проверьте, что выбрано ваше.`
+                : `В ${year} году выпускалось несколько поколений — выберите своё.`
   const generationField = generationManual ? (
     textField('generation', generationLabel, {
       maxLength: 30,
@@ -411,7 +413,7 @@ export function CarForm({ initial, initialPhoto, onSubmit, onCancel }: CarFormPr
               <p className="field__hint">
                 {manual.make || manual.model
                   ? 'Для автомобиля не из каталога код кузова не определяется — укажите его, если знаете.'
-                  : 'Для этой модели в справочнике нет поколений — укажите код кузова вручную, если знаете.'}
+                  : 'Поколения для этой модели в справочнике не найдены — укажите код кузова вручную, если знаете.'}
               </p>
             ),
     })
