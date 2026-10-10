@@ -5,6 +5,8 @@ import { useRepositories } from '../repositories'
 export function useCarPhoto(carId: string | null) {
   const { photo: repository } = useRepositories()
   const [photo, setPhoto] = useState<string | null>(null)
+  /** для какого автомобиля уже известно, есть ли фото: до этого иллюстрация из каталога не показывается */
+  const [checkedFor, setCheckedFor] = useState<string | null>(null)
 
   useEffect(() => {
     if (carId === null) {
@@ -16,6 +18,7 @@ export function useCarPhoto(carId: string | null) {
       .get(carId)
       .then((dataUrl) => alive && setPhoto(dataUrl))
       .catch(() => alive && setPhoto(null))
+      .finally(() => alive && setCheckedFor(carId))
     return () => {
       alive = false
     }
@@ -37,5 +40,5 @@ export function useCarPhoto(carId: string | null) {
     [repository],
   )
 
-  return { photo, save, remove }
+  return { photo, checked: carId !== null && checkedFor === carId, save, remove }
 }

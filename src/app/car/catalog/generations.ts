@@ -75,11 +75,12 @@ const THUMBS = 'https://upload.wikimedia.org/wikipedia/commons/thumb/'
 function toImage(raw: RawImage | undefined): CarImage | null {
   if (!raw) return null
   const [path, author, licence] = raw
-  const url = THUMBS + path.split('/').map(encodeURIComponent).join('/')
+  // путь уже закодирован для адреса — так его отдаёт Wikimedia
+  const url = THUMBS + path
   return {
     url,
     srcSet: `${url.replace('/960px-', '/500px-')} 500w, ${url} 960w`,
-    page: `https://commons.wikimedia.org/wiki/File:${encodeURIComponent(path.split('/')[2] ?? '')}`,
+    page: `https://commons.wikimedia.org/wiki/File:${path.split('/')[2] ?? ''}`,
     author,
     licence,
   }
