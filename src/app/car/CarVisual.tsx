@@ -107,9 +107,11 @@ export function CarVisual({ photo, body, alt }: CarVisualProps) {
     <figure className="car-visual">
       {body && <BodySilhouette type={body} />}
       <figcaption>
-        {body
-          ? `Иллюстрация кузова: ${BODY_LABELS[body].toLowerCase()} · это не фото вашего автомобиля`
-          : 'Фото не добавлено · тип кузова не выбран'}
+        {photo
+          ? 'Фото не удалось загрузить · обновите страницу'
+          : body
+            ? `Иллюстрация кузова: ${BODY_LABELS[body].toLowerCase()} · это не фото вашего автомобиля`
+            : 'Фото не добавлено · тип кузова не выбран'}
       </figcaption>
     </figure>
   )

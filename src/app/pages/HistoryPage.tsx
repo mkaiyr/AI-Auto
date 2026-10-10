@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowDownUp } from 'lucide-react'
 import { Link } from '../../router'
 import { useCar } from '../car/useCar'
@@ -27,6 +27,7 @@ export function HistoryPage() {
   const [confirmId, setConfirmId] = useState<string | null>(null)
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const deleteLock = useRef(false)
   const [targetId, setTargetId] = useState<string | null>(null)
 
   // переход из раздела «Расходы» по адресу /app/history#record-<id>:
@@ -93,7 +94,9 @@ export function HistoryPage() {
   }
 
   const handleDelete = async (id: string) => {
-    if (deletingId) return
+    // замок ставится сразу: повторное нажатие может прийти раньше, чем кнопка перерисуется заблокированной
+    if (deleteLock.current) return
+    deleteLock.current = true
     setDeletingId(id)
     setDeleteError(null)
     try {
@@ -102,6 +105,7 @@ export function HistoryPage() {
     } catch (cause) {
       setDeleteError(errorText(cause, 'Не удалось удалить запись. Попробуйте ещё раз.'))
     } finally {
+      deleteLock.current = false
       setDeletingId(null)
     }
   }

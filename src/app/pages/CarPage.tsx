@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { BODY_LABELS, ENGINE_LABELS } from '../car/carStore'
 import { CarVisual } from '../car/CarVisual'
 import { useCar } from '../car/useCar'
@@ -29,6 +29,7 @@ export function CarPage() {
   const [photoError, setPhotoError] = useState<string | null>(null)
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [deleting, setDeleting] = useState(false)
+  const deleteLock = useRef(false)
 
   if (status === 'loading') return <PageLoading eyebrow={<Eyebrow />} />
   if (status === 'error') return <PageError eyebrow={<Eyebrow />} message={error ?? 'Не удалось загрузить автомобиль.'} onRetry={reload} />
@@ -80,7 +81,9 @@ export function CarPage() {
   }
 
   const handleDelete = async () => {
-    if (deleting) return
+    // замок ставится сразу: повторное нажатие может прийти раньше, чем кнопка перерисуется заблокированной
+    if (deleteLock.current) return
+    deleteLock.current = true
     setDeleting(true)
     setDeleteError(null)
     try {
@@ -90,6 +93,7 @@ export function CarPage() {
     } catch (cause) {
       setDeleteError(errorText(cause, 'Не удалось удалить автомобиль. Попробуйте ещё раз.'))
     } finally {
+      deleteLock.current = false
       setDeleting(false)
     }
   }
