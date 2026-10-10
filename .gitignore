@@ -15,3 +15,53 @@ mockups
 # Служебные файлы Supabase CLI
 supabase/.temp
 supabase/.branches
+
+# ---------- Мобильное приложение (Capacitor) ----------
+
+# Ключи подписи и учётные данные магазинов: никогда не попадают в Git.
+# Правила действуют в любой папке проекта. Ключ подписи хранится только
+# в GitHub Secrets и в отдельной резервной копии вне репозитория.
+*.jks
+*.keystore
+*.p12
+*.pfx
+*.p8
+*.cer
+*.mobileprovision
+*.certSigningRequest
+*.base64
+*.b64
+keystore.properties
+key.properties
+signing.properties
+google-services.json
+GoogleService-Info.plist
+service-account*.json
+*-credentials.json
+*credentials*.json
+
+# Собранные приложения: скачиваются из результатов облачной сборки
+*.apk
+*.aab
+*.ipa
+
+# Android: служебные и создаваемые при сборке файлы
+android/.gradle/
+android/.idea/
+android/build/
+android/app/build/
+android/app/release/
+android/captures/
+android/local.properties
+android/capacitor-cordova-android-plugins/
+# копия собранного сайта и настроек, которую создаёт «cap sync»
+android/app/src/main/assets/public/
+android/app/src/main/assets/capacitor.config.json
+android/app/src/main/assets/capacitor.plugins.json
+
+# iOS: служебные и создаваемые при сборке файлы
+ios/App/Pods/
+ios/App/App/public/
+ios/App/App/capacitor.config.json
+ios/DerivedData/
+xcuserdata/
