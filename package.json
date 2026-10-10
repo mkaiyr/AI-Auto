@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@mlc-ai/web-llm": "0.2.85",
     "@supabase/supabase-js": "^2.117.3",
     "lucide-react": "^1.54.0",
     "react": "^19.3.0",
