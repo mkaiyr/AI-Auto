@@ -238,10 +238,12 @@ export function AssistantChat({ loadCarContext }: AssistantChatProps) {
 
   return (
     <section className="ai" aria-label="ИИ-помощник">
-      <p className="ai__limits">
+      <p className="ai__limits only-desktop">
         Небольшая языковая модель работает прямо в вашем браузере. Она может ошибаться и не заменяет диагностику в автосервисе. Вопросы и ответы
         не отправляются на сервер и не сохраняются.
       </p>
+      {/* на телефоне то же предупреждение короче */}
+      <p className="ai__limits only-mobile">ИИ работает в вашем браузере, может ошибаться и не заменяет автосервис. Переписка никуда не отправляется.</p>
 
       {stage === 'checking' && <p className="ai__status">Проверка устройства…</p>}
 

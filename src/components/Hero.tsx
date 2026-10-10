@@ -23,10 +23,12 @@ export function Hero() {
         </h1>
       </div>
 
-      <p className="hero__lead">
+      <p className="hero__lead only-desktop">
         Профиль машины, история обслуживания, расходы и ИИ-помощник по уходу за автомобилем — в
         одном месте.
       </p>
+      {/* короткий вариант для телефона */}
+      <p className="hero__lead only-mobile">Автомобиль, история, расходы и ИИ-помощник — в одном месте.</p>
 
       <div className="hero__action">
         <Button href="#functions" icon={ArrowRight}>

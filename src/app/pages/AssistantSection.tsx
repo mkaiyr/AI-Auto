@@ -29,7 +29,7 @@ export function AssistantSection({ section, index }: { section: AppFunction; ind
         {section.title}
       </p>
       <h1 className="page__title">{section.title}</h1>
-      <p className="page__lead">{section.text}</p>
+      <p className="page__lead only-desktop">{section.text}</p>
       <AssistantChat loadCarContext={loadCarContext} />
     </div>
   )

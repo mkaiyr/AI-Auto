@@ -16,13 +16,15 @@ export function FunctionCards() {
         />
 
         <ol className="functions">
-          {appFunctions.map(({ id, title, text, ready }, i) => (
+          {appFunctions.map(({ id, icon: Icon, title, text, brief, ready }, i) => (
             <li className="functions__item" id={id} key={id}>
               <Reveal delay={i * 60}>
                 <article className="function-row">
                   <span className="function-row__index">0{i + 1}</span>
+                  <Icon className="function-row__icon only-mobile" size={22} strokeWidth={1.75} aria-hidden="true" />
                   <h3 className="function-row__title">{title}</h3>
-                  <p className="function-row__text">{text}</p>
+                  <p className="function-row__text only-desktop">{text}</p>
+                  <p className="function-row__text only-mobile">{brief}</p>
                   {ready ? (
                     <Link className="function-row__tag function-row__tag--ready" to={`/app/${id}`}>
                       Открыть

@@ -66,7 +66,7 @@ export function AppShell({ path }: { path: string }) {
 
         <nav aria-label="Разделы приложения">
           <ol className="app__nav">
-            {appFunctions.map(({ id, short }, i) => {
+            {appFunctions.map(({ id, short, icon: Icon }, i) => {
               const active = i === index
               return (
                 <li key={id}>
@@ -77,6 +77,8 @@ export function AppShell({ path }: { path: string }) {
                     ref={active ? activeLink : undefined}
                   >
                     <b>0{i + 1}</b>
+                    {/* на телефоне разделы — нижняя панель со значками */}
+                    <Icon className="app__nav-icon only-mobile" size={22} strokeWidth={1.75} aria-hidden="true" />
                     <span>{short}</span>
                   </Link>
                 </li>
