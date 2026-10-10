@@ -9,6 +9,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@capacitor/android": "8.5.3",
+    "@capacitor/core": "8.5.3",
     "@mlc-ai/web-llm": "0.2.85",
     "@supabase/supabase-js": "^2.117.3",
     "lucide-react": "^1.54.0",
