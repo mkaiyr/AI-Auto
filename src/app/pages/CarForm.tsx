@@ -44,6 +44,8 @@ export function CarForm({ initial, initialPhoto, onSubmit, onCancel }: CarFormPr
   const [saveError, setSaveError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const form = useRef<HTMLFormElement>(null)
+  /** true, пока идёт сохранение: вторая отправка формы игнорируется */
+  const submitting = useRef(false)
 
   const set = (name: keyof CarFormValues, value: string) => {
     setValues((current) => ({ ...current, [name]: value }))
@@ -71,6 +73,7 @@ export function CarForm({ initial, initialPhoto, onSubmit, onCancel }: CarFormPr
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault()
+    if (submitting.current) return
     const result = validateCar(values)
     setErrors(result.errors)
 
@@ -83,12 +86,18 @@ export function CarForm({ initial, initialPhoto, onSubmit, onCancel }: CarFormPr
     const change: PhotoChange =
       photo === initialPhoto ? { type: 'keep' } : photo === null ? { type: 'remove' } : { type: 'set', dataUrl: photo }
 
+    // Замок ставится сразу, а не через состояние: повторное нажатие может прийти
+    // раньше, чем кнопка успеет перерисоваться заблокированной.
+    submitting.current = true
     setSaving(true)
     setSaveError(null)
     try {
       await onSubmit(result.car, change)
     } catch {
       setSaveError('Не удалось сохранить: хранилище браузера недоступно или переполнено.')
+    } finally {
+      // и после успеха, и после ошибки форма снова доступна
+      submitting.current = false
       setSaving(false)
     }
   }
@@ -193,7 +202,7 @@ export function CarForm({ initial, initialPhoto, onSubmit, onCancel }: CarFormPr
 
       <div className="actions form__wide">
         <button className="btn btn--primary" type="submit" disabled={saving || photoBusy}>
-          Сохранить
+          {saving ? 'Сохранение…' : 'Сохранить'}
         </button>
         <button className="btn" type="button" onClick={onCancel}>
           Отмена

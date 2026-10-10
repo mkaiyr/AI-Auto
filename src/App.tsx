@@ -57,9 +57,9 @@ export default function App() {
   if (isApp || isLogin) {
     if (state.status === 'loading') return <AuthLoading />
     if (state.status === 'unconfigured') return <AuthUnavailable message={state.message} />
-    // приватные страницы рендерятся только при подтверждённой сессии;
-    // в остальных случаях показывается экран загрузки на время перехода
-    if (isApp) return state.status === 'signedIn' ? <AppShell path={path} /> : <AuthLoading />
+    // приватные страницы рендерятся только при наличии сессии; в остальных случаях — экран загрузки.
+    // key пересоздаёт кабинет при смене аккаунта, чтобы данные прежнего пользователя не остались на экране
+    if (isApp) return state.status === 'signedIn' ? <AppShell key={state.user.id} path={path} /> : <AuthLoading />
     return state.status === 'signedOut' ? <AuthPage /> : <AuthLoading />
   }
 

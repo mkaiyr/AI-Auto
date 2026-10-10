@@ -26,6 +26,8 @@ export function ServiceForm({ initial, onSubmit, onCancel }: ServiceFormProps) {
   const [saveError, setSaveError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const form = useRef<HTMLFormElement>(null)
+  /** true, пока идёт сохранение: вторая отправка формы игнорируется */
+  const submitting = useRef(false)
 
   const set = (name: keyof ServiceFormValues, value: string) => {
     setValues((current) => ({ ...current, [name]: value }))
@@ -34,6 +36,7 @@ export function ServiceForm({ initial, onSubmit, onCancel }: ServiceFormProps) {
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault()
+    if (submitting.current) return
     const result = validateService(values)
     setErrors(result.errors)
 
@@ -43,12 +46,18 @@ export function ServiceForm({ initial, onSubmit, onCancel }: ServiceFormProps) {
       return
     }
 
+    // Замок ставится сразу, а не через состояние: повторное нажатие может прийти
+    // раньше, чем кнопка успеет перерисоваться заблокированной.
+    submitting.current = true
     setSaving(true)
     setSaveError(null)
     try {
       await onSubmit(result.record)
     } catch {
       setSaveError('Не удалось сохранить: хранилище браузера недоступно или переполнено.')
+    } finally {
+      // и после успеха, и после ошибки форма снова доступна
+      submitting.current = false
       setSaving(false)
     }
   }
@@ -125,7 +134,7 @@ export function ServiceForm({ initial, onSubmit, onCancel }: ServiceFormProps) {
 
       <div className="actions form__wide">
         <button className="btn btn--primary" type="submit" disabled={saving}>
-          Сохранить
+          {saving ? 'Сохранение…' : 'Сохранить'}
         </button>
         <button className="btn" type="button" onClick={onCancel}>
           Отмена

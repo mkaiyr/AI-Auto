@@ -6,6 +6,7 @@ import { useCarPhoto } from '../car/useCarPhoto'
 import { formatNumber, plural } from '../format'
 import { useServiceRecords } from '../service/useServiceRecords'
 import { CarForm } from './CarForm'
+import { LegacyOffer } from './LegacyOffer'
 
 type Mode = 'view' | 'form' | 'confirm-delete'
 
@@ -19,7 +20,7 @@ const Eyebrow = () => (
 )
 
 export function CarPage() {
-  const { status, car, error, save, remove } = useCar()
+  const { status, car, error, save, remove, reload } = useCar()
   const { photo, save: savePhoto, remove: removePhoto } = useCarPhoto(car?.id ?? null)
   const { records } = useServiceRecords(car?.id ?? null)
   const [mode, setMode] = useState<Mode>('view')
@@ -82,6 +83,7 @@ export function CarPage() {
             Добавить автомобиль
           </button>
         </div>
+        <LegacyOffer onClaimed={reload} />
       </div>
     )
   }

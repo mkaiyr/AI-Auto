@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
-import { localServiceRepository, type ServiceInput, type ServiceRecord, type ServiceRepository } from './serviceStore'
+import { useRepositories } from '../repositories'
+import type { ServiceInput, ServiceRecord } from './serviceStore'
 
 interface ServiceState {
   status: 'loading' | 'ready'
@@ -8,8 +9,9 @@ interface ServiceState {
   error: string | null
 }
 
-/** История обслуживания одного автомобиля. Без автомобиля (carId = null) записей нет */
-export function useServiceRecords(carId: string | null, repository: ServiceRepository = localServiceRepository) {
+/** История обслуживания одного автомобиля текущего пользователя. Без автомобиля (carId = null) записей нет */
+export function useServiceRecords(carId: string | null) {
+  const { service: repository } = useRepositories()
   const [state, setState] = useState<ServiceState>({ status: 'loading', records: [], error: null })
 
   useEffect(() => {

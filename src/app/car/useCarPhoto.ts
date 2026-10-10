@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
-import { localCarPhotoRepository, type CarPhotoRepository } from './carPhoto'
+import { useRepositories } from '../repositories'
 
 /** Сохранённая фотография автомобиля. Без автомобиля (carId = null) фото нет */
-export function useCarPhoto(carId: string | null, repository: CarPhotoRepository = localCarPhotoRepository) {
+export function useCarPhoto(carId: string | null) {
+  const { photo: repository } = useRepositories()
   const [photo, setPhoto] = useState<string | null>(null)
 
   useEffect(() => {

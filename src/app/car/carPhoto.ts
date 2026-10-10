@@ -2,6 +2,8 @@
 // Фото лежит под отдельным ключом — сбой записи не может повредить сам профиль.
 // Позже CarPhotoRepository заменяется загрузкой на сервер.
 
+import { userKey } from '../repositories'
+
 export const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 export const MAX_FILE_MB = 15
 const MIN_SIDE = 320
@@ -77,27 +79,33 @@ export interface CarPhotoRepository {
   remove(carId: string): Promise<void>
 }
 
-const STORAGE_KEY = 'ai-auto:car-photo:v1'
+/** Основа ключа; полный ключ включает идентификатор пользователя (см. repositories.ts) */
+export const CAR_PHOTO_STORAGE_KEY = 'ai-auto:car-photo:v1'
 
-export const localCarPhotoRepository: CarPhotoRepository = {
-  async get(carId) {
-    const raw = window.localStorage.getItem(STORAGE_KEY)
-    if (raw === null) return null
-    try {
-      const parsed = JSON.parse(raw) as { carId?: unknown; dataUrl?: unknown }
-      // фото другого автомобиля не показываем как своё
-      return parsed.carId === carId && typeof parsed.dataUrl === 'string' ? parsed.dataUrl : null
-    } catch {
-      return null
-    }
-  },
+/** Фотография автомобиля одного пользователя в localStorage */
+export function createLocalCarPhotoRepository(userId: string): CarPhotoRepository {
+  const STORAGE_KEY = userKey(CAR_PHOTO_STORAGE_KEY, userId)
 
-  async save(carId, dataUrl) {
-    // если места не хватит, setItem бросит ошибку, а прежнее фото останется на месте
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ carId, dataUrl }))
-  },
+  return {
+    async get(carId) {
+      const raw = window.localStorage.getItem(STORAGE_KEY)
+      if (raw === null) return null
+      try {
+        const parsed = JSON.parse(raw) as { carId?: unknown; dataUrl?: unknown }
+        // фото другого автомобиля не показываем как своё
+        return parsed.carId === carId && typeof parsed.dataUrl === 'string' ? parsed.dataUrl : null
+      } catch {
+        return null
+      }
+    },
 
-  async remove() {
-    window.localStorage.removeItem(STORAGE_KEY)
-  },
+    async save(carId, dataUrl) {
+      // если места не хватит, setItem бросит ошибку, а прежнее фото останется на месте
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ carId, dataUrl }))
+    },
+
+    async remove() {
+      window.localStorage.removeItem(STORAGE_KEY)
+    },
+  }
 }

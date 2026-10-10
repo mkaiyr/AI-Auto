@@ -3,6 +3,7 @@
 // позже заменяется серверной базой без переделки интерфейса.
 
 import { newId } from '../format'
+import { userKey } from '../repositories'
 
 export type ServiceCategory =
   | 'maintenance'
@@ -55,7 +56,8 @@ export interface ServiceRepository {
   removeByCar(carId: string): Promise<void>
 }
 
-const STORAGE_KEY = 'ai-auto:service:v1'
+/** Основа ключа; полный ключ включает идентификатор пользователя (см. repositories.ts) */
+export const SERVICE_STORAGE_KEY = 'ai-auto:service:v1'
 
 function isRecord(value: unknown): value is ServiceRecord {
   if (typeof value !== 'object' || value === null) return false
@@ -73,46 +75,53 @@ function isRecord(value: unknown): value is ServiceRecord {
   )
 }
 
-function readAll(): ServiceRecord[] {
-  const raw = window.localStorage.getItem(STORAGE_KEY)
-  if (raw === null) return []
-  try {
-    const parsed: unknown = JSON.parse(raw)
-    return Array.isArray(parsed) ? parsed.filter(isRecord) : []
-  } catch {
-    return []
+/**
+ * История обслуживания одного пользователя в localStorage.
+ * Записи лежат в браузере: на другом устройстве их не будет.
+ */
+export function createLocalServiceRepository(userId: string): ServiceRepository {
+  const STORAGE_KEY = userKey(SERVICE_STORAGE_KEY, userId)
+
+  const readAll = (): ServiceRecord[] => {
+    const raw = window.localStorage.getItem(STORAGE_KEY)
+    if (raw === null) return []
+    try {
+      const parsed: unknown = JSON.parse(raw)
+      return Array.isArray(parsed) ? parsed.filter(isRecord) : []
+    } catch {
+      return []
+    }
   }
-}
 
-const writeAll = (records: ServiceRecord[]) => window.localStorage.setItem(STORAGE_KEY, JSON.stringify(records))
+  const writeAll = (records: ServiceRecord[]) => window.localStorage.setItem(STORAGE_KEY, JSON.stringify(records))
 
-/** Записи лежат в браузере пользователя: на другом устройстве их не будет */
-export const localServiceRepository: ServiceRepository = {
-  async list(carId) {
-    return readAll().filter((record) => record.carId === carId)
-  },
+  return {
+    async list(carId) {
+      return readAll().filter((record) => record.carId === carId)
+    },
 
-  async create(carId, input) {
-    const now = new Date().toISOString()
-    const record: ServiceRecord = { ...input, id: newId(), carId, createdAt: now, updatedAt: now }
-    writeAll([...readAll(), record])
-    return record
-  },
+    async create(carId, input) {
+      const now = new Date().toISOString()
+      const record: ServiceRecord = { ...input, id: newId(), carId, createdAt: now, updatedAt: now }
+      writeAll([...readAll(), record])
+      return record
+    },
 
-  async update(id, input) {
-    const records = readAll()
-    const current = records.find((record) => record.id === id)
-    if (!current) throw new Error('Запись не найдена')
-    const updated: ServiceRecord = { ...current, ...input, updatedAt: new Date().toISOString() }
-    writeAll(records.map((record) => (record.id === id ? updated : record)))
-    return updated
-  },
+    async update(id, input) {
+      const records = readAll()
+      const current = records.find((record) => record.id === id)
+      if (!current) throw new Error('Запись не найдена')
+      const updated: ServiceRecord = { ...current, ...input, updatedAt: new Date().toISOString() }
+      writeAll(records.map((record) => (record.id === id ? updated : record)))
+      return updated
+    },
 
-  async remove(id) {
-    writeAll(readAll().filter((record) => record.id !== id))
-  },
+    async remove(id) {
+      writeAll(readAll().filter((record) => record.id !== id))
+    },
 
-  async removeByCar(carId) {
-    writeAll(readAll().filter((record) => record.carId !== carId))
-  },
+    async removeByCar(carId) {
+      writeAll(readAll().filter((record) => record.carId !== carId))
+    },
+  }
 }

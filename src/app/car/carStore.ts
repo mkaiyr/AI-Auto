@@ -3,6 +3,7 @@
 // позже можно заменить серверным хранилищем, не трогая страницы и формы.
 
 import { newId } from '../format'
+import { userKey } from '../repositories'
 
 export type EngineType = 'petrol' | 'diesel' | 'hybrid' | 'electric' | 'lpg'
 
@@ -64,7 +65,8 @@ export interface CarRepository {
   remove(): Promise<void>
 }
 
-const STORAGE_KEY = 'ai-auto:car:v1'
+/** Основа ключа; полный ключ включает идентификатор пользователя (см. repositories.ts) */
+export const CAR_STORAGE_KEY = 'ai-auto:car:v1'
 
 /** Проверяет сохранённые данные. Идентификатора и кузова может не быть: они появились позже остальных полей */
 function isStoredCar(value: unknown): value is Omit<Car, 'id' | 'body'> & { id?: unknown; body?: unknown } {
@@ -81,34 +83,43 @@ function isStoredCar(value: unknown): value is Omit<Car, 'id' | 'body'> & { id?:
   )
 }
 
-/** Данные лежат в браузере пользователя: на другом устройстве их не будет */
-export const localCarRepository: CarRepository = {
-  async get() {
-    const raw = window.localStorage.getItem(STORAGE_KEY)
-    if (raw === null) return null
-    try {
-      const parsed: unknown = JSON.parse(raw)
-      if (!isStoredCar(parsed)) return null
-      const body = typeof parsed.body === 'string' && parsed.body in BODY_LABELS ? (parsed.body as BodyType) : null
-      if (typeof parsed.id === 'string') return { ...parsed, id: parsed.id, body }
-      // профиль сохранён до появления идентификатора — выдаём его один раз и запоминаем
-      const car: Car = { ...parsed, id: newId(), body }
+/**
+ * Профиль автомобиля одного пользователя в localStorage.
+ * Данные лежат в браузере: на другом устройстве их не будет.
+ */
+export function createLocalCarRepository(userId: string): CarRepository {
+  const STORAGE_KEY = userKey(CAR_STORAGE_KEY, userId)
+
+  const repository: CarRepository = {
+    async get() {
+      const raw = window.localStorage.getItem(STORAGE_KEY)
+      if (raw === null) return null
+      try {
+        const parsed: unknown = JSON.parse(raw)
+        if (!isStoredCar(parsed)) return null
+        const body = typeof parsed.body === 'string' && parsed.body in BODY_LABELS ? (parsed.body as BodyType) : null
+        if (typeof parsed.id === 'string') return { ...parsed, id: parsed.id, body }
+        // профиль сохранён до появления идентификатора — выдаём его один раз и запоминаем
+        const car: Car = { ...parsed, id: newId(), body }
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(car))
+        return car
+      } catch {
+        return null
+      }
+    },
+
+    async save(input) {
+      // при редактировании идентификатор сохраняется, у нового автомобиля — новый
+      const existing = await repository.get()
+      const car: Car = { ...input, id: existing?.id ?? newId(), updatedAt: new Date().toISOString() }
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(car))
       return car
-    } catch {
-      return null
-    }
-  },
+    },
 
-  async save(input) {
-    // при редактировании идентификатор сохраняется, у нового автомобиля — новый
-    const existing = await localCarRepository.get()
-    const car: Car = { ...input, id: existing?.id ?? newId(), updatedAt: new Date().toISOString() }
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(car))
-    return car
-  },
+    async remove() {
+      window.localStorage.removeItem(STORAGE_KEY)
+    },
+  }
 
-  async remove() {
-    window.localStorage.removeItem(STORAGE_KEY)
-  },
+  return repository
 }
