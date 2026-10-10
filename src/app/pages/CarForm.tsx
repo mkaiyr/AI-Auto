@@ -53,8 +53,10 @@ function suggestGeneration(options: GenerationOption[], year: string, current: s
   const parsed = parseYear(year)
   const candidates = parsed === null ? options : optionsForYear(options, parsed)
   if (candidates.some((item) => item.value === current)) return current
+  // рестайлинг с непроверенным годом — уточнение, которое делает только сам пользователь
+  const firm = candidates.filter((item) => !item.tentative)
   // при неполном списке поколений единственный найденный вариант может быть не тем — выбирает пользователь
-  return parsed !== null && candidates.length === 1 && !partial ? candidates[0].value : ''
+  return parsed !== null && firm.length === 1 && !partial ? firm[0].value : ''
 }
 
 export function CarForm({ initial, initialPhoto, onSubmit, onCancel }: CarFormProps) {
@@ -375,14 +377,21 @@ export function CarForm({ initial, initialPhoto, onSubmit, onCancel }: CarFormPr
   const selected = options.find((item) => item.value === values.generation) ?? null
   // выбранный вариант остаётся в списке, даже если не совпадает с годом: значение не должно пропасть молча
   const listed = selected && !candidates.includes(selected) ? [selected, ...candidates] : candidates
-  const sameGeneration = candidates.length > 1 && candidates.every((item) => item.generation === candidates[0].generation)
+  /** варианты, из которых складывается решение: без необязательных уточнений о рестайлинге */
+  const firm = candidates.filter((item) => !item.tentative)
+  const sameGeneration = firm.length > 1 && firm.every((item) => item.generation === firm[0].generation)
   /** год рестайлинга: выпускались и прежняя, и обновлённая версия одного поколения */
-  const bothVersions = candidates.some((item) => item.restyled && candidates.some((other) => !other.restyled && other.generation === item.generation))
+  const bothVersions = firm.some((item) => item.restyled && firm.some((other) => !other.restyled && other.generation === item.generation))
+  /** необязательное уточнение для выбранного поколения: рестайлинг с непроверенным годом */
+  const refinement = selected && !selected.restyled ? candidates.find((item) => item.tentative && item.generation === selected.generation) : undefined
   /** рестайлинг у выбранного поколения был, но в справочнике он не выделен отдельным вариантом */
-  const faceliftNote =
-    selected && selected.generation.faceliftUnlisted
-      ? ' У этого поколения был рестайлинг; в справочнике он отдельно не выделен — уточнить версию можно ручным вводом.'
-      : ''
+  const faceliftNote = refinement
+    ? ` У этого поколения был рестайлинг — по Википедии, примерно с ${refinement.generation.facelift?.from} года (дата не проверена). Если автомобиль обновлённый, выберите вариант «${refinement.value}».`
+    : selected?.tentative
+      ? ' Год рестайлинга взят из Википедии и не проверен — убедитесь, что ваш автомобиль действительно обновлённый.'
+      : selected && selected.generation.faceliftUnlisted
+        ? ' У этого поколения был рестайлинг; в справочнике он отдельно не выделен — уточнить версию можно ручным вводом.'
+        : ''
   const generationLabel = (
     <>
       Поколение / код кузова <span>необязательно</span>
@@ -394,9 +403,9 @@ export function CarForm({ initial, initialPhoto, onSubmit, onCancel }: CarFormPr
       ? 'Укажите год выпуска — в списке останутся только подходящие варианты.'
       : selected && !candidates.includes(selected)
         ? `Выбранный вариант не совпадает с ${year} годом выпуска. Проверьте год или выберите другой.`
-        : candidates.length === 0
+        : firm.length === 0
           ? `Для ${year} года в справочнике нет поколения этой модели. Проверьте год или введите код вручную.`
-          : candidates.length === 1
+          : firm.length === 1
             ? partial
               ? 'В справочнике описаны не все поколения этой модели. Выберите вариант, только если он ваш, или введите код вручную.'
               : selected
@@ -451,7 +460,7 @@ export function CarForm({ initial, initialPhoto, onSubmit, onCancel }: CarFormPr
         aria-invalid={errors.generation ? true : undefined}
         aria-describedby="car-generation-hint"
       >
-        <option value="">{generationsLoading ? 'Загрузка поколений…' : candidates.length > 1 ? 'Выберите вариант' : 'Не указано'}</option>
+        <option value="">{generationsLoading ? 'Загрузка поколений…' : firm.length > 1 ? 'Выберите вариант' : 'Не указано'}</option>
         {listed.map((item) => (
           <option key={item.value} value={item.value}>
             {item.label}

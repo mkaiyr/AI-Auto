@@ -152,6 +152,11 @@ const FACELIFTS = {
   ],
 }
 
+/** Имя файла говорит, что это не вид спереди: «rear», «interior», немецкое «– h» (hinten) */
+const NOT_FRONT = /rear|interior|innenraum|cockpit|dashboard|heck|engine|[–-]\s*h\d?\s+\d{6,8}/i
+/** Упоминание рестайлинга в тексте раздела — без даты это только повод для предупреждения */
+const FACELIFT_MENTION = /\bfacelift(ed)?\b|\brefresh(ed)?\b|mid-cycle|\bLCI\b|restyl/i
+
 /** Подзаголовок, говорящий о рестайлинге поколения */
 const FACELIFT_HEADING = /facelift|refresh|restyl|mid-cycle|\bLCI\b|life cycle impulse/i
 
@@ -438,7 +443,14 @@ function parseArticle(text) {
     for (let index = startIndex + 1; index < headings.length && headings[index].level > box.heading.level; index++) {
       if (FACELIFT_HEADING.test(stripHeading(headings[index].title))) faceliftSections.push({ title: headings[index].title, body: text.slice(headings[index].at, headings[index + 1]?.at ?? text.length) })
     }
-    generations.push({ heading: box.heading.title, params: box.params, years, faceliftSections })
+    let sectionEnd = text.length
+    for (let index = startIndex + 1; index < headings.length; index++) {
+      if (headings[index].level <= box.heading.level) {
+        sectionEnd = headings[index].at
+        break
+      }
+    }
+    generations.push({ heading: box.heading.title, params: box.params, years, faceliftSections, faceliftMentioned: FACELIFT_MENTION.test(text.slice(box.heading.at, sectionEnd)) })
     described.add(box.heading.at)
   }
 
@@ -460,7 +472,7 @@ function parseArticle(text) {
   const faceliftSections = headings
     .map((heading, index) => ({ title: heading.title, body: text.slice(heading.at, headings[index + 1]?.at ?? text.length) }))
     .filter((section) => FACELIFT_HEADING.test(stripHeading(section.title)))
-  return { top, generations, links, faceliftSections }
+  return { top, generations, links, faceliftSections, faceliftMentioned: FACELIFT_MENTION.test(text) }
 }
 
 /**
@@ -484,9 +496,12 @@ function extractFacelift(sections, years) {
   const distinct = [...new Set(found)]
   if (distinct.length !== 1) return null
   const [year] = distinct
-  if (!(year > years.from && year <= (years.to ?? THIS_YEAR))) return null
-  // фотография обновлённой версии — только файл из этого же раздела, в имени которого прямо сказано «facelift»
-  const image = [...body.matchAll(/(?:File|Image):([^|\]\n]+\.(?:jpe?g|png))/gi)].map((match) => imageName(match[1])).find((name) => name && /facelift/i.test(name))
+  // рестайлинг не совпадает ни с первым, ни с последним годом поколения и не случается через 12+ лет после запуска:
+  // такие значения — признак того, что год в тексте относится к чему-то другому
+  if (year <= years.from || year - years.from > 12 || (years.to != null && year >= years.to)) return null
+  // фотография обновлённой версии — только файл из этого же раздела, в имени которого прямо сказано «facelift»,
+  // и только вид спереди: снимки сзади и салона для карточки автомобиля не годятся
+  const image = [...body.matchAll(/(?:File|Image):([^|\]\n]+\.(?:jpe?g|png))/gi)].map((match) => imageName(match[1])).find((name) => name && /facelift/i.test(name) && !NOT_FRONT.test(name))
   return { from: year, image: image ?? null, verified: false }
 }
 
@@ -523,7 +538,7 @@ function buildGeneration(source) {
     from: years.from,
     to: years.to,
     image: imageName(params.image),
-    facelifted: (source.faceliftSections ?? []).length > 0,
+    facelifted: (source.faceliftSections ?? []).length > 0 || Boolean(source.faceliftMentioned),
     facelift: extractFacelift(source.faceliftSections, years),
   }
 }
@@ -615,7 +630,7 @@ for (const [key, model] of models) {
     // «Mercedes-Benz W124» — код стоит прямо в названии статьи
     const tail = article.title.split(' ').pop()
     const title = isCode(tail) && /\d/.test(tail) ? `(${tail})` : article.title
-    list.push(buildGeneration({ params: top, years, heading: link.heading, title, faceliftSections: sub.faceliftSections }))
+    list.push(buildGeneration({ params: top, years, heading: link.heading, title, faceliftSections: sub.faceliftSections, faceliftMentioned: sub.faceliftMentioned }))
     // в статье о поколении описано и следующее: «Volkswagen Passat (B7)» внутри статьи о B6
     for (const inner of sub.generations) {
       if (stripHeading(inner.params.name ?? '').startsWith(model.article + ' (')) list.push(buildGeneration({ ...inner, heading: '' }))
@@ -701,7 +716,8 @@ for (const [key, model] of models) {
     }
     const facelift = generation.facelift
     if (facelift) {
-      const showsFacelift = generation.image && (/facelift/i.test(generation.image) || (first !== null && first > facelift.from + 1))
+      // перенос снимка — только для рестайлинга, проверенного вручную: при неточном годе он навредил бы
+      const showsFacelift = facelift.verified && generation.image && (/facelift/i.test(generation.image) || (first !== null && first > facelift.from + 1))
       if (showsFacelift) {
         log.movedPhotos.push(`${name}: «${generation.image}» отнесён к рестайлингу ${facelift.from}`)
         facelift.image ??= generation.image
@@ -859,7 +875,7 @@ writeFileSync(
     'Здесь перечислено всё, что скрипт решил сам, — это список для выборочной ручной проверки, а не подтверждение достоверности.',
     '',
     section('Рестайлинги, проверенные вручную', 'Заданы в таблице FACELIFTS с указанием источника.', log.verified),
-    section('Рестайлинги, определённые по разделу статьи Википедии', `Год взят из заголовка или первых фраз единственного раздела о рестайлинге. В форме такие варианты пересекаются на два года, вручную не проверялись. Ещё у ${log.skippedFacelifts} поколений раздел о рестайлинге есть, но год однозначно не определяется — для них показывается предупреждение.`, log.facelifts),
+    section('Рестайлинги, определённые по разделу статьи Википедии', `Год взят из заголовка или первых фраз единственного раздела о рестайлинге и вручную не проверялся. В форме такой рестайлинг — необязательное уточнение «примерно с … года»: сам он никогда не подставляется, автоматически выбирается только поколение. Ещё у ${log.skippedFacelifts} поколений рестайлинг в статье упомянут, но год однозначно не определяется — для них показывается предупреждение.`, log.facelifts),
     section('Фотографии, отнесённые к рестайлингу', 'В имени файла слово «facelift» или год позже рестайлинга.', log.movedPhotos),
     section('Отброшенные фотографии', 'Год в имени файла не попадает в годы выпуска поколения — вероятно, на снимке другое поколение.', log.rejectedPhotos),
     section('Ручные исправления данных', 'Таблица CORRECTIONS.', log.corrections),

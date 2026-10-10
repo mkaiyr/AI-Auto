@@ -34,9 +34,13 @@ export interface Generation {
   /** null — выпускается */
   to: number | null
   image: CarImage | null
-  /** подтверждённый рестайлинг: год начала и фотография обновлённой версии */
-  facelift: { from: number; image: CarImage | null } | null
-  /** в источнике у поколения описан рестайлинг, но в справочнике он не выделен: годы и фото не подтверждены */
+  /**
+   * Рестайлинг: год начала и фотография обновлённой версии.
+   * verified: true — год проверен вручную по источнику; false — взят скриптом из раздела статьи и может
+   * отличаться на год-два, поэтому такой рестайлинг предлагается только как необязательное уточнение.
+   */
+  facelift: { from: number; image: CarImage | null; verified: boolean } | null
+  /** в источнике рестайлинг упомянут, но год определить не удалось: вариант не выделен, показывается предупреждение */
   faceliftUnlisted: boolean
 }
 
@@ -63,6 +67,8 @@ export interface GenerationOption {
   to: number | null
   /** true — обновлённая версия того же поколения */
   restyled: boolean
+  /** true — рестайлинг с непроверенным годом: выбрать можно, но сам он не подставляется */
+  tentative: boolean
 }
 
 export type MakeGenerations = Record<string, ModelGenerations>
@@ -74,7 +80,7 @@ interface RawGeneration {
   f: number
   t: number
   i?: RawImage
-  r?: [number, RawImage?]
+  r?: [number, number, RawImage?]
   x?: number
 }
 interface RawModel {
@@ -135,7 +141,7 @@ export function loadGenerations(make: string): Promise<MakeGenerations> {
               from: row.f,
               to: row.t || null,
               image: toImage(row.i),
-              facelift: row.r ? { from: row.r[0], image: toImage(row.r[1]) } : null,
+              facelift: row.r ? { from: row.r[0], verified: row.r[1] === 1, image: toImage(row.r[2]) } : null,
               faceliftUnlisted: row.x === 1,
             })),
           }
@@ -163,6 +169,13 @@ const RESTYLED_SUFFIX = ' FL'
 /** Как показать сохранённое значение человеку: «DN8 FL» → «DN8 FL (рестайлинг)» */
 export const generationTitle = (value: string) => (value.endsWith(RESTYLED_SUFFIX) ? `${value} (рестайлинг)` : value)
 
+/** Адрес текста лицензии Creative Commons по её краткому названию: «CC BY-SA 3.0 de» → …/by-sa/3.0/de/ */
+export function licenceUrl(licence: string): string | null {
+  if (licence === 'CC0') return 'https://creativecommons.org/publicdomain/zero/1.0/'
+  const match = licence.match(/^CC (BY(?:-SA)?) (\d(?:\.\d)?)(?: ([a-z-]+))?$/i)
+  return match ? `https://creativecommons.org/licenses/${match[1].toLowerCase()}/${match[2]}/${match[3] ? `${match[3]}/` : ''}` : null
+}
+
 const NOTE_BODIES: [string, BodyType][] = [
   ['седан', 'sedan'],
   ['универсал', 'wagon'],
@@ -182,9 +195,12 @@ const MAX_JOINED = 3
  * Варианты для списка. У поколения их несколько, если разным кузовам присвоены разные коды
  * (F30 — седан, F31 — универсал); иначе вариант один и коды записаны вместе.
  *
- * Поколение с подтверждённым рестайлингом делится на два варианта с одним кодом кузова:
+ * Поколение с проверенным рестайлингом делится на два варианта с одним кодом кузова:
  * «DN8 · до рестайлинга · 2019–2023» и «DN8 FL (рестайлинг) · 2023–н. в.». Это не два поколения:
  * у обоих вариантов одно и то же поле generation.
+ *
+ * Если год рестайлинга не проверен, поколение остаётся одним вариантом на все свои годы, а обновлённая
+ * версия добавляется как уточнение «примерно с … года» (tentative): его выбирает только сам пользователь.
  */
 export function generationOptions(model: ModelGenerations | null): GenerationOption[] {
   const options: GenerationOption[] = []
@@ -204,13 +220,19 @@ export function generationOptions(model: ModelGenerations | null): GenerationOpt
     }
     for (const [value, suffix, body] of variants) {
       const named = value === roman(generation.ordinal) && suffix.startsWith(' поколение')
-      const add = (option: Omit<GenerationOption, 'generation' | 'body' | 'label'>, name: string, note: string) => {
+      const add = (option: Omit<GenerationOption, 'generation' | 'body' | 'label' | 'tentative'> & { tentative?: boolean }, name: string, note: string) => {
         if (options.some((other) => other.value === option.value)) return
         const label = [name, note, named ? '' : number, generationYears(option)].filter(Boolean).join(' · ')
-        options.push({ ...option, label, generation, body })
+        options.push({ tentative: false, ...option, label, generation, body })
       }
       if (!facelift) {
         add({ value, from: generation.from, to: generation.to, restyled: false }, value + suffix, '')
+        continue
+      }
+      if (!facelift.verified) {
+        add({ value, from: generation.from, to: generation.to, restyled: false }, value + suffix, '')
+        // запас в один год до названной даты: год в источнике — обычно год показа, а не начала продаж
+        add({ value: value + RESTYLED_SUFFIX, from: facelift.from - 1, to: generation.to, restyled: true, tentative: true }, `${value}${RESTYLED_SUFFIX} (рестайлинг, примерно с ${facelift.from})${suffix}`, '')
         continue
       }
       // в год рестайлинга выпускались обе версии, поэтому годы вариантов пересекаются на этот год
@@ -254,14 +276,16 @@ export function pickIllustration(model: ModelGenerations | null, generation: str
   const option = generation ? options.find((item) => item.value === generation) : undefined
   if (option) {
     const image = optionImage(option)
-    if (image) return { image, exact: true }
+    // поколение с непроверенным рестайлингом: в годы после него машина могла быть уже обновлённой
+    const maybeRestyled = !option.restyled && option.generation.facelift?.verified === false && year !== null && year >= option.generation.facelift.from - 1
+    if (image) return { image, exact: !maybeRestyled }
     // обновлённая версия без собственного снимка: показываем поколение, но не выдаём за точное фото
     if (option.generation.image) return { image: option.generation.image, exact: false }
   }
   const chosen = option ? option.generation : findGeneration(model, generation)
   if (!option && chosen?.image) return { image: chosen.image, exact: true }
   if (year !== null && !chosen) {
-    const byYear = options.filter((item) => coversYear(item, year) && optionImage(item))
+    const byYear = options.filter((item) => !item.tentative && coversYear(item, year) && optionImage(item))
     const images = new Set(byYear.map((item) => optionImage(item)?.url))
     // в переходный год ближе всего по времени вариант, который начался позже остальных
     const nearest = byYear.sort((a, b) => b.from - a.from)[0]

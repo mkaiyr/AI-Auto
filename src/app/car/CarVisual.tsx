@@ -1,6 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { BODY_LABELS, type BodyType } from './carStore'
-import type { Illustration } from './catalog/generations'
+import { licenceUrl, type Illustration } from './catalog/generations'
+
+/** Через сколько повторить загрузку снимка после сбоя: сервер Wikimedia при перегрузке отвечает 429 */
+const RETRY_DELAY = 5000
 import './car.css'
 
 // Стилизованные силуэты кузовов: вид сбоку, задняя часть слева.
@@ -105,6 +108,16 @@ export function CarVisual({ photo, body, alt, illustration = null, title = '' }:
   const [failedPhoto, setFailedPhoto] = useState<string | null>(null)
   const [loadedImage, setLoadedImage] = useState<string | null>(null)
   const [failedImage, setFailedImage] = useState<string | null>(null)
+  /** снимок, загрузка которого сорвалась один раз и будет повторена */
+  const [retrying, setRetrying] = useState<string | null>(null)
+  const [attempt, setAttempt] = useState(0)
+
+  // одна повторная попытка с задержкой; после второго сбоя остаётся силуэт
+  useEffect(() => {
+    if (retrying === null) return
+    const timer = window.setTimeout(() => setAttempt((current) => current + 1), RETRY_DELAY)
+    return () => window.clearTimeout(timer)
+  }, [retrying])
 
   if (photo && photo !== failedPhoto) {
     return (
@@ -115,15 +128,17 @@ export function CarVisual({ photo, body, alt, illustration = null, title = '' }:
   }
 
   const image = illustration && illustration.image.url !== failedImage ? illustration.image : null
+  const waiting = image !== null && retrying === image.url && attempt === 0
+  const licenceLink = image ? licenceUrl(image.licence) : null
   const shown = image !== null && image.url === loadedImage
 
   return (
     <figure className={shown ? 'car-visual car-visual--catalog' : 'car-visual'}>
       {body && <BodySilhouette type={body} />}
-      {image && (
+      {image && !waiting && (
         <img
           className="car-visual__catalog"
-          key={image.url}
+          key={`${image.url}#${attempt}`}
           src={image.url}
           srcSet={image.srcSet}
           sizes="(max-width: 600px) 100vw, 960px"
@@ -131,16 +146,34 @@ export function CarVisual({ photo, body, alt, illustration = null, title = '' }:
           decoding="async"
           referrerPolicy="no-referrer"
           onLoad={() => setLoadedImage(image.url)}
-          onError={() => setFailedImage(image.url)}
+          onError={() => {
+            if (retrying === image.url) setFailedImage(image.url)
+            else {
+              setAttempt(0)
+              setRetrying(image.url)
+            }
+          }}
         />
       )}
       <figcaption>
         {shown && image && illustration ? (
           <>
-            {illustration.exact ? `Иллюстрация: ${title} · это не фото вашего автомобиля` : `Иллюстрация модели ${title} · поколение и кузов могут отличаться`}
-            <a href={image.page} target="_blank" rel="noopener noreferrer">
-              Фото: {image.author} · {image.licence} · Wikimedia Commons
-            </a>
+            {illustration.exact ? `Иллюстрация: ${title} · это не фото вашего автомобиля` : `Иллюстрация модели ${title} · поколение, рестайлинг и кузов могут отличаться`}
+            {/* атрибуция по условиям лицензии: автор, источник, лицензия и пометка об изменениях */}
+            <span className="car-visual__credit">
+              <a href={image.page} target="_blank" rel="noopener noreferrer">
+                Фото: {image.author} · Wikimedia Commons
+              </a>
+              {' · '}
+              {licenceLink ? (
+                <a href={licenceLink} target="_blank" rel="noopener noreferrer license">
+                  {image.licence}
+                </a>
+              ) : (
+                image.licence
+              )}
+              {' · обрезано, цвет приглушён'}
+            </span>
           </>
         ) : photo ? (
           'Фото не удалось загрузить · обновите страницу'

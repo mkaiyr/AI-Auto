@@ -67,12 +67,15 @@
   color: rgba(243, 243, 240, 0.78);
 }
 
-.car-visual figcaption a {
+.car-visual__credit {
   display: block;
-  color: inherit;
   opacity: 0.72;
-  text-decoration: none;
   overflow-wrap: anywhere;
+}
+
+.car-visual figcaption a {
+  color: inherit;
+  text-decoration: none;
 }
 
 .car-visual figcaption a:hover,
