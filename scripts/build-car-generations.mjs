@@ -125,30 +125,120 @@ const ALIASES = {
   'УАЗ|Хантер': { title: 'UAZ Hunter' },
 }
 
-// Исправления, проверенные вручную, для случаев, когда карточка статьи объединяет разные автомобили.
-// split — код выделяется из общего поколения в отдельное со своими годами.
+// Исправления по источникам. У каждой записи — источник и обоснование; без источника запись не добавляется.
+//   split — код выделяется из общего поколения в отдельный вариант со своими годами;
+//   years — годы поколения с данным кодом именно для этой модели (а не мировые из общей статьи);
+//   keep  — из кодов поколения остаются только перечисленные (остальные относятся к другим рынкам и названиям);
+//   add   — вариант, которого нет в карточках статьи: другой автомобиль под тем же названием на рынках СНГ.
 const CORRECTIONS = {
   // Almera G15 выпускалась только в России (АвтоВАЗ, 2012–2018). В статье она описана в одной
   // карточке с японской Bluebird Sylphy G11 (2005–2012), из-за чего годы получались общими: 2005–2019.
   'Nissan|Almera': { split: [{ code: 'G15', from: 2012, to: 2018 }] },
+
+  // Имя «Prado» появилось в апреле 1990 года у 70-й серии; 90-я серия — май 1996; 120-я — октябрь 2002; 150-я — сентябрь 2009.
+  // Источники (Toyota, официально): global.toyota/en/newsroom/toyota/25724050.html (13.04.1990),
+  // global.toyota/en/mobility/toyota-brand/features/landcruiser/history/evolution/light-duty.html,
+  // global.toyota/en/newsroom/toyota/23825616.html (14.09.2009).
+  // В статье Википедии у J70 стоял 1984 год (начало всей 70-й серии), у J90 — выпуск «до 2009».
+  'Toyota|Land Cruiser Prado': {
+    years: [
+      { code: 'J70', from: 1990, to: 1996 },
+      { code: 'J90', from: 1996, to: 2002 },
+    ],
+  },
+
+  // Solaris — название Accent для России и СНГ, выпускался только в Санкт-Петербурге.
+  // Первое поколение: серийное производство с января 2011 года (Hyundai, официально:
+  // hyundai.com/worldwide/en/news/news-room/news/hyundai-motor-opens-first-full-cycle-car-manufacturing-plant-in-russia-0000000187.html).
+  // Второе поколение: с февраля 2017 года (WardsAuto, «Hyundai Launches Russian Output of Popular Solaris», март 2017);
+  // выпуск остановлен в марте 2022 года (en.wikipedia.org/wiki/Hyundai_Motor_Manufacturing_Rus). Это вторичные источники.
+  // Коды RC и YC в карточке Accent относятся к китайской Verna, к Solaris — нет.
+  'Hyundai|Solaris': {
+    years: [
+      { code: 'RB', from: 2011, to: 2017 },
+      { code: 'HC', from: 2017, to: 2022 },
+    ],
+    keep: [
+      { code: 'RB', codes: ['RB'] },
+      { code: 'HC', codes: ['HC'] },
+    ],
+  },
+
+  // Rio для России и СНГ — другой автомобиль, чем мировой Rio тех же лет: QB (2011–2017) и FB (2017–2022),
+  // оба выпускались в Санкт-Петербурге. Производство QB начато 15.08.2011, FB — 04.07.2017.
+  // Источники вторичные: en.wikipedia.org/wiki/Kia_Rio (разделы третьего и четвёртого поколений),
+  // just-auto.com «Russia: Kia Rio hatchback production starts». Официального источника Kia найти не удалось.
+  'Kia|Rio': {
+    add: [
+      { codes: ['QB'], ordinal: 3, from: 2011, to: 2017, note: 'сборка в России, рынки СНГ' },
+      { codes: ['FB'], ordinal: 4, from: 2017, to: 2022, note: 'сборка в России, рынки СНГ', image: 'Kia Rio 2017 (Russia) (cropped).jpg' },
+    ],
+  },
 }
 
-// Рестайлинги, проверенные вручную. Рестайлинг — не новое поколение: код кузова тот же, меняются
-// внешность и годы. В справочник попадают только подтверждённые случаи; остальные поколения с разделом
-// «Facelift» в статье лишь помечаются (см. FACELIFT_HEADING), даты для них не выдумываются.
-//   code  — код поколения, к которому относится рестайлинг;
-//   from  — первый год, когда обновлённая версия выпускалась или продавалась;
-//   image — фотография именно обновлённой версии (файл Wikimedia Commons из раздела «Facelift» статьи).
+// Рестайлинги по источникам. Рестайлинг — не новое поколение: код кузова тот же, меняются внешность и годы.
+//   code     — код поколения, к которому относится рестайлинг;
+//   from     — первый год, когда обновлённая версия появилась хотя бы на одном рынке;
+//   preUntil — последний год, когда ещё выпускалась или продавалась прежняя версия (по умолчанию равен from).
+//              Если годы для Казахстана не подтверждены, прежняя версия оставляется ещё на год: в эти годы
+//              форма предлагает обе версии и ничего не подставляет сама;
+//   level    — 'official': подтверждено материалами производителя, автовыбор по году разрешён;
+//              'secondary': только вторичные источники — рестайлинг остаётся уточнением «примерно с … года»;
+//   image    — фотография именно обновлённой версии (файл Wikimedia Commons из статьи о поколении).
 const FACELIFTS = {
   'Hyundai|Sonata': [
-    {
-      // Обновлённая Sonata DN8 («Sonata The Edge») показана 26 марта 2023 года на Seoul Mobility Show,
-      // в Северной Америке представлена 30 августа 2023 года (en.wikipedia.org/wiki/Hyundai_Sonata, раздел
-      // «Eighth generation → Facelift»); официальные продажи в Казахстане — с октября 2023 года.
-      code: 'DN8',
-      from: 2023,
-      image: '2024 Hyundai Sonata (facelift), front.jpg',
-    },
+    // Sonata DN8 («Sonata The Edge») показана 26.03.2023 на Seoul Mobility Show (en.wikipedia.org/wiki/Hyundai_Sonata,
+    // раздел «Eighth generation → Facelift»); продажи в Казахстане с октября 2023 года — по сведениям владельца проекта.
+    { code: 'DN8', from: 2023, level: 'official', image: '2024 Hyundai Sonata (facelift), front.jpg' },
+  ],
+  'Toyota|Camry': [
+    // XV50: обновлённая Camry 2015 модельного года показана 16.04.2014, в продаже с осени 2014 года
+    // (Toyota, официально: pressroom.toyota.com/toyota-camry-reveal-2014-nyias/). Даты для Казахстана не подтверждены.
+    { code: 'XV50', from: 2014, preUntil: 2015, level: 'official', image: '2016 Toyota Camry (ASV50R) Altise sedan (2017-12-09) 01.jpg' },
+    // XV70: Camry 2021 модельного года с новым оформлением передней части объявлена 15.07.2020
+    // (Toyota, официально: pressroom.toyota.com/clear-cut-leader-the-2021-toyota-camry-adds-more-variants-while-advancing-safety/).
+    // Даты для Казахстана не подтверждены, поэтому прежняя версия оставлена и на 2021 год.
+    { code: 'XV70', from: 2020, preUntil: 2021, level: 'official', image: '2022 Toyota Camry SE Standard Package in Celestial Silver Metallic, Front Left.jpg' },
+  ],
+  'Toyota|Land Cruiser Prado': [
+    // J150: частичное обновление с новой внешностью — 12.09.2017 (Toyota, официально: global.toyota/en/detail/18473230).
+    // Обновление 2013 года упоминается в Википедии, но официальным источником не подтверждено и отдельно не выделено:
+    // вариант «до рестайлинга» здесь означает «до обновления 2017 года».
+    { code: 'J150', from: 2017, level: 'official', image: '2018 Toyota Land Cruiser Prado (GDJ150R) GXL wagon (2018-08-06) 01.jpg' },
+  ],
+  'Hyundai|Tucson': [
+    // TL: обновление показано 28.03.2018 в Нью-Йорке, в Европе в продаже с лета 2018 года
+    // (Hyundai, официально: hyundai.news/uk/articles/press-releases/new-hyundai-tucson-receives-worldwide-debut-at-new-york-international-auto-show.html).
+    { code: 'TL', from: 2018, preUntil: 2019, level: 'official', image: '2018 Hyundai Tucson Premium SE CRDi 2WD facelift 2.0 Front.jpg' },
+    // NX4: обновление для Европы описано 27.03.2024, на тот момент ещё не в продаже
+    // (Hyundai, официально: hyundai.news/eu/articles/stories/europes-fan-favourite-gets-facelift.html).
+    // В Корее обновлённая версия показана раньше, в конце 2023 года (Википедия), поэтому from — 2023.
+    { code: 'NX4', from: 2023, preUntil: 2024, level: 'official', image: 'Hyundai Tucson 1.6 T-GDI PHEV Trend (IV, Facelift) – f 15022025.jpg' },
+  ],
+  'Hyundai|Elantra': [
+    // AD: обновлённая Elantra 2019 модельного года — 21.08.2018 (Hyundai, официально: hyundainews.com/releases/684).
+    { code: 'AD', from: 2018, preUntil: 2019, level: 'official', image: '2019 Hyundai Elantra 2.0 Executive (44).jpg' },
+    // CN7: обновлённая Elantra 2024 модельного года для Северной Америки — 30.08.2023
+    // (Hyundai, официально: hyundainews.com, «2024 Elantra»). Подходящей фотографии с подтверждённым видом нет.
+    { code: 'CN7', from: 2023, preUntil: 2024, level: 'official' },
+  ],
+  'Kia|Rio': [
+    // YB: обновление объявлено 26.05.2020, в Европе в продаже с третьего квартала 2020 года
+    // (Kia, официально: kianewscenter.com, «Electrified power, 'big car' technology, and refreshed design for upgraded Kia Rio»).
+    { code: 'YB', from: 2020, preUntil: 2021, level: 'official', image: '2021 Kia Rio S (facelift), front 3.12.23.jpg' },
+    // FB (Россия и СНГ): обновление 2020 года — только вторичный источник (en.wikipedia.org/wiki/Kia_Rio).
+    { code: 'FB', from: 2020, level: 'secondary', image: 'Kia Rio FL 2020 Russian (cropped).jpg' },
+  ],
+  'Volkswagen|Polo': [
+    // Шестое поколение: «In 2021, the Polo was comprehensively revamped with a sharpened body design»
+    // (Volkswagen, официально: пресс-релиз «50 years of the Volkswagen Polo», 01.05.2025). Относится к европейскому хэтчбеку.
+    { code: 'AW1', from: 2021, preUntil: 2022, level: 'official', image: 'VW Polo MOVE (VI, Facelift) – f 18042025.jpg' },
+  ],
+  'Hyundai|Solaris': [
+    // Обновления 2014 и 2020 годов — только вторичные источники (indianautosblog.com о запуске в России в 2014 году,
+    // en.wikipedia.org/wiki/Hyundai_Accent). Официальный источник Hyundai найти не удалось.
+    { code: 'RB', from: 2014, level: 'secondary', image: '2014-2017 Hyundai Solaris Sedan (front).jpg' },
+    { code: 'HC', from: 2020, level: 'secondary', image: '2021 Hyundai Solaris white front.jpg' },
   ],
 }
 
@@ -672,6 +762,24 @@ for (const [key, model] of models) {
     )
   }
 
+  const byCode = (code) => list.find((generation) => generation.codes.some((item) => item[0] === code))
+  for (const fix of CORRECTIONS[key]?.years ?? []) {
+    const target = byCode(fix.code)
+    if (!target) throw new Error(`Исправление ${key}: поколение ${fix.code} не найдено в данных`)
+    log.corrections.push(`${model.make} ${model.model} ${fix.code}: годы ${target.from}–${target.to ?? 'н.в.'} заменены на ${fix.from}–${fix.to ?? 'н.в.'}`)
+    Object.assign(target, { from: fix.from, to: fix.to })
+  }
+  for (const fix of CORRECTIONS[key]?.keep ?? []) {
+    const target = byCode(fix.code)
+    if (!target) throw new Error(`Исправление ${key}: поколение ${fix.code} не найдено в данных`)
+    const dropped = target.codes.filter((item) => !fix.codes.includes(item[0])).map((item) => item[0])
+    if (dropped.length > 0) log.corrections.push(`${model.make} ${model.model} ${fix.code}: убраны коды других рынков — ${dropped.join(', ')}`)
+    target.codes = target.codes.filter((item) => fix.codes.includes(item[0]))
+  }
+  for (const fix of CORRECTIONS[key]?.add ?? []) {
+    list.push({ ordinal: fix.ordinal ?? 0, codes: fix.codes.map((code) => [code, fix.note ?? '']), from: fix.from, to: fix.to, image: fix.image ?? null, added: true })
+    log.corrections.push(`${model.make} ${model.model}: добавлен вариант ${fix.codes.join('/')} ${fix.from}–${fix.to ?? 'н.в.'}${fix.note ? ` (${fix.note})` : ''}`)
+  }
   for (const fix of CORRECTIONS[key]?.split ?? []) {
     const owner = list.find((generation) => generation.codes.length > 1 && generation.codes.some((item) => item[0] === fix.code))
     if (!owner) continue
@@ -688,7 +796,7 @@ for (const [key, model] of models) {
     if (generation.codes.length === 0 && generation.ordinal === 0) continue
     // анонсированные, но ещё не выпускаемые поколения
     if (generation.from > THIS_YEAR) continue
-    if (unique.some((other) => other.id === id || (generation.ordinal > 0 && other.ordinal === generation.ordinal && other.codes.length >= generation.codes.length))) continue
+    if (unique.some((other) => other.id === id || (!generation.added && !other.added && generation.ordinal > 0 && other.ordinal === generation.ordinal && other.codes.length >= generation.codes.length))) continue
     unique.push({ ...generation, id })
   }
   unique.sort((a, b) => a.from - b.from || a.ordinal - b.ordinal)
@@ -720,7 +828,7 @@ for (const [key, model] of models) {
   for (const fix of FACELIFTS[key] ?? []) {
     const target = kept.find((generation) => generation.codes.some((item) => item[0] === fix.code))
     if (!target) throw new Error(`Рестайлинг ${key} ${fix.code}: поколение не найдено в данных`)
-    target.facelift = { from: fix.from, image: fix.image, verified: true }
+    target.facelift = { from: fix.from, preUntil: fix.preUntil ?? fix.from, image: fix.image ?? null, verified: fix.level === 'official', manual: true }
   }
 
   model.image = imageName(model.parsed.top?.image)
@@ -767,6 +875,10 @@ for (const [key, model] of models) {
       log.rejectedPhotos.push(`${name} ← ${generation.image}`)
       generation.image = null
     }
+    if (generation.facelift && generation.facelift.from > THIS_YEAR) {
+      generation.facelift = null
+      generation.facelifted = true
+    }
     const facelift = generation.facelift
     if (facelift) {
       // перенос снимка — только для рестайлинга, проверенного вручную: при неточном годе он навредил бы
@@ -776,7 +888,7 @@ for (const [key, model] of models) {
         facelift.image ??= generation.image
         generation.image = null
       }
-      ;(facelift.verified ? log.verified : log.facelifts).push(`${name}: рестайлинг с ${facelift.from}${facelift.image ? `, фото «${facelift.image}»` : ', фото обновлённой версии нет'}`)
+      ;(facelift.manual ? log.verified : log.facelifts).push(`${facelift.manual ? (facelift.verified ? '[производитель] ' : '[вторичный источник] ') : ''}` + `${name}: рестайлинг с ${facelift.from}${facelift.image ? `, фото «${facelift.image}»` : ', фото обновлённой версии нет'}`)
     } else if (generation.facelifted) {
       log.skippedFacelifts++
     }
@@ -877,9 +989,9 @@ for (const model of models.values()) {
       if (generation.facelift && !faceliftFits && generation.facelift.verified) throw new Error(`Рестайлинг ${model.make} ${model.model} ${generation.facelift.from} вне лет поколения ${from}–${to}`)
       if (faceliftFits) {
         // r — рестайлинг:
-        // [год, 1 — проверен вручную / 0 — определён по разделу статьи, фотография обновлённой версии]
+        // [год, 1 — подтверждён производителем / 0 — не подтверждён, последний год прежней версии, фотография обновлённой версии]
         const restyled = generation.facelift.image && images.get(generation.facelift.image)
-        row.r = [generation.facelift.from, generation.facelift.verified ? 1 : 0]
+        row.r = [generation.facelift.from, generation.facelift.verified ? 1 : 0, generation.facelift.preUntil ?? generation.facelift.from]
         if (restyled) row.r.push(restyled)
       } else if (generation.facelifted) {
         // x — в источнике у поколения есть раздел о рестайлинге, но в справочнике он не выделен
@@ -932,12 +1044,12 @@ writeFileSync(
     `Создан автоматически скриптом scripts/build-car-generations.mjs ${new Date().toISOString().slice(0, 10)}. Вручную не редактируется.`,
     'Здесь перечислено всё, что скрипт решил сам, — это список для выборочной ручной проверки, а не подтверждение достоверности.',
     '',
-    section('Рестайлинги, проверенные вручную', 'Заданы в таблице FACELIFTS с указанием источника.', log.verified),
+    section('Рестайлинги, заданные вручную по источникам', 'Таблица FACELIFTS; источник указан в комментарии к каждой записи. «Производитель» — автовыбор по году разрешён, «вторичный источник» — только уточнение.', log.verified),
     section('Рестайлинги, определённые по разделу статьи Википедии', `Год взят из заголовка или первых фраз единственного раздела о рестайлинге и вручную не проверялся. В форме такой рестайлинг — необязательное уточнение «примерно с … года»: сам он никогда не подставляется, автоматически выбирается только поколение. Ещё у ${log.skippedFacelifts} поколений рестайлинг в статье упомянут, но год однозначно не определяется — для них показывается предупреждение.`, log.facelifts),
     section('Фотографии, отнесённые к рестайлингу', 'В имени файла слово «facelift» или год позже рестайлинга.', log.movedPhotos),
     section('Отброшенные фотографии: год не совпадает', 'Год в имени файла не попадает в годы выпуска поколения — вероятно, на снимке другое поколение.', log.rejectedPhotos),
     section('Отброшенные фотографии: названа другая модель', 'Имя файла называет другую модель той же марки и не называет эту. Вместо снимка показывается общее фото модели или силуэт.', log.otherModelPhotos),
-    section('Ручные исправления данных', 'Таблица CORRECTIONS.', log.corrections),
+    section('Исправления данных по источникам', 'Таблица CORRECTIONS; источник указан в комментарии к каждой записи.', log.corrections),
   ].join('\n'),
   'utf8',
 )

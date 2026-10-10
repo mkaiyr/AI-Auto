@@ -39,7 +39,7 @@ export interface Generation {
    * verified: true — год проверен вручную по источнику; false — взят скриптом из раздела статьи и может
    * отличаться на год-два, поэтому такой рестайлинг предлагается только как необязательное уточнение.
    */
-  facelift: { from: number; image: CarImage | null; verified: boolean } | null
+  facelift: { from: number; preUntil: number; image: CarImage | null; verified: boolean } | null
   /** в источнике рестайлинг упомянут, но год определить не удалось: вариант не выделен, показывается предупреждение */
   faceliftUnlisted: boolean
 }
@@ -80,7 +80,7 @@ interface RawGeneration {
   f: number
   t: number
   i?: RawImage
-  r?: [number, number, RawImage?]
+  r?: [number, number, number, RawImage?]
   x?: number
 }
 interface RawModel {
@@ -141,7 +141,7 @@ export function loadGenerations(make: string): Promise<MakeGenerations> {
               from: row.f,
               to: row.t || null,
               image: toImage(row.i),
-              facelift: row.r ? { from: row.r[0], verified: row.r[1] === 1, image: toImage(row.r[2]) } : null,
+              facelift: row.r ? { from: row.r[0], verified: row.r[1] === 1, preUntil: row.r[2], image: toImage(row.r[3]) } : null,
               faceliftUnlisted: row.x === 1,
             })),
           }
@@ -212,7 +212,9 @@ export function generationOptions(model: ModelGenerations | null): GenerationOpt
     if (codes.length > 1 && codes.some((item) => item.note !== '')) {
       for (const { code, note } of codes) variants.push([code, note ? ` — ${note}` : '', bodyOf(note)])
     } else if (codes.length > 0 && (codes.length <= MAX_JOINED || generation.ordinal === 0)) {
-      variants.push([codes.slice(0, MAX_JOINED).map((item) => item.code).join('/'), '', bodyOf(codes[0].note)])
+      // у единственного кода примечание — не кузов, а пояснение («сборка в России, рынки СНГ»)
+      const note = codes.length === 1 && codes[0].note && !bodyOf(codes[0].note) ? ` — ${codes[0].note}` : ''
+      variants.push([codes.slice(0, MAX_JOINED).map((item) => item.code).join('/'), note, bodyOf(codes[0].note)])
     } else if (generation.ordinal > 0) {
       // кодов нет или их слишком много для одного значения — поколение называется по номеру
       const list = codes.length > 0 ? ` (${codes.slice(0, MAX_JOINED).map((item) => item.code).join(', ')}…)` : ''
@@ -235,8 +237,8 @@ export function generationOptions(model: ModelGenerations | null): GenerationOpt
         add({ value: value + RESTYLED_SUFFIX, from: facelift.from - 1, to: generation.to, restyled: true, tentative: true }, `${value}${RESTYLED_SUFFIX} (рестайлинг, примерно с ${facelift.from})${suffix}`, '')
         continue
       }
-      // в год рестайлинга выпускались обе версии, поэтому годы вариантов пересекаются на этот год
-      add({ value, from: generation.from, to: facelift.from, restyled: false }, value + suffix, 'до рестайлинга')
+      // в переходные годы выпускались и продавались обе версии, поэтому годы вариантов пересекаются
+      add({ value, from: generation.from, to: facelift.preUntil, restyled: false }, value + suffix, `до рестайлинга ${facelift.from} года`)
       add({ value: value + RESTYLED_SUFFIX, from: facelift.from, to: generation.to, restyled: true }, `${generationTitle(value + RESTYLED_SUFFIX)}${suffix}`, '')
     }
   }

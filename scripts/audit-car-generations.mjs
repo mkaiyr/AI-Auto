@@ -81,7 +81,7 @@ for (const [make, , models] of catalog.makes) {
       }
       if (row.r) {
         count[row.r[1] === 1 ? 'verified' : 'tentative']++
-        photo(row.r[2], 'faceliftPhotos')
+        photo(row.r[3], 'faceliftPhotos')
         if (row.r[0] <= row.f || row.r[0] > end) lists.faceliftRange.push(`${label(row)}: рестайлинг ${row.r[0]}`)
       } else if (row.x) count.warned++
       if (row.i) {
@@ -105,7 +105,7 @@ for (const [make, , models] of catalog.makes) {
     // сколько модель-лет дают один вариант (автовыбор), несколько (выбор пользователя) и ни одного
     if (rows.length > 0) {
       for (let year = Math.max(modelFrom || 1990, 1990); year <= Math.min(modelTo || NOW, NOW); year++) {
-        const firm = rows.flatMap((row) => (row.r?.[1] === 1 ? [[row.f, row.r[0]], [row.r[0], row.t || NOW]] : [[row.f, row.t || NOW]])).filter(([from, to]) => year >= from && year <= to).length
+        const firm = rows.flatMap((row) => (row.r?.[1] === 1 ? [[row.f, row.r[2]], [row.r[0], row.t || NOW]] : [[row.f, row.t || NOW]])).filter(([from, to]) => year >= from && year <= to).length
         count[firm === 1 && !entry.p ? 'autoYears' : firm === 0 ? 'emptyYears' : 'listYears']++
       }
     }
@@ -148,7 +148,7 @@ writeFileSync(
     '',
     `- марок с данными: ${count.makes}; моделей: ${count.models}, из них с поколениями: ${count.withGenerations}`,
     `- поколений: ${count.generations}; кодов кузова: ${count.codes}`,
-    `- рестайлингов: проверенных вручную ${count.verified}, определённых по разделу статьи (не проверены) ${count.tentative}; поколений с предупреждением «рестайлинг был, год неизвестен» ${count.warned}`,
+    `- рестайлингов: подтверждённых производителем ${count.verified}, неподтверждённых (раздел статьи или вторичный источник) ${count.tentative}; поколений с предупреждением «рестайлинг был, год неизвестен» ${count.warned}`,
     `- фотографий: ${count.photos} (моделей ${count.modelPhotos}, поколений ${count.generationPhotos}, рестайлингов ${count.faceliftPhotos})`,
     `- лицензии: ${Object.entries(licences).sort((a, b) => b[1] - a[1]).map(([name, number]) => `${name} — ${number}`).join('; ')}`,
     `- модель-годы с 1990 года: один вариант (возможен автовыбор) ${count.autoYears}, несколько или неполный список (выбирает пользователь) ${count.listYears}, ни одного ${count.emptyYears}`,
