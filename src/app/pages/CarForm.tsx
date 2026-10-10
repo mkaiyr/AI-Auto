@@ -154,7 +154,9 @@ export function CarForm({ initial, initialPhoto, onSubmit, onCancel }: CarFormPr
     const next = suggestGeneration(options, year, keep, partial)
     patch({ year, ...generationPatch(options, next) })
     if (next !== keep) setGenerationPicked(false)
-    setGenerationDropped(values.generation !== '' && next !== values.generation && parseYear(year) !== null)
+    // о сбросе сообщается, если пропал выбор самого пользователя или подходящего варианта не осталось вовсе;
+    // замена одной автоматической подсказки другой в пояснении не нуждается
+    setGenerationDropped(values.generation !== '' && next !== values.generation && parseYear(year) !== null && (generationPicked || next === ''))
   }
 
   // Справочник мог догрузиться уже после выбора модели и года — подсказка появляется, как только он готов
@@ -375,7 +377,7 @@ export function CarForm({ initial, initialPhoto, onSubmit, onCancel }: CarFormPr
   const listed = selected && !candidates.includes(selected) ? [selected, ...candidates] : candidates
   const sameGeneration = candidates.length > 1 && candidates.every((item) => item.generation === candidates[0].generation)
   /** год рестайлинга: выпускались и прежняя, и обновлённая версия одного поколения */
-  const bothVersions = sameGeneration && candidates.some((item) => item.restyled) && candidates.some((item) => !item.restyled)
+  const bothVersions = candidates.some((item) => item.restyled && candidates.some((other) => !other.restyled && other.generation === item.generation))
   /** рестайлинг у выбранного поколения был, но в справочнике он не выделен отдельным вариантом */
   const faceliftNote =
     selected && selected.generation.faceliftUnlisted
