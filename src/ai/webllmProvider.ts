@@ -43,6 +43,12 @@ let loadedModel: string | null = null
 /** поддерживает ли видеокарта вычисления половинной точности: от этого зависит вариант файлов модели */
 let halfFloat = true
 let lastSpeed: number | null = null
+/** номер текущей загрузки: отмена увеличивает его, и прежняя загрузка понимает, что она больше не нужна */
+let loadToken = 0
+/** Сколько раз загрузка возобновляется сама после обрыва связи: файлов много, и единичный сбой — обычное дело */
+const LOAD_ATTEMPTS = 5
+const isNetworkError = (error: unknown) => /fetch|network|load failed|ERR_|timeout|cache/i.test(error instanceof Error ? error.message : String(error))
+const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 const fullId = (option: ModelOption & { base: string }) => `${option.base}-${halfFloat ? 'q4f16_1' : 'q4f32_1'}-MLC`
 const optionOf = (id: string) => MODELS.find((model) => model.id === id) ?? MODELS[0]
@@ -59,6 +65,7 @@ function explain(error: unknown, fallback: string): AssistantError {
 }
 
 async function release() {
+  loadToken++
   const current = engine
   engine = null
   loadedModel = null
@@ -96,22 +103,41 @@ export const webllmProvider: AssistantProvider = {
     const model = fullId(optionOf(modelId))
     if (engine && loadedModel === model) return
     await release()
-    try {
-      const webllm = await import('@mlc-ai/web-llm')
-      worker = new Worker(new URL('./webllm.worker.ts', import.meta.url), { type: 'module' })
-      const created = await webllm.CreateWebWorkerMLCEngine(worker, model, {
-        initProgressCallback: (report) => onProgress({ progress: report.progress, detail: report.text }),
-      })
-      // пока шла загрузка, её могли отменить
-      if (!worker) {
-        await created.unload().catch(() => {})
-        throw new AssistantError('Загрузка отменена.')
+    const token = loadToken
+    const cancelled = () => token !== loadToken
+    for (let attempt = 1; ; attempt++) {
+      let own: Worker | null = null
+      try {
+        const webllm = await import('@mlc-ai/web-llm')
+        if (cancelled()) throw new AssistantError('Загрузка отменена.')
+        own = new Worker(new URL('./webllm.worker.ts', import.meta.url), { type: 'module' })
+        worker = own
+        const created = await webllm.CreateWebWorkerMLCEngine(own, model, {
+          initProgressCallback: (report) => !cancelled() && onProgress({ progress: report.progress, detail: report.text }),
+        })
+        // пока шла загрузка, её могли отменить
+        if (cancelled()) {
+          await created.unload().catch(() => {})
+          own.terminate()
+          throw new AssistantError('Загрузка отменена.')
+        }
+        engine = created
+        loadedModel = model
+        return
+      } catch (error) {
+        if (cancelled()) throw new AssistantError('Загрузка отменена.')
+        own?.terminate()
+        if (worker === own) worker = null
+        // Уже скачанные файлы лежат в кеше браузера, поэтому повтор продолжает с того же места
+        if (!(error instanceof AssistantError) && isNetworkError(error) && attempt < LOAD_ATTEMPTS) {
+          console.warn(`[AI Auto] загрузка модели прервалась, попытка ${attempt + 1} из ${LOAD_ATTEMPTS}:`, error)
+          await pause(1500 * attempt)
+          if (cancelled()) throw new AssistantError('Загрузка отменена.')
+          continue
+        }
+        console.warn('[AI Auto] модель не запустилась:', error)
+        throw error instanceof AssistantError ? error : explain(error, 'Не удалось запустить модель.')
       }
-      engine = created
-      loadedModel = model
-    } catch (error) {
-      await release()
-      throw error instanceof AssistantError ? error : explain(error, 'Не удалось запустить модель.')
     }
   },
 
