@@ -602,7 +602,20 @@ for (const model of models.values()) {
 // а всю линейку — её общие годы и фото нельзя приписывать каждому поколению.
 for (const model of models.values()) {
   const accepted = model.parsed.links.filter((link) => link.accepted)
-  for (const link of accepted) if (accepted.filter((other) => other.target === link.target).length > 1) link.shared = true
+  for (const link of accepted) {
+    const same = accepted.filter((other) => other.accepted && other.target === link.target)
+    if (!link.accepted || same.length < 2) continue
+    // Исключение: статья об одном поколении, упомянутая дважды («Mercedes-Benz W124» — и в истории модели,
+    // и в разделе «First generation»). Код стоит в её названии; она учитывается один раз, по разделу с номером поколения.
+    const tail = link.target.split(' ').pop()
+    const ownCode = codesFromTitle(link.target).length > 0 || (isCode(tail) && /\d/.test(tail))
+    if (ownCode) {
+      const best = same.find((other) => ordinalOf(other.heading) > 0) ?? same[0]
+      for (const other of same) if (other !== best) other.accepted = false
+    } else {
+      for (const other of same) other.shared = true
+    }
+  }
 }
 const subArticles = await fetchArticles([...subTitles])
 
@@ -646,8 +659,17 @@ for (const [key, model] of models) {
   // «M3» в статье о BMW M3, «CLS» в статье о CLS: название модели, попавшее в заголовки разделов,
   // — не код кузова. Признак: «код» совпадает со словом из названия и повторяется в нескольких поколениях.
   const titleWords = new Set(`${model.article} ${model.model}`.toUpperCase().split(/[\s()-]+/))
+  const squeezed = (text) => text.toUpperCase().replace(/[^A-Z0-9]/g, '')
+  const modelNames = new Set([squeezed(model.model), squeezed(model.article.split(' ').slice(1).join(' '))])
   for (const generation of list) {
-    generation.codes = generation.codes.filter(([code]) => !(titleWords.has(code) && list.filter((other) => other.codes.some((item) => item[0] === code)).length > 1))
+    generation.codes = generation.codes.filter(
+      ([code]) =>
+        // слово из названия, повторяющееся в нескольких поколениях
+        !(titleWords.has(code) && list.filter((other) => other.codes.some((item) => item[0] === code)).length > 1) &&
+        // само название модели («CS75», «S60», «M3») и обозначения двигателя или версии
+        !modelNames.has(squeezed(code)) &&
+        !/^(V6|V8|V10|V12|SS)$/.test(code),
+    )
   }
 
   for (const fix of CORRECTIONS[key]?.split ?? []) {
@@ -767,6 +789,9 @@ for (const [key, model] of models) {
     const between = kept.filter((other) => other.ordinal === 0 && other.from >= previous.from && other.from <= generation.from).length
     return between < generation.ordinal - previous.ordinal - 1
   })
+  // Более позднее по номеру поколение «начато» раньше предыдущего — годы разобраны неверно,
+  // и на автоматический выбор по году для этой модели полагаться нельзя.
+  if (numberedKept.some((generation, index) => index > 0 && generation.ordinal > numberedKept[index - 1].ordinal && generation.from < numberedKept[index - 1].from)) model.partial = true
   // без поколений модель остаётся в справочнике только ради фотографии
   if (kept.length === 0 && !((model.exact || (ALIASES[key] && !only)) && model.image)) {
     models.delete(key)
@@ -845,8 +870,11 @@ for (const model of models.values()) {
       const row = { o: generation.ordinal, c: generation.codes, f: from, t: to }
       const image = generation.image && images.get(generation.image)
       if (image) row.i = image
-      if (generation.facelift) {
-        // r — подтверждённый рестайлинг: [год начала, фотография обновлённой версии]
+      // рестайлинг должен попадать внутрь лет поколения и после их уточнения по каталогу
+      const faceliftFits = generation.facelift && generation.facelift.from > from && (to === 0 || generation.facelift.from <= to)
+      if (generation.facelift && !faceliftFits && generation.facelift.verified) throw new Error(`Рестайлинг ${model.make} ${model.model} ${generation.facelift.from} вне лет поколения ${from}–${to}`)
+      if (faceliftFits) {
+        // r — рестайлинг:
         // [год, 1 — проверен вручную / 0 — определён по разделу статьи, фотография обновлённой версии]
         const restyled = generation.facelift.image && images.get(generation.facelift.image)
         row.r = [generation.facelift.from, generation.facelift.verified ? 1 : 0]
