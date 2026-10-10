@@ -12,6 +12,7 @@ import {
 } from '../car/carStore'
 import { validateCar, type CarFormErrors, type CarFormValues } from '../car/carValidation'
 import { CarVisual } from '../car/CarVisual'
+import { errorText } from '../dataErrors'
 
 /** Что сделать с фотографией при сохранении формы */
 export type PhotoChange = { type: 'keep' } | { type: 'set'; dataUrl: string } | { type: 'remove' }
@@ -93,8 +94,9 @@ export function CarForm({ initial, initialPhoto, onSubmit, onCancel }: CarFormPr
     setSaveError(null)
     try {
       await onSubmit(result.car, change)
-    } catch {
-      setSaveError('Не удалось сохранить: хранилище браузера недоступно или переполнено.')
+    } catch (cause) {
+      // данные остаются в форме: после восстановления связи можно нажать «Сохранить» ещё раз
+      setSaveError(errorText(cause, 'Не удалось сохранить. Попробуйте ещё раз.'))
     } finally {
       // и после успеха, и после ошибки форма снова доступна
       submitting.current = false
@@ -175,7 +177,7 @@ export function CarForm({ initial, initialPhoto, onSubmit, onCancel }: CarFormPr
           </p>
         ) : (
           <p className="photo__hint">
-            JPEG, PNG или WebP до {MAX_FILE_MB} МБ. Фото уменьшается и хранится только в этом браузере.
+            JPEG, PNG или WebP до {MAX_FILE_MB} МБ. Фото уменьшается перед загрузкой и хранится в закрытом хранилище вашего аккаунта.
           </p>
         )}
       </div>

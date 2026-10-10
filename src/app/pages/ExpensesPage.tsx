@@ -6,6 +6,7 @@ import { byCategory, inPeriod, PERIOD_LABELS, periodStart, sumCost, type Period 
 import { formatDay, formatMoney, plural, todayISO } from '../format'
 import { CATEGORY_LABELS } from '../service/serviceStore'
 import { useServiceRecords } from '../service/useServiceRecords'
+import { PageError, PageLoading } from './PageState'
 import './expenses.css'
 
 const Eyebrow = () => (
@@ -20,8 +21,8 @@ const monthName = (isoDay: string) => {
 }
 
 export function ExpensesPage() {
-  const { status: carStatus, car } = useCar()
-  const { status, records, error } = useServiceRecords(car?.id ?? null)
+  const { status: carStatus, car, error: carError, reload: reloadCar } = useCar()
+  const { status, records, error, reload } = useServiceRecords(car?.id ?? null)
   const [period, setPeriod] = useState<Period>('all')
   const today = todayISO()
 
@@ -31,13 +32,10 @@ export function ExpensesPage() {
   )
   const categories = useMemo(() => byCategory(selected), [selected])
 
-  if (carStatus === 'loading' || (car && status === 'loading')) {
-    return (
-      <div className="page">
-        <Eyebrow />
-      </div>
-    )
-  }
+  if (carStatus === 'loading' || (car && status === 'loading')) return <PageLoading eyebrow={<Eyebrow />} />
+  // сбой связи показывается отдельно от «записей нет», чтобы не выглядеть как потеря данных
+  if (carStatus === 'error') return <PageError eyebrow={<Eyebrow />} message={carError ?? 'Не удалось загрузить автомобиль.'} onRetry={reloadCar} />
+  if (status === 'error') return <PageError eyebrow={<Eyebrow />} message={error ?? 'Не удалось загрузить историю обслуживания.'} onRetry={reload} />
 
   if (!car) {
     return (
@@ -65,11 +63,6 @@ export function ExpensesPage() {
           Суммы считаются автоматически по записям истории обслуживания. Добавьте первую запись со стоимостью — и
           она появится здесь.
         </p>
-        {error && (
-          <p className="alert" role="alert">
-            {error}
-          </p>
-        )}
         <div className="actions">
           <Link className="btn btn--primary" to="/app/history">
             Перейти к истории обслуживания

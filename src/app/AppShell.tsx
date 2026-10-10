@@ -93,7 +93,7 @@ export function AppShell({ path }: { path: string }) {
           </button>
         </div>
 
-        <p className="app__storage">Данные хранятся только в этом браузере и не передаются на сервер.</p>
+        <p className="app__storage">Данные хранятся в вашем аккаунте и доступны после входа с любого устройства.</p>
       </aside>
 
       <main className="app__main">

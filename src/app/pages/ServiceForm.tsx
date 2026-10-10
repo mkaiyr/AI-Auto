@@ -1,4 +1,5 @@
 import { useRef, useState, type FormEvent } from 'react'
+import { errorText } from '../dataErrors'
 import { todayISO } from '../format'
 import { CATEGORY_LABELS, type ServiceInput, type ServiceRecord } from '../service/serviceStore'
 import { validateService, type ServiceFormErrors, type ServiceFormValues } from '../service/serviceValidation'
@@ -53,8 +54,9 @@ export function ServiceForm({ initial, onSubmit, onCancel }: ServiceFormProps) {
     setSaveError(null)
     try {
       await onSubmit(result.record)
-    } catch {
-      setSaveError('Не удалось сохранить: хранилище браузера недоступно или переполнено.')
+    } catch (cause) {
+      // данные остаются в форме: после восстановления связи можно нажать «Сохранить» ещё раз
+      setSaveError(errorText(cause, 'Не удалось сохранить. Попробуйте ещё раз.'))
     } finally {
       // и после успеха, и после ошибки форма снова доступна
       submitting.current = false

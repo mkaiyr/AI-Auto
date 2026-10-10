@@ -2,9 +2,11 @@ import { useEffect, useMemo, useState } from 'react'
 import { ArrowDownUp } from 'lucide-react'
 import { Link } from '../../router'
 import { useCar } from '../car/useCar'
+import { errorText } from '../dataErrors'
 import { formatDay, formatMoney, formatNumber, plural } from '../format'
 import { CATEGORY_LABELS, type ServiceRecord } from '../service/serviceStore'
 import { useServiceRecords } from '../service/useServiceRecords'
+import { PageError, PageLoading } from './PageState'
 import { ServiceForm } from './ServiceForm'
 import './history.css'
 
@@ -18,12 +20,13 @@ const Eyebrow = () => (
 )
 
 export function HistoryPage() {
-  const { status: carStatus, car } = useCar()
-  const { status, records, error, create, update, remove } = useServiceRecords(car?.id ?? null)
+  const { status: carStatus, car, error: carError, reload: reloadCar } = useCar()
+  const { status, records, error, create, update, remove, reload } = useServiceRecords(car?.id ?? null)
   const [mode, setMode] = useState<Mode>({ type: 'list' })
   const [order, setOrder] = useState<Order>('desc')
   const [confirmId, setConfirmId] = useState<string | null>(null)
   const [deleteError, setDeleteError] = useState<string | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
   const [targetId, setTargetId] = useState<string | null>(null)
 
   // переход из раздела «Расходы» по адресу /app/history#record-<id>:
@@ -47,13 +50,10 @@ export function HistoryPage() {
     )
   }, [records, order])
 
-  if (carStatus === 'loading' || (car && status === 'loading')) {
-    return (
-      <div className="page">
-        <Eyebrow />
-      </div>
-    )
-  }
+  if (carStatus === 'loading' || (car && status === 'loading')) return <PageLoading eyebrow={<Eyebrow />} />
+  // сбой связи показывается отдельно от «записей нет», чтобы не выглядеть как потеря данных
+  if (carStatus === 'error') return <PageError eyebrow={<Eyebrow />} message={carError ?? 'Не удалось загрузить автомобиль.'} onRetry={reloadCar} />
+  if (status === 'error') return <PageError eyebrow={<Eyebrow />} message={error ?? 'Не удалось загрузить историю обслуживания.'} onRetry={reload} />
 
   if (!car) {
     return (
@@ -93,12 +93,16 @@ export function HistoryPage() {
   }
 
   const handleDelete = async (id: string) => {
+    if (deletingId) return
+    setDeletingId(id)
+    setDeleteError(null)
     try {
       await remove(id)
       setConfirmId(null)
-      setDeleteError(null)
-    } catch {
-      setDeleteError('Не удалось удалить запись: хранилище браузера недоступно.')
+    } catch (cause) {
+      setDeleteError(errorText(cause, 'Не удалось удалить запись. Попробуйте ещё раз.'))
+    } finally {
+      setDeletingId(null)
     }
   }
 
@@ -113,11 +117,6 @@ export function HistoryPage() {
           Добавляйте замены масла, ремонты и покупку запчастей — с датой, пробегом и стоимостью. История ведётся
           для автомобиля {carName}.
         </p>
-        {error && (
-          <p className="alert" role="alert">
-            {error}
-          </p>
-        )}
         <div className="actions">
           <button className="btn btn--primary" type="button" onClick={() => setMode({ type: 'form', record: null })}>
             Добавить запись
@@ -131,7 +130,7 @@ export function HistoryPage() {
     <div className="page">
       <Eyebrow />
       <h1 className="page__title">История обслуживания</h1>
-      <p className="note">{carName} · хранится только в этом браузере</p>
+      <p className="note">{carName} · хранится в вашем аккаунте</p>
 
       <div className="history__bar">
         <button className="btn btn--primary" type="button" onClick={() => setMode({ type: 'form', record: null })}>
@@ -194,10 +193,10 @@ export function HistoryPage() {
                   </p>
                 )}
                 <div className="actions">
-                  <button className="btn btn--danger" type="button" onClick={() => handleDelete(record.id)}>
-                    Да, удалить
+                  <button className="btn btn--danger" type="button" onClick={() => handleDelete(record.id)} disabled={deletingId !== null}>
+                    {deletingId === record.id ? 'Удаление…' : 'Да, удалить'}
                   </button>
-                  <button className="btn" type="button" autoFocus onClick={() => setConfirmId(null)}>
+                  <button className="btn" type="button" autoFocus onClick={() => setConfirmId(null)} disabled={deletingId !== null}>
                     Отмена
                   </button>
                 </div>
