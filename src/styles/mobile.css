@@ -1,0 +1,1002 @@
+/* ================================================================
+   Мобильный слой: оформление Clean Light для телефонов.
+
+   Действует только при ширине до 640 px. На планшетах и компьютерах сайт
+   остаётся прежним: всё оформление ниже лежит внутри @media (max-width: 640px).
+   Вне его — только два служебных класса и отступы под вырез экрана, которые
+   в обычном браузере равны нулю.
+
+   Файл подключается последним (src/main.tsx) и ничего не меняет в остальных
+   стилях: он переопределяет переменные оформления и отдельные правила.
+   ================================================================ */
+
+/* Текст и значки, которые показываются только на телефоне или только на широком экране */
+@media (min-width: 641px) {
+  .only-mobile {
+    display: none !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .only-desktop {
+    display: none !important;
+  }
+}
+
+/* Вырез экрана и скруглённые углы: в браузере на компьютере эти отступы равны нулю */
+body {
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+@media (max-width: 640px) {
+  /* ---------- Переменные оформления: светлая тема ---------- */
+
+  :root {
+    color-scheme: light;
+
+    --bg: #f4f4f1;
+    --bg-raised: #ffffff;
+    --bg-deep: #ecece8;
+    --surface: #ffffff;
+    --surface-hover: #f0f0ec;
+    --line: rgba(14, 16, 19, 0.1);
+    --line-strong: rgba(14, 16, 19, 0.22);
+
+    --text: #0e1013;
+    --text-muted: rgba(14, 16, 19, 0.64);
+    --text-dim: rgba(14, 16, 19, 0.44);
+
+    /* лайм на светлом фоне не читается как текст: он идёт на заливки, а «чернила» на нём тёмные */
+    --lime-soft: rgba(200, 255, 46, 0.32);
+
+    --gutter: 20px;
+    --card-radius: 20px;
+    --card-shadow: 0 1px 2px rgba(14, 16, 19, 0.04), 0 8px 24px -12px rgba(14, 16, 19, 0.12);
+    --danger: #a8323f;
+    /* высота нижней панели разделов без учёта выреза */
+    --tabbar: 64px;
+  }
+
+  body {
+    background: var(--bg);
+  }
+
+  :focus-visible {
+    outline-color: var(--text);
+  }
+
+  /* ---------- Общие элементы ---------- */
+
+  .page__eyebrow {
+    font-size: 10px;
+  }
+
+  .page__title {
+    margin-top: 10px;
+    font-size: 2.15rem;
+    line-height: 1.04;
+  }
+
+  .page__lead {
+    margin-top: 12px;
+    font-size: 15px;
+  }
+
+  .note {
+    margin-top: 12px;
+    font-size: 10px;
+  }
+
+  .actions {
+    gap: 10px;
+    margin-top: 22px;
+  }
+
+  .btn {
+    min-height: 52px;
+    padding: 0 22px;
+    border-radius: 14px;
+    border-color: var(--line-strong);
+    background: var(--bg-raised);
+  }
+
+  .btn:focus-visible {
+    border-radius: 14px;
+  }
+
+  /* главное действие — лаймовая кнопка во всю ширину */
+  .btn--primary,
+  .btn--primary:hover {
+    border-color: var(--lime);
+    background: var(--lime);
+    color: var(--lime-ink);
+  }
+
+  .actions .btn--primary {
+    flex: 1 1 100%;
+  }
+
+  .actions .btn:not(.btn--primary) {
+    flex: 1 1 0;
+  }
+
+  .btn--danger,
+  .btn--danger:hover {
+    border-color: var(--danger);
+    background: var(--danger);
+    color: #fff;
+  }
+
+  .alert,
+  .field__error,
+  .app__signout-error {
+    color: var(--danger);
+  }
+
+  .alert {
+    margin-top: 16px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: rgba(168, 50, 63, 0.08);
+  }
+
+  .confirm {
+    padding: 18px;
+    border-radius: var(--card-radius);
+    border-color: rgba(168, 50, 63, 0.4);
+    background: rgba(168, 50, 63, 0.06);
+  }
+
+  .status {
+    margin-top: 22px;
+    padding: 18px;
+    border: 0;
+    border-radius: var(--card-radius);
+    background: var(--bg-raised);
+    box-shadow: var(--card-shadow);
+  }
+
+  /* ---------- Формы: поля в виде плашек ---------- */
+
+  .form {
+    row-gap: 4px;
+    margin-top: 20px;
+  }
+
+  .field label {
+    font-size: 10px;
+  }
+
+  .field input,
+  .field select,
+  .field textarea {
+    height: 52px;
+    margin-top: 8px;
+    padding: 0 14px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--bg-raised);
+    font-size: 17px;
+  }
+
+  .field textarea {
+    padding: 12px 14px;
+  }
+
+  .field input:focus-visible,
+  .field select:focus-visible,
+  .field textarea:focus-visible {
+    border-color: var(--text);
+    box-shadow: 0 0 0 3px var(--lime-soft);
+  }
+
+  .field [aria-invalid='true'] {
+    border-color: var(--danger);
+  }
+
+  .field input:disabled,
+  .field select:disabled {
+    background: var(--bg-deep);
+  }
+
+  .field__switch {
+    border-bottom-color: var(--line-strong);
+  }
+
+  .combo__list {
+    top: 84px;
+    border-radius: 14px;
+    border-color: var(--line);
+    box-shadow: 0 16px 40px -12px rgba(14, 16, 19, 0.28);
+  }
+
+  .combo__option[aria-selected='true'] {
+    background: var(--lime-soft);
+  }
+
+  .combo__option[data-current] {
+    box-shadow: inset 3px 0 0 var(--text);
+  }
+
+  /* ================================================================
+     Главная страница
+     ================================================================ */
+
+  /* Главный экран остаётся тёмным — это фотография. Он становится карточкой на светлой странице,
+     поэтому внутри него и в шапке поверх него действуют прежние тёмные переменные. */
+  .header,
+  .hero,
+  .car-visual {
+    color-scheme: dark;
+    --bg: #0e1013;
+    --bg-raised: #15181d;
+    --line: rgba(226, 234, 243, 0.12);
+    --line-strong: rgba(226, 234, 243, 0.22);
+    --text: #f3f3f0;
+    --text-muted: rgba(243, 243, 240, 0.66);
+    --text-dim: rgba(243, 243, 240, 0.4);
+    color: var(--text);
+  }
+
+  .header {
+    top: calc(8px + env(safe-area-inset-top, 0px));
+    left: 8px;
+    right: 8px;
+  }
+
+  .header__inner {
+    padding-inline: 18px;
+  }
+
+  .header__nav {
+    padding: 8px 18px 20px;
+    border: 0;
+    border-radius: 0 0 28px 28px;
+  }
+
+  .header__cabinet--menu {
+    border-color: var(--lime);
+    border-radius: 14px;
+    background: var(--lime);
+    color: var(--lime-ink);
+  }
+
+  .hero {
+    min-height: min(100svh - 16px, 760px);
+    margin: calc(8px + env(safe-area-inset-top, 0px)) 8px 0;
+    padding-inline: 18px;
+    border-radius: 28px;
+  }
+
+  .hero__title {
+    font-size: clamp(2.6rem, 14.4vw, 4rem);
+  }
+
+  .hero__lead {
+    font-size: 15px;
+  }
+
+  /* кнопка главного экрана — заметная лаймовая плашка */
+  .hero__action {
+    margin-top: 18px;
+    margin-bottom: 22px;
+  }
+
+  .hero__action .button {
+    min-height: 52px;
+    padding: 0 22px;
+    border-radius: 14px;
+    background: var(--lime);
+    color: var(--lime-ink);
+  }
+
+  .hero__action .button::after,
+  .hero__action .button::before {
+    display: none;
+  }
+
+  .hero__action .button svg {
+    color: var(--lime-ink);
+  }
+
+  /* оглавление разделов дублирует блок «Функции» ниже; подпись к фотографии остаётся */
+  .hero__index {
+    display: none;
+  }
+
+  .hero__foot {
+    min-height: 0;
+    padding-block: 12px 16px;
+  }
+
+  .section {
+    padding-block: 44px;
+  }
+
+  #features,
+  #functions {
+    border-top: 0;
+    background: none;
+    box-shadow: none;
+  }
+
+  #functions {
+    padding-top: 12px;
+  }
+
+  .section-heading {
+    margin-bottom: 22px;
+  }
+
+  .section-heading__eyebrow {
+    margin-bottom: 12px;
+    font-size: 10px;
+  }
+
+  .section-heading__eyebrow::before {
+    width: 8px;
+    height: 8px;
+    box-shadow: 0 0 0 1px rgba(14, 16, 19, 0.5);
+  }
+
+  .section-heading__title {
+    font-size: 2rem;
+    line-height: 1.05;
+  }
+
+  /* пояснение под заголовком повторяет метки «Открыть» и «Скоро» у разделов */
+  .section-heading__text {
+    display: none;
+  }
+
+  .features {
+    row-gap: 0;
+  }
+
+  .features__list {
+    display: grid;
+    gap: 10px;
+    border: 0;
+  }
+
+  .feature {
+    grid-template-columns: 44px minmax(0, 1fr);
+    column-gap: 14px;
+    row-gap: 4px;
+    align-items: start;
+    padding: 16px;
+    border: 0;
+    border-radius: var(--card-radius);
+    background: var(--bg-raised);
+    box-shadow: var(--card-shadow);
+  }
+
+  .feature__index {
+    display: none;
+  }
+
+  .feature__icon,
+  .function-row__icon {
+    grid-row: 1 / span 2;
+    width: 44px;
+    height: 44px;
+    padding: 11px;
+    border-radius: 14px;
+    background: var(--lime);
+    color: var(--lime-ink);
+  }
+
+  .feature__title {
+    align-self: end;
+    font-size: 1.35rem;
+    line-height: 1.1;
+  }
+
+  .feature__text {
+    grid-column: 2;
+    font-size: 14px;
+    line-height: 1.45;
+  }
+
+  .functions {
+    display: grid;
+    gap: 10px;
+    border: 0;
+  }
+
+  .function-row {
+    grid-template-columns: 44px minmax(0, 1fr) auto;
+    grid-template-areas:
+      'icon title tag'
+      'icon text tag';
+    column-gap: 14px;
+    row-gap: 2px;
+    align-items: center;
+    padding: 14px 14px 14px 16px;
+    border: 0;
+    border-radius: var(--card-radius);
+    background: var(--bg-raised);
+    box-shadow: var(--card-shadow);
+  }
+
+  .function-row::before,
+  .function-row__index {
+    display: none;
+  }
+
+  .function-row__icon {
+    grid-area: icon;
+    background: var(--bg-deep);
+    color: var(--text);
+  }
+
+  .function-row__title {
+    align-self: end;
+    font-size: 1.3rem;
+    line-height: 1.1;
+  }
+
+  .function-row__text {
+    align-self: start;
+    font-size: 13px;
+    line-height: 1.4;
+  }
+
+  .function-row:hover .function-row__text {
+    color: var(--text-muted);
+  }
+
+  .function-row__tag {
+    display: inline-flex;
+    align-items: center;
+    min-height: 36px;
+    padding: 0 14px;
+    border-radius: 999px;
+    background: var(--bg-deep);
+    font-size: 10px;
+  }
+
+  .function-row__tag::before {
+    display: none;
+  }
+
+  .function-row__tag--ready,
+  .function-row__tag--ready:hover {
+    background: var(--lime);
+    color: var(--lime-ink);
+  }
+
+  .footer {
+    padding-block: 24px calc(28px + env(safe-area-inset-bottom, 0px));
+    border-top: 0;
+  }
+
+  .footer__inner {
+    gap: 8px;
+  }
+
+  .footer__text {
+    margin-top: 6px;
+  }
+
+  /* ================================================================
+     Вход и регистрация
+     ================================================================ */
+
+  .auth {
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    background: var(--bg);
+  }
+
+  .auth__body {
+    align-self: start;
+    padding-block: 28px 48px;
+  }
+
+  .auth__title {
+    font-size: 2.6rem;
+  }
+
+  .auth__switch {
+    margin-top: 22px;
+  }
+
+  .auth__switch button:hover {
+    border-color: var(--text);
+  }
+
+  /* ================================================================
+     Кабинет: шапка и нижняя панель разделов
+     ================================================================ */
+
+  .app {
+    background: var(--bg);
+  }
+
+  .app__rail {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    padding-top: env(safe-area-inset-top, 0px);
+    border-bottom: 0;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+  }
+
+  .app__top {
+    height: 52px;
+  }
+
+  /* лента разделов переезжает вниз экрана — под большой палец */
+  .app__nav {
+    position: fixed;
+    z-index: 30;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0;
+    margin: 0;
+    padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid var(--line);
+    background: color-mix(in srgb, var(--bg-raised) 92%, transparent);
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
+    overflow: visible;
+  }
+
+  .app__nav-link {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    min-height: 52px;
+    padding: 0;
+    color: var(--text-dim);
+  }
+
+  .app__nav-link b {
+    display: none;
+  }
+
+  .app__nav-link span {
+    max-width: 100%;
+    overflow: hidden;
+    font-family: var(--font-body);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0;
+    line-height: 1.2;
+    text-overflow: ellipsis;
+    text-transform: none;
+    white-space: nowrap;
+  }
+
+  .app__nav-icon {
+    width: 48px;
+    height: 28px;
+    padding: 3px 13px;
+    border-radius: 999px;
+  }
+
+  .app__nav-link[aria-current='page'] {
+    color: var(--text);
+  }
+
+  .app__nav-link[aria-current='page']::before {
+    display: none;
+  }
+
+  /* активный раздел — лаймовая «таблетка» под значком */
+  .app__nav-link[aria-current='page'] .app__nav-icon {
+    background: var(--lime);
+    color: var(--lime-ink);
+  }
+
+  .app__main {
+    padding: 8px 20px calc(var(--tabbar) + 36px + env(safe-area-inset-bottom, 0px));
+    background: none;
+  }
+
+  /* название раздела уже есть в заголовке страницы и в нижней панели */
+  .app__main .page__eyebrow {
+    display: none;
+  }
+
+  .app__main .page__title {
+    margin-top: 6px;
+  }
+
+  /* ---------- Автомобиль ---------- */
+
+  .car-visual {
+    height: auto;
+    min-height: 200px;
+    max-height: none;
+    margin-top: 6px;
+    border: 0;
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
+  }
+
+  .car-visual:not(.car-visual--catalog) {
+    aspect-ratio: 16 / 10;
+  }
+
+  .photo .car-visual {
+    height: auto;
+  }
+
+  .car-visual.car-visual--photo {
+    aspect-ratio: 16 / 10;
+  }
+
+  .car-visual--catalog figcaption {
+    font-size: 9px;
+  }
+
+  .car-visual + .page__title,
+  .car-visual + .alert + .page__title {
+    margin-top: 18px;
+  }
+
+  /* характеристики — плитки в две колонки вместо длинного списка строк */
+  .specs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 18px;
+    border: 0;
+  }
+
+  .spec {
+    display: block;
+    padding: 14px 14px 16px;
+    border: 0;
+    border-radius: 16px;
+    background: var(--bg-raised);
+    box-shadow: var(--card-shadow);
+  }
+
+  .spec dt {
+    font-size: 10px;
+  }
+
+  .spec dd {
+    margin-top: 8px;
+    font-size: 1.3rem;
+    line-height: 1.15;
+    overflow-wrap: anywhere;
+  }
+
+  .photo__controls {
+    margin-top: 12px;
+  }
+
+  .photo__controls .btn {
+    flex: 1 1 0;
+  }
+
+  /* ---------- История ---------- */
+
+  .history__bar {
+    gap: 12px;
+    margin-top: 18px;
+  }
+
+  .history__bar .btn {
+    width: 100%;
+  }
+
+  .history__meta {
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .history__sort svg {
+    color: var(--text);
+  }
+
+  .records {
+    display: grid;
+    gap: 10px;
+    margin-top: 14px;
+    border: 0;
+  }
+
+  .record {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'head head'
+      'body figures'
+      'foot foot';
+    column-gap: 12px;
+    row-gap: 8px;
+    padding: 16px;
+    border: 0;
+    border-radius: var(--card-radius);
+    background: var(--bg-raised);
+    box-shadow: var(--card-shadow);
+    scroll-margin-top: 72px;
+  }
+
+  .record--target {
+    background: var(--bg-raised);
+    box-shadow: 0 0 0 2px var(--text), var(--card-shadow);
+  }
+
+  .record__head {
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .record__category {
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: var(--bg-deep);
+    color: var(--text-muted);
+    font-size: 9px;
+  }
+
+  .record__title {
+    font-size: 1.35rem;
+    line-height: 1.12;
+  }
+
+  .record__comment {
+    margin-top: 6px;
+    font-size: 14px;
+  }
+
+  .record__figures {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+    text-align: right;
+  }
+
+  .record__figures .record__cost {
+    font-family: var(--font-body);
+    font-size: 1.05rem;
+    font-weight: 500;
+  }
+
+  .record__actions {
+    gap: 8px;
+    margin-top: 4px;
+    padding-top: 10px;
+    border-top: 1px solid var(--line);
+  }
+
+  .record__actions button {
+    padding: 8px 12px;
+    border: 0;
+    border-radius: 10px;
+    background: var(--bg-deep);
+    color: var(--text);
+    font-size: 10px;
+  }
+
+  /* ---------- Расходы ---------- */
+
+  .totals {
+    gap: 10px;
+    margin-top: 18px;
+    border: 0;
+  }
+
+  .total,
+  .total + .total {
+    padding: 14px 14px 16px;
+    border: 0;
+    border-radius: var(--card-radius);
+    background: var(--bg-raised);
+    box-shadow: var(--card-shadow);
+  }
+
+  /* первая плитка — главный итог: тёмная, с лаймовой суммой */
+  .total:first-child {
+    background: var(--text);
+    box-shadow: none;
+  }
+
+  .total:first-child dt {
+    color: rgba(243, 243, 240, 0.6);
+  }
+
+  .total:first-child dd {
+    color: var(--lime);
+  }
+
+  .total dt {
+    font-size: 9px;
+  }
+
+  .total dd {
+    margin-top: 10px;
+    font-size: 1.55rem;
+    line-height: 1.1;
+    overflow-wrap: anywhere;
+  }
+
+  /* периоды — переключатель-«таблетка» */
+  .periods {
+    flex-wrap: nowrap;
+    gap: 0;
+    margin-top: 18px;
+    padding: 4px;
+    border: 0;
+    border-radius: 14px;
+    background: var(--bg-deep);
+  }
+
+  .periods button {
+    flex: 1 1 0;
+    padding: 10px 4px;
+    border-radius: 10px;
+    font-size: 9px;
+    white-space: nowrap;
+  }
+
+  .periods button[aria-pressed='true'] {
+    background: var(--bg-raised);
+    box-shadow: var(--card-shadow);
+  }
+
+  .periods button[aria-pressed='true']::after {
+    display: none;
+  }
+
+  .period-summary {
+    margin-top: 12px;
+  }
+
+  .subhead {
+    margin-top: 26px;
+  }
+
+  .cats,
+  .expense-list {
+    display: grid;
+    gap: 10px;
+    margin-top: 12px;
+    border: 0;
+  }
+
+  .cat,
+  .expense {
+    padding: 14px 16px;
+    border: 0;
+    border-radius: 16px;
+    background: var(--bg-raised);
+    box-shadow: var(--card-shadow);
+  }
+
+  .cat__name,
+  .expense__title {
+    font-size: 1.2rem;
+    line-height: 1.15;
+  }
+
+  .cat__bar {
+    height: 6px;
+    border-radius: 3px;
+    background: var(--bg-deep);
+    overflow: hidden;
+  }
+
+  .cat__bar i {
+    border-radius: 3px;
+    background: var(--text);
+  }
+
+  /* ================================================================
+     ИИ-помощник
+     ================================================================ */
+
+  .ai {
+    margin-top: 16px;
+  }
+
+  .ai__limits {
+    padding: 12px 14px;
+    border: 0;
+    border-radius: 14px;
+    background: rgba(168, 50, 63, 0.07);
+    color: var(--text);
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .ai__panel,
+  .ai__context {
+    margin-top: 14px;
+    padding: 16px;
+    border: 0;
+    border-radius: var(--card-radius);
+    background: var(--bg-raised);
+    box-shadow: var(--card-shadow);
+  }
+
+  .ai__model {
+    padding: 12px 14px;
+    border-radius: 14px;
+  }
+
+  .ai__model:has(input:checked) {
+    border-color: var(--text);
+    background: var(--bg);
+  }
+
+  .ai__model input {
+    accent-color: var(--text);
+  }
+
+  .ai__bar {
+    height: 8px;
+    border-radius: 4px;
+    background: var(--bg-deep);
+    overflow: hidden;
+  }
+
+  .ai__bar span {
+    background: var(--text);
+  }
+
+  .ai__log {
+    max-height: none;
+    margin-top: 14px;
+    padding: 4px 0 8px;
+    border: 0;
+    overflow: visible;
+  }
+
+  .ai__turn {
+    max-width: 92%;
+  }
+
+  .ai__turn--user {
+    padding: 10px 14px;
+    border: 0;
+    border-radius: 18px 18px 4px 18px;
+    background: var(--text);
+    color: #f3f3f0;
+  }
+
+  .ai__turn--assistant {
+    padding: 12px 14px;
+    border-radius: 18px 18px 18px 4px;
+    background: var(--bg-raised);
+    box-shadow: var(--card-shadow);
+  }
+
+  .ai__danger {
+    border-radius: 12px;
+    border-color: rgba(168, 50, 63, 0.4);
+    background: rgba(168, 50, 63, 0.08);
+  }
+
+  .ai__form textarea {
+    border-color: var(--line);
+    border-radius: 14px;
+    background: var(--bg-raised);
+  }
+
+  .ai-public {
+    padding-top: env(safe-area-inset-top, 0px);
+    background: var(--bg);
+  }
+
+  .ai-public__top {
+    padding: 16px 20px;
+    border-bottom: 0;
+  }
+
+  .ai-public__main {
+    padding: 8px 20px calc(48px + env(safe-area-inset-bottom, 0px));
+  }
+}
