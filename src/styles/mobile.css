@@ -286,17 +286,13 @@ body {
   .hero__action .button {
     min-height: 52px;
     padding: 0 22px;
+    border: 0;
     border-radius: 14px;
     background: var(--lime);
     color: var(--lime-ink);
   }
 
-  .hero__action .button::after,
-  .hero__action .button::before {
-    display: none;
-  }
-
-  .hero__action .button svg {
+  .hero__action .button__icon {
     color: var(--lime-ink);
   }
 
