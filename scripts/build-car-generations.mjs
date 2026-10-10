@@ -30,7 +30,7 @@ const FRESH = process.argv.includes('--fresh')
 const REVIEW = process.argv.find((arg) => arg.startsWith('--review='))?.slice(9)
 // журнал сборки для ручной проверки: что определено автоматически и что отброшено
 const LOG = 'docs/car-catalog-build-log.md'
-const log = { facelifts: [], verified: [], skippedFacelifts: 0, rejectedPhotos: [], movedPhotos: [], corrections: [] }
+const log = { facelifts: [], verified: [], skippedFacelifts: 0, rejectedPhotos: [], otherModelPhotos: [], movedPhotos: [], corrections: [] }
 
 // Название марки в Википедии, если оно отличается от каталога
 const MAKE_NAMES = {
@@ -701,11 +701,38 @@ for (const [key, model] of models) {
     target.facelift = { from: fix.from, image: fix.image, verified: true }
   }
 
+  model.image = imageName(model.parsed.top?.image)
+
   // ---- фотографии: год в имени файла должен попадать в годы поколения ----
   // Имена файлов на Commons обычно начинаются с модельного года: «2019 Hyundai Accent …».
   // Снимок с годом вне выпуска поколения — другое поколение или другая модель; он отбрасывается.
   // Снимок с годом после рестайлинга (или со словом «facelift» в имени) показывает обновлённую версию.
+  // Имя файла называет другую модель той же марки («Audi A7 …» в карточке A6) и не называет нашу —
+  // снимок чужой модели не показывается, даже если машины похожи.
+  const escape = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/[ _-]+/g, '[ _-]*')
+  const makeName = (MAKE_NAMES[model.make]?.[0] ?? model.make).replace(/-$/, '')
+  const ownNames = [model.model, model.article.replace(new RegExp(`^${escape(makeName)}\\s*`, 'i'), '')].map((name) => {
+    let latin = name
+    for (const [pattern, replacement] of MODEL_NAMES) latin = latin.replace(pattern, replacement)
+    return latin
+  })
+  const siblings = (catalog.makes.find((item) => item[0] === model.make)?.[2] ?? []).map((item) => item[0]).filter((name) => /^[A-Za-z0-9][A-Za-z0-9 -]{1,}$/.test(name) && (name.length >= 3 || /\d/.test(name)))
+  const namesOther = (file) => {
+    const text = file.replace(/_/g, ' ')
+    if (ownNames.some((own) => own.length >= 2 && new RegExp(`(^|[^A-Za-z0-9])${escape(own)}`, 'i').test(text))) return null
+    return siblings.find((other) => !ownNames.some((own) => own.toLowerCase().includes(other.toLowerCase())) && new RegExp(`${escape(makeName)}[ -]+${escape(other)}([^A-Za-z0-9]|$)`, 'i').test(text)) ?? null
+  }
+  if (model.image && namesOther(model.image)) {
+    log.otherModelPhotos.push(`${model.make} ${model.model} (общее фото модели) ← ${model.image}`)
+    model.image = null
+  }
   for (const generation of kept) {
+    const other = generation.image && namesOther(generation.image)
+    if (other) {
+      log.otherModelPhotos.push(`${model.make} ${model.model} [${generation.codes.map((item) => item[0]).join('/') || 'пок. ' + generation.ordinal}] ← ${generation.image} (названа модель ${other})`)
+      generation.image = null
+    }
+    if (generation.facelift?.image && namesOther(generation.facelift.image)) generation.facelift.image = null
     const name = `${model.make} ${model.model} [${generation.codes.map((item) => item[0]).join('/') || 'пок. ' + generation.ordinal}] ${generation.from}–${generation.to ?? 'н.в.'}`
     const lead = generation.image?.match(/^(\d{4})(?:[-–](\d{4}))?[ _,]/)
     const first = lead ? Number(lead[1]) : null
@@ -738,7 +765,6 @@ for (const [key, model] of models) {
     const between = kept.filter((other) => other.ordinal === 0 && other.from >= previous.from && other.from <= generation.from).length
     return between < generation.ordinal - previous.ordinal - 1
   })
-  model.image = imageName(model.parsed.top?.image)
   // без поколений модель остаётся в справочнике только ради фотографии
   if (kept.length === 0 && !((model.exact || (ALIASES[key] && !only)) && model.image)) {
     models.delete(key)
@@ -877,7 +903,8 @@ writeFileSync(
     section('Рестайлинги, проверенные вручную', 'Заданы в таблице FACELIFTS с указанием источника.', log.verified),
     section('Рестайлинги, определённые по разделу статьи Википедии', `Год взят из заголовка или первых фраз единственного раздела о рестайлинге и вручную не проверялся. В форме такой рестайлинг — необязательное уточнение «примерно с … года»: сам он никогда не подставляется, автоматически выбирается только поколение. Ещё у ${log.skippedFacelifts} поколений рестайлинг в статье упомянут, но год однозначно не определяется — для них показывается предупреждение.`, log.facelifts),
     section('Фотографии, отнесённые к рестайлингу', 'В имени файла слово «facelift» или год позже рестайлинга.', log.movedPhotos),
-    section('Отброшенные фотографии', 'Год в имени файла не попадает в годы выпуска поколения — вероятно, на снимке другое поколение.', log.rejectedPhotos),
+    section('Отброшенные фотографии: год не совпадает', 'Год в имени файла не попадает в годы выпуска поколения — вероятно, на снимке другое поколение.', log.rejectedPhotos),
+    section('Отброшенные фотографии: названа другая модель', 'Имя файла называет другую модель той же марки и не называет эту. Вместо снимка показывается общее фото модели или силуэт.', log.otherModelPhotos),
     section('Ручные исправления данных', 'Таблица CORRECTIONS.', log.corrections),
   ].join('\n'),
   'utf8',
