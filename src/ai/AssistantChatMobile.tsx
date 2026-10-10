@@ -232,14 +232,14 @@ export function AssistantChatMobile({ owner, loadCarContext, tabbar = false }: A
     // На вопросы о безопасности отвечает заранее написанная справка: догадка модели здесь опасна
     const safety = classifyQuestion(question)
     if (safety !== 'none') {
+      setSetupOpen(false)
       setTurns([...history, { role: 'assistant', content: SAFETY_ANSWER[safety], safety }])
       return
     }
     if (engineReady) void answer(history)
     else {
-      // модели ещё нет: вопрос остаётся в переписке, ниже появляется карточка запуска
+      // модели ещё нет: вопрос остаётся в переписке, под ним появляется карточка запуска
       setTurns(history)
-      setSetupOpen(true)
     }
   }
 
