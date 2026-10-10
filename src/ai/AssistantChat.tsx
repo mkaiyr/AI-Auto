@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react'
 import { Link } from '../router'
-import { buildMessages, DANGER_NOTICE, isDangerTopic } from './prompt'
+import { buildMessages, DANGER_ANSWER, DANGER_NOTICE, isDangerTopic } from './prompt'
 import { getAssistantProvider } from './providers'
 import { AssistantError, type ChatMessage, type Support } from './types'
 import './assistant.css'
@@ -51,8 +51,15 @@ function rememberModel(id: string | null) {
   }
 }
 
-/** Модель размечает ответ звёздочками и решётками — в интерфейсе они только мешают */
-const plain = (text: string) => text.replace(/\*\*(.+?)\*\*/g, '$1').replace(/^#{1,4}\s+/gm, '')
+/**
+ * Модель размечает ответ звёздочками и решётками — в интерфейсе они только мешают.
+ * Иероглифы, которые маленькая модель иногда вставляет посреди русского текста, тоже убираются.
+ */
+const plain = (text: string) =>
+  text
+    .replace(/\*\*(.+?)\*\*/g, '$1')
+    .replace(/^#{1,4}\s+/gm, '')
+    .replace(/[\u3040-\u30ff\u3400-\u9fff\uac00-\ud7af]+/g, '')
 
 export function AssistantChat({ loadCarContext }: AssistantChatProps) {
   const provider = getAssistantProvider()
@@ -159,12 +166,16 @@ export function AssistantChat({ loadCarContext }: AssistantChatProps) {
     const question = draft.trim()
     if (question === '' || generating || stage !== 'ready') return
     const history: Turn[] = [...turns, { role: 'user', content: question }]
-    const danger = isDangerTopic(question)
-    setTurns([...history, { role: 'assistant', content: '', danger }])
     setDraft('')
     setError(null)
+    // На вопросы о безопасности отвечает не модель, а заранее написанный текст: её догадка здесь опасна
+    if (isDangerTopic(question)) {
+      setTurns([...history, { role: 'assistant', content: DANGER_ANSWER, danger: true }])
+      return
+    }
+    setTurns([...history, { role: 'assistant', content: '' }])
     setGenerating(true)
-    const write = (content: string) => setTurns([...history, { role: 'assistant', content, danger }])
+    const write = (content: string) => setTurns([...history, { role: 'assistant', content }])
     try {
       const answer = await provider.generate(buildMessages(history, car?.text ?? null), write)
       write(answer.trim() === '' ? 'Ответ не получен. Попробуйте переформулировать вопрос.' : answer)
@@ -375,7 +386,7 @@ export function AssistantChat({ loadCarContext }: AssistantChatProps) {
                 </button>
               )}
               <span className="ai__hint" aria-live="polite">
-                {generating ? 'ИИ печатает ответ…' : `Модель: ${selected.name.toLowerCase()}${speed ? ` · ${speed.toFixed(1).replace('.', ',')} токена в секунду` : ''}`}
+                {generating ? 'ИИ печатает ответ… это может занять от нескольких секунд до нескольких минут' : `Модель: ${selected.name.toLowerCase()}${speed ? ` · ${speed.toFixed(1).replace('.', ',')} токена в секунду` : ''}`}
               </span>
               <button className="ai__link" type="button" onClick={() => setTurns([])} disabled={generating || turns.length === 0}>
                 Очистить переписку
