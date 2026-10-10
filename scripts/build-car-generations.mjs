@@ -217,7 +217,8 @@ const FACELIFTS = {
   ],
   'Hyundai|Elantra': [
     // AD: обновлённая Elantra 2019 модельного года — 21.08.2018 (Hyundai, официально: hyundainews.com/releases/684).
-    { code: 'AD', from: 2018, preUntil: 2019, level: 'official', image: '2019 Hyundai Elantra 2.0 Executive (44).jpg' },
+    // Фотографии нет: единственный подходящий по имени файл («2019 Hyundai Elantra 2.0 Executive (44).jpg») оказался снимком салона.
+    { code: 'AD', from: 2018, preUntil: 2019, level: 'official' },
     // CN7: обновлённая Elantra 2024 модельного года для Северной Америки — 30.08.2023
     // (Hyundai, официально: hyundainews.com, «2024 Elantra»). Подходящей фотографии с подтверждённым видом нет.
     { code: 'CN7', from: 2023, preUntil: 2024, level: 'official' },
