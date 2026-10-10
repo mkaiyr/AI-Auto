@@ -1,16 +1,19 @@
 import { useEffect } from 'react'
 import { AppShell } from './app/AppShell'
-import { AuthLoading, AuthPage, AuthUnavailable } from './auth/AuthPage'
+import { AuthLoading, AuthOffline, AuthPage, AuthUnavailable } from './auth/AuthPage'
 import { useAuth } from './auth/AuthProvider'
+import { ResetPasswordPage } from './auth/ResetPasswordPage'
 import { Header } from './components/Header'
 import { Hero } from './components/Hero'
 import { Features } from './components/Features'
 import { FunctionCards } from './components/FunctionCards'
 import { Footer } from './components/Footer'
+import { NotFoundPage } from './NotFoundPage'
 import { navigate, usePath } from './router'
 
 const LANDING_TITLE = 'AI Auto — всё о вашем автомобиле'
 const LOGIN_PATH = '/login'
+const RESET_PATH = '/reset-password'
 const DEFAULT_APP_PATH = '/app/car'
 const RETURN_KEY = 'ai-auto:return-to'
 
@@ -35,33 +38,43 @@ function rememberReturnPath(path: string) {
 
 export default function App() {
   const path = usePath()
-  const { state } = useAuth()
+  const { state, passwordRecovery, retry } = useAuth()
   const isApp = path === '/app' || path.startsWith('/app/')
   const isLogin = path === LOGIN_PATH
+  const isReset = path === RESET_PATH
+  const isLanding = path === '/'
 
   useEffect(() => {
-    if (!isApp && !isLogin) document.title = LANDING_TITLE
+    if (isLanding) document.title = LANDING_TITLE
     if (isLogin) document.title = 'Вход — AI Auto'
-  }, [isApp, isLogin])
+    if (isReset) document.title = 'Новый пароль — AI Auto'
+  }, [isLanding, isLogin, isReset])
 
-  // Защита кабинета: без сессии — на страницу входа; со входа после авторизации — обратно в кабинет
+  // Переходы между входом и кабинетом. Кабинет открывается только при сессии, подтверждённой сервером
   useEffect(() => {
-    if (state.status === 'signedOut' && isApp) {
+    if (state.status === 'signedIn' && passwordRecovery && !isReset && (isApp || isLogin)) {
+      // по ссылке восстановления сначала нужно задать новый пароль, куда бы она ни привела
+      navigate(RESET_PATH, { replace: true })
+    } else if (state.status === 'signedOut' && isApp) {
       rememberReturnPath(path)
       navigate(LOGIN_PATH, { replace: true })
-    } else if (state.status === 'signedIn' && isLogin) {
+    } else if (state.status === 'signedIn' && isLogin && !passwordRecovery) {
       navigate(takeReturnPath(), { replace: true })
     }
-  }, [state.status, isApp, isLogin, path])
+  }, [state.status, passwordRecovery, isApp, isLogin, isReset, path])
 
-  if (isApp || isLogin) {
+  if (isApp || isLogin || isReset) {
     if (state.status === 'loading') return <AuthLoading />
     if (state.status === 'unconfigured') return <AuthUnavailable message={state.message} />
-    // приватные страницы рендерятся только при наличии сессии; в остальных случаях — экран загрузки.
-    // key пересоздаёт кабинет при смене аккаунта, чтобы данные прежнего пользователя не остались на экране
-    if (isApp) return state.status === 'signedIn' ? <AppShell key={state.user.id} path={path} /> : <AuthLoading />
+    if (state.status === 'unreachable') return <AuthOffline message={state.message} onRetry={retry} />
+    if (isReset) return <ResetPasswordPage />
+    // Приватные страницы отрисовываются только при подтверждённой сессии; в остальных случаях — экран загрузки
+    // на время перехода. key пересоздаёт кабинет при смене аккаунта: данные прежнего пользователя не остаются на экране.
+    if (isApp) return state.status === 'signedIn' && !passwordRecovery ? <AppShell key={state.user.id} path={path} /> : <AuthLoading />
     return state.status === 'signedOut' ? <AuthPage /> : <AuthLoading />
   }
+
+  if (!isLanding) return <NotFoundPage />
 
   return (
     <>
