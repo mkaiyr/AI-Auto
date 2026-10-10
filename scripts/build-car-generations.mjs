@@ -28,6 +28,9 @@ const USER_AGENT = 'AIAutoCatalogBuilder/1.0 (https://github.com/mkaiyr/AI-Auto)
 const THIS_YEAR = new Date().getFullYear()
 const FRESH = process.argv.includes('--fresh')
 const REVIEW = process.argv.find((arg) => arg.startsWith('--review='))?.slice(9)
+// журнал сборки для ручной проверки: что определено автоматически и что отброшено
+const LOG = 'docs/car-catalog-build-log.md'
+const log = { facelifts: [], verified: [], skippedFacelifts: 0, rejectedPhotos: [], movedPhotos: [], corrections: [] }
 
 // Название марки в Википедии, если оно отличается от каталога
 const MAKE_NAMES = {
@@ -431,11 +434,11 @@ function parseArticle(text) {
     if (!years) continue
     // есть ли внутри раздела поколения подраздел о рестайлинге
     const startIndex = headings.indexOf(box.heading)
-    let facelifted = false
+    const faceliftSections = []
     for (let index = startIndex + 1; index < headings.length && headings[index].level > box.heading.level; index++) {
-      if (FACELIFT_HEADING.test(stripHeading(headings[index].title))) facelifted = true
+      if (FACELIFT_HEADING.test(stripHeading(headings[index].title))) faceliftSections.push({ title: headings[index].title, body: text.slice(headings[index].at, headings[index + 1]?.at ?? text.length) })
     }
-    generations.push({ heading: box.heading.title, params: box.params, years, facelifted })
+    generations.push({ heading: box.heading.title, params: box.params, years, faceliftSections })
     described.add(box.heading.at)
   }
 
@@ -454,8 +457,37 @@ function parseArticle(text) {
     }
   })
   // для отдельной статьи о поколении: раздел о рестайлинге где угодно в статье
-  const facelifted = headings.some((heading) => FACELIFT_HEADING.test(stripHeading(heading.title)))
-  return { top, generations, links, facelifted }
+  const faceliftSections = headings
+    .map((heading, index) => ({ title: heading.title, body: text.slice(heading.at, headings[index + 1]?.at ?? text.length) }))
+    .filter((section) => FACELIFT_HEADING.test(stripHeading(section.title)))
+  return { top, generations, links, faceliftSections }
+}
+
+/**
+ * Рестайлинг по разделу статьи. Принимается только однозначный случай: раздел о рестайлинге один,
+ * и год назван либо в его заголовке, либо в первых фразах — причём ровно один. Два рестайлинга,
+ * несколько разных лет или год вне выпуска поколения — рестайлинг остаётся неподтверждённым.
+ */
+function extractFacelift(sections, years) {
+  if (!sections || sections.length !== 1) return null
+  const [{ title, body }] = sections
+  let found = [...stripHeading(title).matchAll(YEAR)].map((match) => Number(match[1]))
+  if (found.length === 0) {
+    const prose = body
+      .replace(/^=+.*=+[ \t]*$/m, '')
+      .replace(/<gallery[\s\S]*?<\/gallery>/gi, '')
+      .split('\n')
+      .filter((line) => !/^\s*(\[\[(File|Image):|\{\{|\||\}\})/i.test(line))
+      .join('\n')
+    found = [...plainLines(prose).join(' ').slice(0, 320).matchAll(YEAR)].map((match) => Number(match[1]))
+  }
+  const distinct = [...new Set(found)]
+  if (distinct.length !== 1) return null
+  const [year] = distinct
+  if (!(year > years.from && year <= (years.to ?? THIS_YEAR))) return null
+  // фотография обновлённой версии — только файл из этого же раздела, в имени которого прямо сказано «facelift»
+  const image = [...body.matchAll(/(?:File|Image):([^|\]\n]+\.(?:jpe?g|png))/gi)].map((match) => imageName(match[1])).find((name) => name && /facelift/i.test(name))
+  return { from: year, image: image ?? null, verified: false }
 }
 
 /** Первый источник, в котором нашлись коды: от самого точного к самому общему */
@@ -491,7 +523,8 @@ function buildGeneration(source) {
     from: years.from,
     to: years.to,
     image: imageName(params.image),
-    facelifted: Boolean(source.facelifted),
+    facelifted: (source.faceliftSections ?? []).length > 0,
+    facelift: extractFacelift(source.faceliftSections, years),
   }
 }
 
@@ -582,7 +615,7 @@ for (const [key, model] of models) {
     // «Mercedes-Benz W124» — код стоит прямо в названии статьи
     const tail = article.title.split(' ').pop()
     const title = isCode(tail) && /\d/.test(tail) ? `(${tail})` : article.title
-    list.push(buildGeneration({ params: top, years, heading: link.heading, title, facelifted: sub.facelifted }))
+    list.push(buildGeneration({ params: top, years, heading: link.heading, title, faceliftSections: sub.faceliftSections }))
     // в статье о поколении описано и следующее: «Volkswagen Passat (B7)» внутри статьи о B6
     for (const inner of sub.generations) {
       if (stripHeading(inner.params.name ?? '').startsWith(model.article + ' (')) list.push(buildGeneration({ ...inner, heading: '' }))
@@ -608,6 +641,7 @@ for (const [key, model] of models) {
     owner.codes = owner.codes.filter((item) => item[0] !== fix.code)
     owner.to = Math.min(owner.to ?? fix.from, fix.from)
     list.push({ ordinal: 0, codes: [[fix.code, '']], from: fix.from, to: fix.to, image: null })
+    log.corrections.push(`${model.make} ${model.model}: код ${fix.code} выделен в отдельный вариант ${fix.from}–${fix.to}`)
   }
 
   // одно и то же поколение не повторяется: совпадают коды или (без кодов) номер и год начала
@@ -649,7 +683,34 @@ for (const [key, model] of models) {
   for (const fix of FACELIFTS[key] ?? []) {
     const target = kept.find((generation) => generation.codes.some((item) => item[0] === fix.code))
     if (!target) throw new Error(`Рестайлинг ${key} ${fix.code}: поколение не найдено в данных`)
-    target.facelift = { from: fix.from, image: fix.image }
+    target.facelift = { from: fix.from, image: fix.image, verified: true }
+  }
+
+  // ---- фотографии: год в имени файла должен попадать в годы поколения ----
+  // Имена файлов на Commons обычно начинаются с модельного года: «2019 Hyundai Accent …».
+  // Снимок с годом вне выпуска поколения — другое поколение или другая модель; он отбрасывается.
+  // Снимок с годом после рестайлинга (или со словом «facelift» в имени) показывает обновлённую версию.
+  for (const generation of kept) {
+    const name = `${model.make} ${model.model} [${generation.codes.map((item) => item[0]).join('/') || 'пок. ' + generation.ordinal}] ${generation.from}–${generation.to ?? 'н.в.'}`
+    const lead = generation.image?.match(/^(\d{4})(?:[-–](\d{4}))?[ _,]/)
+    const first = lead ? Number(lead[1]) : null
+    const last = lead ? Number(lead[2] ?? lead[1]) : null
+    if (first !== null && first >= 1930 && first <= THIS_YEAR + 1 && (first > (generation.to ?? THIS_YEAR) + 1 || last < generation.from - 1)) {
+      log.rejectedPhotos.push(`${name} ← ${generation.image}`)
+      generation.image = null
+    }
+    const facelift = generation.facelift
+    if (facelift) {
+      const showsFacelift = generation.image && (/facelift/i.test(generation.image) || (first !== null && first > facelift.from + 1))
+      if (showsFacelift) {
+        log.movedPhotos.push(`${name}: «${generation.image}» отнесён к рестайлингу ${facelift.from}`)
+        facelift.image ??= generation.image
+        generation.image = null
+      }
+      ;(facelift.verified ? log.verified : log.facelifts).push(`${name}: рестайлинг с ${facelift.from}${facelift.image ? `, фото «${facelift.image}»` : ', фото обновлённой версии нет'}`)
+    } else if (generation.facelifted) {
+      log.skippedFacelifts++
+    }
   }
 
   // Пропуск в нумерации (I, II, VIII…) означает, что часть поколений в статье не описана карточкой.
@@ -742,8 +803,10 @@ for (const model of models.values()) {
       if (image) row.i = image
       if (generation.facelift) {
         // r — подтверждённый рестайлинг: [год начала, фотография обновлённой версии]
+        // [год, 1 — проверен вручную / 0 — определён по разделу статьи, фотография обновлённой версии]
         const restyled = generation.facelift.image && images.get(generation.facelift.image)
-        row.r = restyled ? [generation.facelift.from, restyled] : [generation.facelift.from]
+        row.r = [generation.facelift.from, generation.facelift.verified ? 1 : 0]
+        if (restyled) row.r.push(restyled)
       } else if (generation.facelifted) {
         // x — в источнике у поколения есть раздел о рестайлинге, но в справочнике он не выделен
         row.x = 1
@@ -785,4 +848,22 @@ writeFileSync(
   'utf8',
 )
 if (REVIEW) writeFileSync(REVIEW, review.join('\n\n'), 'utf8')
+const section = (title, note, list) => `## ${title} — ${list.length}\n\n${note}\n\n${list.map((line) => `- ${line}`).join('\n') || '—'}\n`
+mkdirSync('docs', { recursive: true })
+writeFileSync(
+  LOG,
+  [
+    '# Журнал сборки справочника поколений',
+    '',
+    `Создан автоматически скриптом scripts/build-car-generations.mjs ${new Date().toISOString().slice(0, 10)}. Вручную не редактируется.`,
+    'Здесь перечислено всё, что скрипт решил сам, — это список для выборочной ручной проверки, а не подтверждение достоверности.',
+    '',
+    section('Рестайлинги, проверенные вручную', 'Заданы в таблице FACELIFTS с указанием источника.', log.verified),
+    section('Рестайлинги, определённые по разделу статьи Википедии', `Год взят из заголовка или первых фраз единственного раздела о рестайлинге. В форме такие варианты пересекаются на два года, вручную не проверялись. Ещё у ${log.skippedFacelifts} поколений раздел о рестайлинге есть, но год однозначно не определяется — для них показывается предупреждение.`, log.facelifts),
+    section('Фотографии, отнесённые к рестайлингу', 'В имени файла слово «facelift» или год позже рестайлинга.', log.movedPhotos),
+    section('Отброшенные фотографии', 'Год в имени файла не попадает в годы выпуска поколения — вероятно, на снимке другое поколение.', log.rejectedPhotos),
+    section('Ручные исправления данных', 'Таблица CORRECTIONS.', log.corrections),
+  ].join('\n'),
+  'utf8',
+)
 console.log(`Готово: марок ${byMake.size}, моделей ${models.size}: с поколениями — ${withGenerations}, с кодами кузова — ${withCodes}, с фотографиями — ${withImages};, поколений ${generationCount}, фотографий ${new Set([...images.values()]).size}`)
