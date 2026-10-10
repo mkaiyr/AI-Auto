@@ -1,17 +1,19 @@
 import { appFunctions } from '../data/content'
 import { Link } from '../router'
+import { useIsMobile } from '../useIsMobile'
 import { Reveal } from './Reveal'
 import { SectionHeading } from './SectionHeading'
 import './FunctionCards.css'
 
 /** Разделы приложения — строки оглавления, а не карточки */
 export function FunctionCards() {
+  const mobile = useIsMobile()
   return (
     <section className="section" id="functions">
       <div className="container">
         <SectionHeading
           eyebrow="Функции"
-          title="Пять разделов на всё владение автомобилем"
+          title={mobile ? 'Пять разделов' : 'Пять разделов на всё владение автомобилем'}
           text="Профиль автомобиля, история обслуживания, расходы и ИИ-помощник уже работают; напоминания в разработке."
         />
 

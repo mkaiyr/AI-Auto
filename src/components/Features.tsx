@@ -1,13 +1,15 @@
 import { features } from '../data/content'
+import { useIsMobile } from '../useIsMobile'
 import { Reveal } from './Reveal'
 import { SectionHeading } from './SectionHeading'
 import './Features.css'
 
 export function Features() {
+  const mobile = useIsMobile()
   return (
     <section className="section" id="features">
       <div className="container features">
-        <SectionHeading eyebrow="Возможности" title="Спокойствие владельца вместо хаоса из чеков и заметок" />
+        <SectionHeading eyebrow="Возможности" title={mobile ? 'Вместо чеков и заметок' : 'Спокойствие владельца вместо хаоса из чеков и заметок'} />
 
         <ol className="features__list">
           {features.map(({ icon: Icon, title, text, brief }, i) => (

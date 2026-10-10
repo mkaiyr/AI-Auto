@@ -1,10 +1,12 @@
 import { useEffect } from 'react'
 import { Link } from '../router'
+import { useIsMobile } from '../useIsMobile'
 import { AssistantChat } from './AssistantChat'
 import '../app/pages/pages.css'
 
 /** Публичная страница ИИ-помощника: доступна без входа, об автомобиле посетителя ничего не знает */
 export function AssistantPage() {
+  const mobile = useIsMobile()
   useEffect(() => {
     document.title = 'ИИ-помощник — AI Auto'
   }, [])
@@ -17,7 +19,7 @@ export function AssistantPage() {
         </Link>
         <nav className="ai-public__links" aria-label="Навигация">
           <Link to="/">На сайт</Link>
-          <Link to="/app/car">Личный кабинет</Link>
+          <Link to="/app/car">{mobile ? 'Кабинет' : 'Личный кабинет'}</Link>
         </nav>
       </header>
       <main className="ai-public__main">
@@ -25,7 +27,9 @@ export function AssistantPage() {
           <p className="page__eyebrow">ИИ-помощник</p>
           <h1 className="page__title">Спросите об автомобиле</h1>
           <p className="page__lead">
-            Обслуживание, эксплуатация, типичные неисправности и работа с AI Auto. Бесплатно, без регистрации, прямо в браузере.
+            {mobile
+              ? 'Бесплатно и без регистрации.'
+              : 'Обслуживание, эксплуатация, типичные неисправности и работа с AI Auto. Бесплатно, без регистрации, прямо в браузере.'}
           </p>
           <AssistantChat />
         </div>

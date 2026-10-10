@@ -1,6 +1,7 @@
 import { useState, type FormEvent, type ReactNode } from 'react'
 import { ArrowLeft } from 'lucide-react'
 import { Link } from '../router'
+import { useIsMobile } from '../useIsMobile'
 import { useAuth } from './AuthProvider'
 import '../app/pages/pages.css'
 import './auth.css'
@@ -85,6 +86,7 @@ export function AuthPage() {
   const [sent, setSent] = useState<{ email: string; kind: 'confirm' | 'reset' } | null>(null)
   /** показать кнопку повторной отправки письма с подтверждением */
   const [canResend, setCanResend] = useState(false)
+  const mobile = useIsMobile()
 
   const switchMode = (next: Mode) => {
     setMode(next)
@@ -159,7 +161,19 @@ export function AuthPage() {
         <h1 className="page__title auth__title">Проверьте почту</h1>
         {/* Текст одинаков для существующих и несуществующих аккаунтов. Доставку письма приложение подтвердить не может */}
         <p className="page__lead">
-          {reset ? (
+          {mobile ? (
+            reset ? (
+              <>
+                Если аккаунт <b className="auth__email">{sent.email}</b> существует, мы отправили ссылку для смены пароля.
+                Проверьте и «Спам».
+              </>
+            ) : (
+              <>
+                Если адрес <b className="auth__email">{sent.email}</b> не был зарегистрирован, мы отправили ссылку для
+                подтверждения. До подтверждения войти нельзя. Уже есть аккаунт — войдите или сбросьте пароль.
+              </>
+            )
+          ) : reset ? (
             <>
               Если аккаунт с адресом <b className="auth__email">{sent.email}</b> существует, на него отправлено письмо со
               ссылкой для смены пароля. Письмо может идти несколько минут — проверьте и папку «Спам».
@@ -191,11 +205,11 @@ export function AuthPage() {
               switchMode('signin')
             }}
           >
-            Перейти ко входу
+            {mobile ? 'Войти' : 'Перейти ко входу'}
           </button>
           {!reset && (
             <button className="btn" type="button" onClick={handleResend} disabled={busy}>
-              Отправить письмо ещё раз
+              {mobile ? 'Отправить ещё раз' : 'Отправить письмо ещё раз'}
             </button>
           )}
         </div>
@@ -203,14 +217,18 @@ export function AuthPage() {
     )
   }
 
-  const titles: Record<Mode, string> = { signin: 'Вход', signup: 'Регистрация', forgot: 'Восстановление пароля' }
+  const titles: Record<Mode, string> = { signin: 'Вход', signup: 'Регистрация', forgot: mobile ? 'Сброс пароля' : 'Восстановление пароля' }
   const submitLabels: Record<Mode, string> = { signin: 'Войти', signup: 'Зарегистрироваться', forgot: 'Отправить ссылку' }
 
   return (
     <AuthLayout>
       <p className="page__eyebrow">Кабинет</p>
       <h1 className="page__title auth__title">{titles[mode]}</h1>
-      {mode === 'forgot' && <p className="page__lead">Укажите почту аккаунта — мы отправим ссылку для установки нового пароля.</p>}
+      {mode === 'forgot' && (
+        <p className="page__lead">
+          {mobile ? 'Пришлём ссылку для нового пароля.' : 'Укажите почту аккаунта — мы отправим ссылку для установки нового пароля.'}
+        </p>
+      )}
 
       <form className="form auth__form" onSubmit={handleSubmit} noValidate>
         <div className="field">
@@ -279,7 +297,7 @@ export function AuthPage() {
           </button>
           {canResend && (
             <button className="btn" type="button" onClick={handleResend} disabled={busy}>
-              Отправить письмо ещё раз
+              {mobile ? 'Отправить ещё раз' : 'Отправить письмо ещё раз'}
             </button>
           )}
         </div>

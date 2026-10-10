@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent, type ReactNode } from 'react'
+import { useIsMobile } from '../../useIsMobile'
 import { MAX_FILE_MB, PhotoError, prepareCarPhoto } from '../car/carPhoto'
 import {
   BODY_LABELS,
@@ -79,6 +80,7 @@ export function CarForm({ initial, initialPhoto, onSubmit, onCancel }: CarFormPr
   const form = useRef<HTMLFormElement>(null)
   /** true, пока идёт сохранение: вторая отправка формы игнорируется */
   const submitting = useRef(false)
+  const mobile = useIsMobile()
 
   useEffect(() => {
     let alive = true
@@ -326,8 +328,8 @@ export function CarForm({ initial, initialPhoto, onSubmit, onCancel }: CarFormPr
         label="Марка"
         value={values.make}
         options={makeOptions}
-        placeholder="Начните вводить: Toyota, тойота…"
-        customLabel="Марки нет в списке — ввести вручную"
+        placeholder={mobile ? 'Toyota, тойота…' : 'Начните вводить: Toyota, тойота…'}
+        customLabel={mobile ? 'Нет в списке — ввести вручную' : 'Марки нет в списке — ввести вручную'}
         error={errors.make}
         onSelect={selectMake}
         onCustom={() => {
@@ -361,8 +363,8 @@ export function CarForm({ initial, initialPhoto, onSubmit, onCancel }: CarFormPr
         value={values.model}
         options={modelOptions}
         disabled={!make}
-        placeholder={make ? 'Начните вводить название' : 'Сначала выберите марку'}
-        customLabel="Модели нет в списке — ввести вручную"
+        placeholder={make ? (mobile ? 'Название модели' : 'Начните вводить название') : 'Сначала выберите марку'}
+        customLabel={mobile ? 'Нет в списке — ввести вручную' : 'Модели нет в списке — ввести вручную'}
         error={errors.model}
         onSelect={selectModel}
         onCustom={() => {
@@ -400,7 +402,9 @@ export function CarForm({ initial, initialPhoto, onSubmit, onCancel }: CarFormPr
   const generationHint = generationsLoading
     ? null
     : year === null
-      ? 'Укажите год выпуска — в списке останутся только подходящие варианты.'
+      ? mobile
+        ? 'Укажите год — останутся подходящие варианты.'
+        : 'Укажите год выпуска — в списке останутся только подходящие варианты.'
       : selected && !candidates.includes(selected)
         ? `Выбранный вариант не совпадает с ${year} годом выпуска. Проверьте год или выберите другой.`
         : firm.length === 0
@@ -413,7 +417,9 @@ export function CarForm({ initial, initialPhoto, onSubmit, onCancel }: CarFormPr
                   ? 'Поколение определено по году выпуска; обновлённую версию выбрали вы.'
                   : selected.restyled
                     ? 'Определено по году выпуска: в этом году выпускалась только обновлённая версия (рестайлинг).'
-                    : 'Определено по году выпуска: в этом году выпускалось одно поколение.'
+                    : mobile
+                      ? 'Определено по году выпуска.'
+                      : 'Определено по году выпуска: в этом году выпускалось одно поколение.'
                 : 'В этом году выпускалось одно поколение — выберите его, если оно ваше.'
             : bothVersions
               ? `В ${year} году выпускались и версия до рестайлинга, и обновлённая — выберите свою.`
@@ -432,7 +438,7 @@ export function CarForm({ initial, initialPhoto, onSubmit, onCancel }: CarFormPr
       },
       after:
         options.length > 0
-          ? switchLink('Подобрать по году выпуска', () => {
+          ? switchLink(mobile ? 'Подобрать по году' : 'Подобрать по году выпуска', () => {
               setManual((current) => ({ ...current, generation: false }))
               patch(generationPatch(options, suggestGeneration(options, values.year, '', partial)))
               setGenerationPicked(false)
@@ -521,7 +527,8 @@ export function CarForm({ initial, initialPhoto, onSubmit, onCancel }: CarFormPr
           </p>
         ) : (
           <p className="photo__hint">
-            JPEG, PNG или WebP до {MAX_FILE_MB} МБ. Фото уменьшается перед загрузкой и хранится в закрытом хранилище вашего аккаунта.
+            JPEG, PNG или WebP до {MAX_FILE_MB} МБ.
+            {!mobile && ' Фото уменьшается перед загрузкой и хранится в закрытом хранилище вашего аккаунта.'}
           </p>
         )}
       </div>

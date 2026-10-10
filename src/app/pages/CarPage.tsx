@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import { useIsMobile } from '../../useIsMobile'
 import { BODY_LABELS, ENGINE_LABELS } from '../car/carStore'
 import { CarVisual } from '../car/CarVisual'
 import { generationTitle, pickIllustration } from '../car/catalog/generations'
@@ -34,6 +35,7 @@ export function CarPage() {
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [deleting, setDeleting] = useState(false)
   const deleteLock = useRef(false)
+  const mobile = useIsMobile()
 
   const illustration = car ? pickIllustration(generations?.[car.model] ?? null, car.generation, car.year) : null
 
@@ -71,14 +73,18 @@ export function CarPage() {
     return (
       <div className="page">
         <Eyebrow />
-        <h1 className="page__title">Автомобиль ещё не добавлен</h1>
-        <p className="page__lead">
-          Укажите марку, модель, год и пробег, добавьте фото или выберите тип кузова. На этот профиль опираются
-          остальные разделы: история обслуживания, расходы, ИИ-помощник, а позже — напоминания.
-        </p>
+        <h1 className="page__title">{mobile ? 'Автомобиля пока нет' : 'Автомобиль ещё не добавлен'}</h1>
+        {mobile ? (
+          <p className="page__lead">На его данных работают остальные разделы.</p>
+        ) : (
+          <p className="page__lead">
+            Укажите марку, модель, год и пробег, добавьте фото или выберите тип кузова. На этот профиль опираются
+            остальные разделы: история обслуживания, расходы, ИИ-помощник, а позже — напоминания.
+          </p>
+        )}
         <div className="actions">
           <button className="btn btn--primary" type="button" onClick={() => setMode('form')}>
-            Добавить автомобиль
+            {mobile ? 'Добавить' : 'Добавить автомобиль'}
           </button>
         </div>
         <ImportOffer onImported={reload} />
@@ -165,7 +171,10 @@ export function CarPage() {
         )}
       </dl>
 
-      <p className="note">Сохранено {formatDate(car.updatedAt)} · в вашем аккаунте</p>
+      <p className="note">
+        Сохранено {formatDate(car.updatedAt)}
+        {!mobile && ' · в вашем аккаунте'}
+      </p>
 
       {mode === 'confirm-delete' ? (
         <div className="confirm" role="alertdialog" aria-labelledby="confirm-title" aria-describedby="confirm-text">

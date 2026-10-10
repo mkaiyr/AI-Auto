@@ -28,7 +28,7 @@ export function Hero() {
         одном месте.
       </p>
       {/* короткий вариант для телефона */}
-      <p className="hero__lead only-mobile">Автомобиль, история, расходы и ИИ-помощник — в одном месте.</p>
+      <p className="hero__lead only-mobile">История обслуживания, расходы и ИИ-помощник.</p>
 
       <div className="hero__action">
         <Button href="#functions" icon={ArrowRight}>

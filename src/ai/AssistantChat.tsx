@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react'
 import { Link } from '../router'
+import { useIsMobile } from '../useIsMobile'
 import { buildMessages } from './prompt'
 import { classifyQuestion, describesSymptom, GUARDED_ANSWER, permitsDriving, SAFETY_ANSWER, SAFETY_NOTICE, SYMPTOM_NOTE, type SafetyClass } from './safety'
 import { getAssistantProvider } from './providers'
@@ -74,6 +75,7 @@ const plain = (text: string) =>
 
 export function AssistantChat({ loadCarContext }: AssistantChatProps) {
   const provider = getAssistantProvider()
+  const mobile = useIsMobile()
   const [stage, setStage] = useState<Stage>('checking')
   const [support, setSupport] = useState<Support | null>(null)
   const [modelId, setModelId] = useState(() => rememberedModel() ?? provider.models[0].id)
@@ -243,7 +245,7 @@ export function AssistantChat({ loadCarContext }: AssistantChatProps) {
         не отправляются на сервер и не сохраняются.
       </p>
       {/* на телефоне то же предупреждение короче */}
-      <p className="ai__limits only-mobile">ИИ работает в вашем браузере, может ошибаться и не заменяет автосервис. Переписка никуда не отправляется.</p>
+      <p className="ai__limits only-mobile">ИИ может ошибаться и не заменяет автосервис. Переписка остаётся на устройстве.</p>
 
       {stage === 'checking' && <p className="ai__status">Проверка устройства…</p>}
 
@@ -251,22 +253,34 @@ export function AssistantChat({ loadCarContext }: AssistantChatProps) {
         <div className="ai__panel" role="status">
           <p className="ai__panel-title">На этом устройстве ИИ не запустится</p>
           <p className="ai__text">{support.message}</p>
-          <ul className="ai__list">
-            <li>Откройте сайт в Chrome или Edge на компьютере либо в Chrome на телефоне с Android.</li>
-            <li>На iPhone и Mac нужен Safari последней версии.</li>
-            <li>Обновите браузер: в старых версиях нужной технологии нет.</li>
-            <li>Остальные разделы работают без ИИ: профиль автомобиля, история обслуживания и расходы.</li>
-          </ul>
+          {mobile ? (
+            <ul className="ai__list">
+              <li>Нужен Chrome или Edge, на iPhone — Safari последней версии.</li>
+              <li>Обновите браузер.</li>
+              <li>Остальные разделы работают без ИИ.</li>
+            </ul>
+          ) : (
+            <ul className="ai__list">
+              <li>Откройте сайт в Chrome или Edge на компьютере либо в Chrome на телефоне с Android.</li>
+              <li>На iPhone и Mac нужен Safari последней версии.</li>
+              <li>Обновите браузер: в старых версиях нужной технологии нет.</li>
+              <li>Остальные разделы работают без ИИ: профиль автомобиля, история обслуживания и расходы.</li>
+            </ul>
+          )}
         </div>
       )}
 
       {stage === 'idle' && (
         <div className="ai__panel">
           <p className="ai__panel-title">Запуск ИИ</p>
-          <p className="ai__text">
-            Модель скачивается на устройство один раз и сохраняется в браузере — при следующих запусках интернет для неё не нужен. Пока вы не
-            нажмёте кнопку, ничего не загружается.
-          </p>
+          {mobile ? (
+            <p className="ai__text">Модель скачивается один раз и хранится в браузере.</p>
+          ) : (
+            <p className="ai__text">
+              Модель скачивается на устройство один раз и сохраняется в браузере — при следующих запусках интернет для неё не нужен. Пока вы не
+              нажмёте кнопку, ничего не загружается.
+            </p>
+          )}
           <fieldset className="ai__models">
             <legend>Модель</legend>
             {provider.models.map((model) => (
@@ -274,21 +288,29 @@ export function AssistantChat({ loadCarContext }: AssistantChatProps) {
                 <input type="radio" name="ai-model" value={model.id} checked={model.id === modelId} onChange={() => setModelId(model.id)} />
                 <span>
                   <b>
-                    {model.name} · около {model.downloadMb} МБ
+                    {model.name} · {!mobile && 'около '}
+                    {model.downloadMb} МБ
                   </b>
-                  {model.note} Нужно примерно {(model.memoryMb / 1024).toFixed(1).replace('.', ',')} ГБ свободной памяти.
-                  {cachedModel === model.id && ' Уже скачана в этом браузере.'}
+                  {mobile ? model.noteBrief : model.note} {mobile ? 'Память: около' : 'Нужно примерно'} {(model.memoryMb / 1024).toFixed(1).replace('.', ',')} ГБ
+                  {mobile ? '.' : ' свободной памяти.'}
+                  {cachedModel === model.id && (mobile ? ' Уже скачана.' : ' Уже скачана в этом браузере.')}
                 </span>
               </label>
             ))}
           </fieldset>
           <p className="ai__text">
-            Запуск на вашем устройстве не гарантирован: это зависит от видеокарты, свободной памяти и места на диске. Если модель не запустится,
-            сайт сообщит причину.
-            {support?.ok && support.weak && ' У этого устройства немного памяти — основная модель, скорее всего, не запустится.'}
+            {mobile
+              ? 'Запуск не гарантирован: зависит от видеокарты, памяти и места на диске.'
+              : 'Запуск на вашем устройстве не гарантирован: это зависит от видеокарты, свободной памяти и места на диске. Если модель не запустится, сайт сообщит причину.'}
+            {support?.ok &&
+              support.weak &&
+              (mobile
+                ? ' Памяти мало — основная модель, скорее всего, не запустится.'
+                : ' У этого устройства немного памяти — основная модель, скорее всего, не запустится.')}
             {support?.ok && support.storageMb !== null && (
               <>
-                {' '}В хранилище браузера доступно около {support.storageMb} МБ
+                {' '}
+                {mobile ? 'Свободно около' : 'В хранилище браузера доступно около'} {support.storageMb} МБ
                 {cachedModel !== modelId && support.storageMb < selected.downloadMb ? ' — для выбранной модели этого мало.' : '.'}
               </>
             )}
@@ -300,22 +322,24 @@ export function AssistantChat({ loadCarContext }: AssistantChatProps) {
           )}
           <div className="actions">
             <button className="btn btn--primary" type="button" onClick={start}>
-              {cachedModel === modelId ? 'Запустить ИИ' : `Скачать и запустить · ${selected.downloadMb} МБ`}
+              {cachedModel === modelId ? (mobile ? 'Запустить' : 'Запустить ИИ') : `${mobile ? 'Скачать' : 'Скачать и запустить'} · ${selected.downloadMb} МБ`}
             </button>
             {cachedModel === modelId && (
               <button className="btn" type="button" onClick={forget}>
-                Удалить файлы модели
+                {mobile ? 'Удалить модель' : 'Удалить файлы модели'}
               </button>
             )}
           </div>
-          <p className="ai__hint">При первом запуске лучше использовать Wi-Fi: мобильный интернет может быть платным.</p>
+          <p className="ai__hint">
+            {mobile ? 'Скачивать лучше по Wi-Fi.' : 'При первом запуске лучше использовать Wi-Fi: мобильный интернет может быть платным.'}
+          </p>
         </div>
       )}
 
       {stage === 'loading' && (
         <div className="ai__panel" role="status" aria-live="polite">
           <p className="ai__panel-title">
-            Загрузка модели — {percent}%
+            {mobile ? 'Загрузка' : 'Загрузка модели'} — {percent}%
           </p>
           <div className="ai__bar" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent} aria-label="Загрузка модели">
             <span style={{ width: `${percent}%` }} />
@@ -327,7 +351,11 @@ export function AssistantChat({ loadCarContext }: AssistantChatProps) {
               попробовать позже — уже скачанное сохранится.
             </p>
           )}
-          <p className="ai__text">Вкладку можно не закрывать: скачанное сохраняется, прерванная загрузка продолжится с того же места.</p>
+          <p className="ai__text">
+            {mobile
+              ? 'Прерванная загрузка продолжится с того же места.'
+              : 'Вкладку можно не закрывать: скачанное сохраняется, прерванная загрузка продолжится с того же места.'}
+          </p>
           <div className="actions">
             <button className="btn" type="button" onClick={cancelLoading}>
               Отменить
@@ -342,7 +370,9 @@ export function AssistantChat({ loadCarContext }: AssistantChatProps) {
             <div className="ai__context">
               {car ? (
                 <>
-                  <p className="ai__text">ИИ учитывает данные из кабинета: {car.summary}</p>
+                  <p className="ai__text">
+                    {mobile ? 'Учтено:' : 'ИИ учитывает данные из кабинета:'} {car.summary}
+                  </p>
                   <button className="ai__link" type="button" onClick={() => setCar(null)}>
                     Не учитывать
                   </button>
@@ -354,10 +384,12 @@ export function AssistantChat({ loadCarContext }: AssistantChatProps) {
                       ? 'В кабинете ещё нет автомобиля — добавьте его в разделе «Автомобиль».'
                       : carState === 'failed'
                         ? 'Не удалось получить данные автомобиля. Попробуйте ещё раз.'
-                        : 'Сейчас ИИ ничего не знает о вашем автомобиле. Данные из кабинета передаются модели только по вашему нажатию и остаются на устройстве.'}
+                        : mobile
+                          ? 'ИИ не знает ваш автомобиль. Данные остаются на устройстве.'
+                          : 'Сейчас ИИ ничего не знает о вашем автомобиле. Данные из кабинета передаются модели только по вашему нажатию и остаются на устройстве.'}
                   </p>
                   <button className="ai__link" type="button" onClick={attachCar} disabled={carState === 'loading'}>
-                    {carState === 'loading' ? 'Получение данных…' : 'Учитывать мой автомобиль и историю обслуживания'}
+                    {carState === 'loading' ? 'Получение данных…' : mobile ? 'Учитывать автомобиль' : 'Учитывать мой автомобиль и историю обслуживания'}
                   </button>
                 </>
               )}
@@ -367,8 +399,9 @@ export function AssistantChat({ loadCarContext }: AssistantChatProps) {
           <div className="ai__log" ref={log} aria-live="polite">
             {turns.length === 0 && (
               <p className="ai__empty">
-                Спросите об обслуживании, эксплуатации, типичных неисправностях или о том, как пользоваться AI Auto. Например: «Как часто
-                менять масло в двигателе?» или «Где посмотреть расходы за год?»
+                {mobile
+                  ? 'Например: «Как часто менять масло?»'
+                  : 'Спросите об обслуживании, эксплуатации, типичных неисправностях или о том, как пользоваться AI Auto. Например: «Как часто менять масло в двигателе?» или «Где посмотреть расходы за год?»'}
               </p>
             )}
             {turns.map((turn, index) =>
@@ -393,8 +426,9 @@ export function AssistantChat({ loadCarContext }: AssistantChatProps) {
           )}
           {speed !== null && speed < SLOW_SPEED && !generating && (
             <p className="ai__text">
-              На этом устройстве модель работает медленно: ответ занимает минуты. Быстрее будет на компьютере с отдельной видеокартой или на
-              более новом телефоне{selected.id !== provider.models[provider.models.length - 1].id ? '; можно также выбрать лёгкую модель' : ''}.
+              {mobile
+                ? `Модель работает медленно: ответ занимает минуты${selected.id !== provider.models[provider.models.length - 1].id ? '. Попробуйте лёгкую модель' : ''}.`
+                : `На этом устройстве модель работает медленно: ответ занимает минуты. Быстрее будет на компьютере с отдельной видеокартой или на более новом телефоне${selected.id !== provider.models[provider.models.length - 1].id ? '; можно также выбрать лёгкую модель' : ''}.`}
             </p>
           )}
 
@@ -410,12 +444,12 @@ export function AssistantChat({ loadCarContext }: AssistantChatProps) {
               value={draft}
               onChange={(event) => setDraft(event.target.value)}
               onKeyDown={onKeyDown}
-              placeholder="Опишите вопрос или симптом"
+              placeholder={mobile ? 'Вопрос или симптом' : 'Опишите вопрос или симптом'}
             />
             <div className="ai__form-actions">
               {generating ? (
                 <button className="btn" type="button" onClick={() => provider.stop()}>
-                  Остановить ответ
+                  {mobile ? 'Стоп' : 'Остановить ответ'}
                 </button>
               ) : (
                 <button className="btn btn--primary" type="submit" disabled={draft.trim() === ''}>
@@ -423,13 +457,13 @@ export function AssistantChat({ loadCarContext }: AssistantChatProps) {
                 </button>
               )}
               <span className="ai__hint" aria-live="polite">
-                {generating ? 'ИИ печатает ответ… это может занять от нескольких секунд до нескольких минут' : `Модель: ${selected.name.toLowerCase()}${speed ? ` · ${speed.toFixed(1).replace('.', ',')} токена в секунду` : ''}`}
+                {generating ? (mobile ? 'ИИ отвечает… до нескольких минут' : 'ИИ печатает ответ… это может занять от нескольких секунд до нескольких минут') : `Модель: ${selected.name.toLowerCase()}${speed ? ` · ${speed.toFixed(1).replace('.', ',')} токена в секунду` : ''}`}
               </span>
               <button className="ai__link" type="button" onClick={() => setTurns([])} disabled={generating || turns.length === 0}>
-                Очистить переписку
+                {mobile ? 'Очистить' : 'Очистить переписку'}
               </button>
               <button className="ai__link" type="button" onClick={unload}>
-                Выгрузить модель
+                {mobile ? 'Выгрузить' : 'Выгрузить модель'}
               </button>
             </div>
           </form>
@@ -438,7 +472,8 @@ export function AssistantChat({ loadCarContext }: AssistantChatProps) {
 
       {!loadCarContext && stage !== 'checking' && (
         <p className="ai__hint">
-          Чтобы ИИ мог учитывать ваш автомобиль и историю обслуживания, откройте помощника <Link to="/app/diagnostics">в личном кабинете</Link>.
+          {mobile ? 'Учёт вашего автомобиля — ' : 'Чтобы ИИ мог учитывать ваш автомобиль и историю обслуживания, откройте помощника '}
+          <Link to="/app/diagnostics">{mobile ? 'в кабинете' : 'в личном кабинете'}</Link>.
         </p>
       )}
     </section>

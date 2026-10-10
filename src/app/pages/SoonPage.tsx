@@ -1,10 +1,12 @@
 import type { AppFunction } from '../../data/content'
 import { Link } from '../../router'
+import { useIsMobile } from '../../useIsMobile'
 import { useCar } from '../car/useCar'
 
 /** Экран раздела, который ещё не реализован: честно говорит об этом и ничего не имитирует */
 export function SoonPage({ section, index }: { section: AppFunction; index: number }) {
   const { status, car } = useCar()
+  const mobile = useIsMobile()
 
   return (
     <div className="page">
@@ -19,10 +21,11 @@ export function SoonPage({ section, index }: { section: AppFunction; index: numb
       <div className="status">
         <p className="status__label">В разработке</p>
         <p className="status__text">
-          Раздел пока не работает: здесь нельзя ввести или сохранить данные.
+          {mobile ? 'Раздел пока не работает.' : 'Раздел пока не работает: здесь нельзя ввести или сохранить данные.'}
           {section.id === 'diagnostics' && ' ИИ к приложению ещё не подключён.'}
         </p>
-        {status === 'ready' && (
+        {/* на телефоне пояснение о будущей работе раздела не показывается */}
+        {status === 'ready' && !mobile && (
           <p className="status__text">
             {car
               ? `Когда раздел появится, он будет опираться на ваш профиль: ${car.make} ${car.model}, ${car.year}.`
@@ -33,7 +36,7 @@ export function SoonPage({ section, index }: { section: AppFunction; index: numb
 
       <div className="actions">
         <Link className="btn" to="/app/car">
-          {car ? 'Открыть профиль автомобиля' : 'Добавить автомобиль'}
+          {car ? (mobile ? 'Мой автомобиль' : 'Открыть профиль автомобиля') : 'Добавить автомобиль'}
         </Link>
       </div>
     </div>

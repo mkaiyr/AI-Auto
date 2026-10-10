@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { ArrowUpRight, Menu, X } from 'lucide-react'
 import { navLinks } from '../data/content'
 import { Link } from '../router'
+import { useIsMobile } from '../useIsMobile'
 import { Logo } from './Logo'
 import './Header.css'
 
@@ -10,6 +11,7 @@ const CABINET_PATH = '/app/car'
 
 export function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
+  const mobile = useIsMobile()
 
   return (
     <header className="header" id="top">
@@ -32,7 +34,7 @@ export function Header() {
           </ul>
           {/* на телефоне кнопка кабинета живёт внутри меню, чтобы не переполнять шапку */}
           <Link className="header__cabinet header__cabinet--menu" to={CABINET_PATH} onClick={() => setMenuOpen(false)}>
-            Личный кабинет
+            {mobile ? 'Кабинет' : 'Личный кабинет'}
             <ArrowUpRight size={16} strokeWidth={1.75} aria-hidden="true" />
           </Link>
         </nav>

@@ -1,5 +1,6 @@
 import { useRef, useState, type FormEvent } from 'react'
 import { Link, navigate } from '../router'
+import { useIsMobile } from '../useIsMobile'
 import { AuthLayout, MIN_PASSWORD } from './AuthPage'
 import { useAuth } from './AuthProvider'
 import { LINK_INVALID } from './authErrors'
@@ -18,13 +19,14 @@ export function ResetPasswordPage() {
   const [busy, setBusy] = useState(false)
   const [done, setDone] = useState(false)
   const submitting = useRef(false)
+  const mobile = useIsMobile()
 
   if (done) {
     return (
       <AuthLayout>
         <p className="page__eyebrow">Восстановление пароля</p>
         <h1 className="page__title auth__title">Пароль изменён</h1>
-        <p className="page__lead">Новый пароль сохранён. Используйте его при следующем входе.</p>
+        <p className="page__lead">{mobile ? 'Используйте его при следующем входе.' : 'Новый пароль сохранён. Используйте его при следующем входе.'}</p>
         <div className="actions">
           <button className="btn btn--primary" type="button" onClick={() => navigate('/app/car')}>
             Открыть кабинет
@@ -42,10 +44,12 @@ export function ResetPasswordPage() {
         <p className="alert" role="alert">
           {linkError ?? LINK_INVALID}
         </p>
-        <p className="page__lead">Ссылка из письма действует ограниченное время и срабатывает один раз.</p>
+        <p className="page__lead">
+          {mobile ? 'Ссылка действует недолго и только один раз.' : 'Ссылка из письма действует ограниченное время и срабатывает один раз.'}
+        </p>
         <div className="actions">
           <Link className="btn btn--primary" to="/login?mode=forgot">
-            Запросить новую ссылку
+            {mobile ? 'Новая ссылка' : 'Запросить новую ссылку'}
           </Link>
         </div>
       </AuthLayout>
@@ -77,7 +81,7 @@ export function ResetPasswordPage() {
       <p className="page__eyebrow">Восстановление пароля</p>
       <h1 className="page__title auth__title">Новый пароль</h1>
       <p className="page__lead">
-        Аккаунт <b className="auth__email">{state.user.email}</b>. Придумайте новый пароль.
+        Аккаунт <b className="auth__email">{state.user.email}</b>.{!mobile && ' Придумайте новый пароль.'}
       </p>
 
       <form className="form auth__form" onSubmit={handleSubmit} noValidate>
@@ -135,7 +139,7 @@ export function ResetPasswordPage() {
 
         <div className="actions">
           <button className="btn btn--primary" type="submit" disabled={busy}>
-            {busy ? 'Сохранение…' : 'Сохранить пароль'}
+            {busy ? 'Сохранение…' : mobile ? 'Сохранить' : 'Сохранить пароль'}
           </button>
         </div>
       </form>

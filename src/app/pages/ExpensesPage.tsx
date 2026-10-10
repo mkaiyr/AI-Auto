@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { ArrowUpRight } from 'lucide-react'
 import { Link } from '../../router'
+import { useIsMobile } from '../../useIsMobile'
 import { useCar } from '../car/useCar'
 import { byCategory, inPeriod, PERIOD_LABELS, periodStart, sumCost, type Period } from '../expenses/expenseStats'
 import { formatDay, formatMoney, plural, todayISO } from '../format'
@@ -25,6 +26,7 @@ export function ExpensesPage() {
   const { status, records, error, reload } = useServiceRecords(car?.id ?? null)
   const [period, setPeriod] = useState<Period>('all')
   const today = todayISO()
+  const mobile = useIsMobile()
 
   const selected = useMemo(
     () => [...inPeriod(records, period, today)].sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt)),
@@ -43,7 +45,9 @@ export function ExpensesPage() {
         <Eyebrow />
         <h1 className="page__title">Сначала добавьте автомобиль</h1>
         <p className="page__lead">
-          Расходы считаются по записям истории обслуживания, а история ведётся для конкретной машины.
+          {mobile
+            ? 'Расходы считаются по истории машины.'
+            : 'Расходы считаются по записям истории обслуживания, а история ведётся для конкретной машины.'}
         </p>
         <div className="actions">
           <Link className="btn btn--primary" to="/app/car">
@@ -59,13 +63,17 @@ export function ExpensesPage() {
       <div className="page">
         <Eyebrow />
         <h1 className="page__title">Расходов пока нет</h1>
-        <p className="page__lead">
-          Суммы считаются автоматически по записям истории обслуживания. Добавьте первую запись со стоимостью — и
-          она появится здесь.
-        </p>
+        {mobile ? (
+          <p className="page__lead">Они появятся из записей истории со стоимостью.</p>
+        ) : (
+          <p className="page__lead">
+            Суммы считаются автоматически по записям истории обслуживания. Добавьте первую запись со стоимостью — и
+            она появится здесь.
+          </p>
+        )}
         <div className="actions">
           <Link className="btn btn--primary" to="/app/history">
-            Перейти к истории обслуживания
+            {mobile ? 'К истории' : 'Перейти к истории обслуживания'}
           </Link>
         </div>
       </div>
@@ -80,7 +88,7 @@ export function ExpensesPage() {
       <Eyebrow />
       <h1 className="page__title">Расходы</h1>
       <p className="note">
-        {car.make} {car.model}, {car.year} · считается по истории обслуживания
+        {car.make} {car.model}, {car.year} · {mobile ? 'по записям истории' : 'считается по истории обслуживания'}
       </p>
 
       <dl className="totals">
@@ -110,7 +118,7 @@ export function ExpensesPage() {
       </p>
 
       {selected.length === 0 ? (
-        <p className="page__lead">За этот период расходов нет. Выберите другой период.</p>
+        <p className="page__lead">{mobile ? 'За этот период расходов нет.' : 'За этот период расходов нет. Выберите другой период.'}</p>
       ) : (
         <>
           {categories.length > 0 && (

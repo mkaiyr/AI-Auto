@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowDownUp } from 'lucide-react'
 import { Link } from '../../router'
+import { useIsMobile } from '../../useIsMobile'
 import { useCar } from '../car/useCar'
 import { errorText } from '../dataErrors'
 import { formatDay, formatMoney, formatNumber, plural } from '../format'
@@ -29,6 +30,7 @@ export function HistoryPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const deleteLock = useRef(false)
   const [targetId, setTargetId] = useState<string | null>(null)
+  const mobile = useIsMobile()
 
   // переход из раздела «Расходы» по адресу /app/history#record-<id>:
   // прокручиваем к записи и отмечаем её. Метка из адреса убирается, чтобы не срабатывать повторно
@@ -61,10 +63,14 @@ export function HistoryPage() {
       <div className="page">
         <Eyebrow />
         <h1 className="page__title">Сначала добавьте автомобиль</h1>
-        <p className="page__lead">
-          Записи об обслуживании привязаны к конкретной машине. Создайте профиль автомобиля — и сможете вести его
-          историю.
-        </p>
+        {mobile ? (
+          <p className="page__lead">Записи привязаны к машине.</p>
+        ) : (
+          <p className="page__lead">
+            Записи об обслуживании привязаны к конкретной машине. Создайте профиль автомобиля — и сможете вести его
+            историю.
+          </p>
+        )}
         <div className="actions">
           <Link className="btn btn--primary" to="/app/car">
             Добавить автомобиль
@@ -117,10 +123,14 @@ export function HistoryPage() {
       <div className="page">
         <Eyebrow />
         <h1 className="page__title">Записей пока нет</h1>
-        <p className="page__lead">
-          Добавляйте замены масла, ремонты и покупку запчастей — с датой, пробегом и стоимостью. История ведётся
-          для автомобиля {carName}.
-        </p>
+        {mobile ? (
+          <p className="page__lead">Добавляйте работы с датой, пробегом и стоимостью.</p>
+        ) : (
+          <p className="page__lead">
+            Добавляйте замены масла, ремонты и покупку запчастей — с датой, пробегом и стоимостью. История ведётся
+            для автомобиля {carName}.
+          </p>
+        )}
         <div className="actions">
           <button className="btn btn--primary" type="button" onClick={() => setMode({ type: 'form', record: null })}>
             Добавить запись
@@ -133,8 +143,11 @@ export function HistoryPage() {
   return (
     <div className="page">
       <Eyebrow />
-      <h1 className="page__title">История обслуживания</h1>
-      <p className="note">{carName} · хранится в вашем аккаунте</p>
+      <h1 className="page__title">{mobile ? 'История' : 'История обслуживания'}</h1>
+      <p className="note">
+        {carName}
+        {!mobile && ' · хранится в вашем аккаунте'}
+      </p>
 
       <div className="history__bar">
         <button className="btn btn--primary" type="button" onClick={() => setMode({ type: 'form', record: null })}>
