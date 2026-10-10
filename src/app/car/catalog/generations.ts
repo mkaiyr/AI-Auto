@@ -107,7 +107,7 @@ export function loadGenerations(make: string): Promise<MakeGenerations> {
   if (!loading) {
     index ??= getJson<{ makes: Record<string, string> }>(`${base()}index.json`).then((data) => data.makes)
     loading = index
-      .then((files) => (files[make] ? getJson<Record<string, RawModel>>(base() + files[make]) : {}))
+      .then((files): Promise<Record<string, RawModel>> | Record<string, RawModel> => (files[make] ? getJson<Record<string, RawModel>>(base() + files[make]) : {}))
       .then((data) => {
         const result: MakeGenerations = {}
         for (const [model, raw] of Object.entries(data)) {

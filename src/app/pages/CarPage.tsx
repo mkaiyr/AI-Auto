@@ -35,6 +35,8 @@ export function CarPage() {
   const [deleting, setDeleting] = useState(false)
   const deleteLock = useRef(false)
 
+  const illustration = car ? pickIllustration(generations?.[car.model] ?? null, car.generation, car.year) : null
+
   if (status === 'loading') return <PageLoading eyebrow={<Eyebrow />} />
   if (status === 'error') return <PageError eyebrow={<Eyebrow />} message={error ?? 'Не удалось загрузить автомобиль.'} onRetry={reload} />
 
@@ -116,8 +118,8 @@ export function CarPage() {
         photo={photo}
         body={car.body}
         alt={`${car.make} ${car.model}`}
-        illustration={pickIllustration(generations?.[car.model] ?? null, car.generation, car.year)}
-        title={[car.make, car.model, car.generation].filter(Boolean).join(' ')}
+        illustration={illustration}
+        title={[car.make, car.model, illustration?.exact && car.generation].filter(Boolean).join(' ')}
       />
 
       {photoError && (

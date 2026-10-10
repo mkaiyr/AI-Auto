@@ -13,7 +13,8 @@ import {
 import { validateCar, type CarFormErrors, type CarFormValues } from '../car/carValidation'
 import { CarVisual } from '../car/CarVisual'
 import { findMake, findModel, loadCatalog, POPULAR_MAKES, searchKey, type CatalogMake } from '../car/catalog/catalog'
-import { generationsForYear, generationsOf, generationYears } from '../car/catalog/generations'
+import { generationOptions, optionsForYear, pickIllustration, type GenerationOption } from '../car/catalog/generations'
+import { useGenerations } from '../car/catalog/useGenerations'
 import { errorText } from '../dataErrors'
 import { Combobox, type ComboOption } from './Combobox'
 
@@ -45,14 +46,14 @@ const parseYear = (value: string) => (/^\d{4}$/.test(value.trim()) ? Number(valu
 
 /**
  * Поколение по году выпуска: единственный подходящий вариант подставляется сам,
- * при нескольких (переходный год) выбор остаётся за пользователем.
+ * при нескольких (переходный год, разные коды у кузовов) выбор остаётся за пользователем.
+ * Без года ничего не подставляется: одного названия модели для этого недостаточно.
  */
-function suggestGeneration(make: string, model: string, year: string, current: string): string {
+function suggestGeneration(options: GenerationOption[], year: string, current: string): string {
   const parsed = parseYear(year)
-  if (parsed === null) return ''
-  const candidates = generationsForYear(make, model, parsed)
-  if (candidates.some((item) => item.code === current)) return current
-  return candidates.length === 1 ? candidates[0].code : ''
+  const candidates = parsed === null ? options : optionsForYear(options, parsed)
+  if (candidates.some((item) => item.value === current)) return current
+  return parsed !== null && candidates.length === 1 ? candidates[0].value : ''
 }
 
 export function CarForm({ initial, initialPhoto, onSubmit, onCancel }: CarFormProps) {
@@ -70,6 +71,8 @@ export function CarForm({ initial, initialPhoto, onSubmit, onCancel }: CarFormPr
   const [manual, setManual] = useState({ make: false, model: false, generation: false })
   /** поколение выбрал сам пользователь (или оно сохранено ранее), а не подставила форма */
   const [generationPicked, setGenerationPicked] = useState(Boolean(initial?.generation))
+  /** прежний вариант перестал подходить к году и был сброшен — об этом говорит подсказка под полем */
+  const [generationDropped, setGenerationDropped] = useState(false)
   const form = useRef<HTMLFormElement>(null)
   /** true, пока идёт сохранение: вторая отправка формы игнорируется */
   const submitting = useRef(false)
@@ -86,13 +89,7 @@ export function CarForm({ initial, initialPhoto, onSubmit, onCancel }: CarFormPr
         const make = findMake(loaded, start.make)
         const makeManual = start.make !== '' && !make
         const modelManual = makeManual || (start.model !== '' && !findModel(make, start.model))
-        const year = parseYear(start.year)
-        const known = year === null ? [] : generationsForYear(start.make, start.model, year)
-        setManual({
-          make: makeManual,
-          model: modelManual,
-          generation: start.generation !== '' && !known.some((item) => item.code === start.generation),
-        })
+        setManual({ make: makeManual, model: modelManual, generation: false })
       })
       .catch(() => alive && setCatalogFailed(true))
     return () => {
@@ -111,7 +108,22 @@ export function CarForm({ initial, initialPhoto, onSubmit, onCancel }: CarFormPr
   }
   const set = (name: keyof CarFormValues, value: string) => patch({ [name]: value })
 
-  // ---- марка, модель, год: зависимые поля ----
+  // ---- марка, модель, год, поколение: зависимые поля ----
+
+  // Поколения загружаются сразу после выбора марки — к моменту выбора модели и года они уже на месте
+  const generations = useGenerations(manual.make || catalogFailed ? '' : values.make)
+  const modelData = manual.model ? null : (generations?.[values.model] ?? null)
+  const options = useMemo(() => generationOptions(modelData), [modelData])
+  const generationsLoading = generations === null && values.model !== '' && !manual.model
+  /** сохранённое значение, которого нет в списке: введено вручную или записано прежней версией справочника */
+  const unlisted = values.generation !== '' && !options.some((item) => item.value === values.generation)
+  const generationManual = manual.generation || manual.make || manual.model || (!generationsLoading && (options.length === 0 || unlisted))
+
+  /** Изменения формы при выборе варианта: код и, если он относится к одному кузову, тип кузова */
+  const generationPatch = (list: GenerationOption[], value: string, body = values.body): Partial<CarFormValues> => {
+    const option = list.find((item) => item.value === value)
+    return option?.body && body === '' ? { generation: value, body: option.body } : { generation: value }
+  }
 
   const selectMake = (make: string) => {
     if (make === values.make) return
@@ -119,21 +131,37 @@ export function CarForm({ initial, initialPhoto, onSubmit, onCancel }: CarFormPr
     patch({ make, model: '', generation: '', body: '' })
     setManual({ make: false, model: false, generation: false })
     setGenerationPicked(false)
+    setGenerationDropped(false)
   }
 
   const selectModel = (model: string) => {
     if (model === values.model) return
-    patch({ model, generation: suggestGeneration(values.make, model, values.year, '') })
+    const list = generationOptions(generations?.[model] ?? null)
+    patch({ model, ...generationPatch(list, suggestGeneration(list, values.year, '')) })
     setManual((current) => ({ ...current, model: false, generation: false }))
     setGenerationPicked(false)
+    setGenerationDropped(false)
   }
 
   const changeYear = (year: string) => {
+    if (generationManual) return patch({ year })
     // Собственный выбор пользователя сохраняется, пока подходит к году. Подставленное формой
     // значение пересчитывается: в переходный год оно сбрасывается, чтобы выбор сделал человек.
     const keep = generationPicked ? values.generation : ''
-    patch(manual.generation ? { year } : { year, generation: suggestGeneration(values.make, values.model, year, keep) })
+    const next = suggestGeneration(options, year, keep)
+    patch({ year, ...generationPatch(options, next) })
+    if (next !== keep) setGenerationPicked(false)
+    setGenerationDropped(values.generation !== '' && next !== values.generation && parseYear(year) !== null)
   }
+
+  // Справочник мог догрузиться уже после выбора модели и года — подсказка появляется, как только он готов
+  useEffect(() => {
+    if (!modelData || generationPicked || manual.generation || values.generation !== '') return
+    const suggested = suggestGeneration(options, values.year, '')
+    if (suggested) patch(generationPatch(options, suggested))
+    // зависит только от появления данных модели: остальное меняют обработчики выше
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [modelData])
 
   const handleFile = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -338,59 +366,90 @@ export function CarForm({ initial, initialPhoto, onSubmit, onCancel }: CarFormPr
     )
 
   // Поколение подбирается только по марке, модели и году вместе. Одного названия модели недостаточно.
-  const knownGenerations = manual.make || manual.model ? null : generationsOf(values.make, values.model)
-  const candidates = knownGenerations && year !== null ? generationsForYear(values.make, values.model, year) : []
+  const candidates = year === null ? options : optionsForYear(options, year)
+  const selected = options.find((item) => item.value === values.generation) ?? null
+  // выбранный вариант остаётся в списке, даже если не совпадает с годом: значение не должно пропасть молча
+  const listed = selected && !candidates.includes(selected) ? [selected, ...candidates] : candidates
+  const sameGeneration = candidates.length > 1 && candidates.every((item) => item.generation === candidates[0].generation)
   const generationLabel = (
     <>
       Поколение / код кузова <span>необязательно</span>
     </>
   )
-  const generationField =
-    manual.generation || !knownGenerations ? (
-      textField('generation', generationLabel, {
-        maxLength: 30,
-        after: knownGenerations
+  const generationHint = generationsLoading
+    ? null
+    : year === null
+      ? 'Укажите год выпуска — в списке останутся только подходящие варианты.'
+      : selected && !candidates.includes(selected)
+        ? `Выбранный вариант не совпадает с ${year} годом выпуска. Проверьте год или выберите другой.`
+        : candidates.length === 0
+          ? `Для ${year} года в справочнике нет поколения этой модели. Проверьте год или введите код вручную.`
+          : candidates.length === 1
+            ? selected
+              ? 'Определено по году выпуска: в этом году выпускалось одно поколение.'
+              : 'В этом году выпускалось одно поколение — выберите его, если оно ваше.'
+            : sameGeneration
+              ? 'Поколение определено по году. У разных кузовов разные коды — выберите свой.'
+              : `В ${year} году выпускалось несколько поколений — выберите своё.`
+  const generationField = generationManual ? (
+    textField('generation', generationLabel, {
+      maxLength: 30,
+      onChange: (value) => {
+        set('generation', value)
+        // значение, которого нет в списке, дальше редактируется как введённое вручную
+        setManual((current) => ({ ...current, generation: true }))
+      },
+      after:
+        options.length > 0
           ? switchLink('Подобрать по году выпуска', () => {
               setManual((current) => ({ ...current, generation: false }))
-              patch({ generation: suggestGeneration(values.make, values.model, values.year, '') })
+              patch(generationPatch(options, suggestGeneration(options, values.year, '')))
               setGenerationPicked(false)
+              setGenerationDropped(false)
             })
-          : values.model !== '' && <p className="field__hint">Для этой модели в справочнике нет поколений — укажите код кузова вручную, если знаете.</p>,
-      })
-    ) : (
-      <div className="field">
-        <label htmlFor="car-generation">{generationLabel}</label>
-        <select
-          id="car-generation"
-          name="generation"
-          value={values.generation}
-          disabled={year === null}
-          onChange={(event) => {
-            set('generation', event.target.value)
-            setGenerationPicked(event.target.value !== '')
-          }}
-          aria-invalid={errors.generation ? true : undefined}
-        >
-          <option value="">{year === null ? 'Сначала укажите год выпуска' : candidates.length > 1 ? 'Выберите поколение' : 'Не указано'}</option>
-          {candidates.map((item) => (
-            <option key={item.code} value={item.code}>
-              {item.code} · {generationYears(item)}
-            </option>
-          ))}
-        </select>
-        {fieldError('generation')}
-        {year !== null && (
-          <p className="field__hint">
-            {candidates.length === 0
-              ? `Для ${year} года в справочнике нет поколения этой модели.`
-              : candidates.length === 1
-                ? 'Определено по году выпуска. Проверьте: в переходные годы возможны оба поколения.'
-                : `В ${year} году выпускалось несколько поколений — выберите своё.`}
-          </p>
-        )}
-        {switchLink('Ввести вручную', () => setManual((current) => ({ ...current, generation: true })))}
-      </div>
-    )
+          : values.model !== '' && (
+              <p className="field__hint">
+                {manual.make || manual.model
+                  ? 'Для автомобиля не из каталога код кузова не определяется — укажите его, если знаете.'
+                  : 'Для этой модели в справочнике нет поколений — укажите код кузова вручную, если знаете.'}
+              </p>
+            ),
+    })
+  ) : (
+    <div className="field">
+      <label htmlFor="car-generation">{generationLabel}</label>
+      <select
+        id="car-generation"
+        name="generation"
+        value={generationsLoading ? '' : values.generation}
+        disabled={generationsLoading}
+        onChange={(event) => {
+          patch(generationPatch(options, event.target.value))
+          setGenerationPicked(event.target.value !== '')
+          setGenerationDropped(false)
+        }}
+        aria-invalid={errors.generation ? true : undefined}
+        aria-describedby="car-generation-hint"
+      >
+        <option value="">{generationsLoading ? 'Загрузка поколений…' : candidates.length > 1 ? 'Выберите вариант' : 'Не указано'}</option>
+        {listed.map((item) => (
+          <option key={item.value} value={item.value}>
+            {item.label}
+          </option>
+        ))}
+      </select>
+      {fieldError('generation')}
+      {generationHint && (
+        <p className="field__hint" id="car-generation-hint">
+          {generationDropped && 'Прежний вариант не подходит к новому году. '}
+          {generationHint}
+        </p>
+      )}
+      {switchLink('Ввести вручную', () => setManual((current) => ({ ...current, generation: true })))}
+    </div>
+  )
+
+  const illustration = pickIllustration(modelData, values.generation || null, year)
 
   const yearOutOfRange = model && year !== null && model.from > 0 && (year < model.from || (model.to > 0 && year > model.to))
   const body = values.body in BODY_LABELS ? (values.body as BodyType) : null
@@ -399,7 +458,13 @@ export function CarForm({ initial, initialPhoto, onSubmit, onCancel }: CarFormPr
   return (
     <form className="form" ref={form} onSubmit={handleSubmit} noValidate>
       <div className="photo form__wide">
-        <CarVisual photo={photo} body={body} alt="Предпросмотр фотографии автомобиля" />
+        <CarVisual
+          photo={photo}
+          body={body}
+          alt="Предпросмотр фотографии автомобиля"
+          illustration={illustration}
+          title={[values.make, values.model, illustration?.exact && values.generation].filter(Boolean).join(' ')}
+        />
         <div className="photo__controls">
           <label className="btn photo__upload">
             {photoBusy ? 'Обработка…' : photo ? 'Заменить фото' : 'Загрузить фото'}
