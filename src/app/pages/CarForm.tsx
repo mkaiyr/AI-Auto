@@ -68,6 +68,8 @@ export function CarForm({ initial, initialPhoto, onSubmit, onCancel }: CarFormPr
   const [catalogFailed, setCatalogFailed] = useState(false)
   /** какие поля заполняются вручную, а не выбором из каталога */
   const [manual, setManual] = useState({ make: false, model: false, generation: false })
+  /** поколение выбрал сам пользователь (или оно сохранено ранее), а не подставила форма */
+  const [generationPicked, setGenerationPicked] = useState(Boolean(initial?.generation))
   const form = useRef<HTMLFormElement>(null)
   /** true, пока идёт сохранение: вторая отправка формы игнорируется */
   const submitting = useRef(false)
@@ -116,16 +118,21 @@ export function CarForm({ initial, initialPhoto, onSubmit, onCancel }: CarFormPr
     // модель, поколение и тип кузова относились к прежней марке
     patch({ make, model: '', generation: '', body: '' })
     setManual({ make: false, model: false, generation: false })
+    setGenerationPicked(false)
   }
 
   const selectModel = (model: string) => {
     if (model === values.model) return
     patch({ model, generation: suggestGeneration(values.make, model, values.year, '') })
     setManual((current) => ({ ...current, model: false, generation: false }))
+    setGenerationPicked(false)
   }
 
   const changeYear = (year: string) => {
-    patch(manual.generation ? { year } : { year, generation: suggestGeneration(values.make, values.model, year, values.generation) })
+    // Собственный выбор пользователя сохраняется, пока подходит к году. Подставленное формой
+    // значение пересчитывается: в переходный год оно сбрасывается, чтобы выбор сделал человек.
+    const keep = generationPicked ? values.generation : ''
+    patch(manual.generation ? { year } : { year, generation: suggestGeneration(values.make, values.model, year, keep) })
   }
 
   const handleFile = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -357,7 +364,10 @@ export function CarForm({ initial, initialPhoto, onSubmit, onCancel }: CarFormPr
           name="generation"
           value={values.generation}
           disabled={year === null}
-          onChange={(event) => set('generation', event.target.value)}
+          onChange={(event) => {
+            set('generation', event.target.value)
+            setGenerationPicked(event.target.value !== '')
+          }}
           aria-invalid={errors.generation ? true : undefined}
         >
           <option value="">{year === null ? 'Сначала укажите год выпуска' : candidates.length > 1 ? 'Выберите поколение' : 'Не указано'}</option>
