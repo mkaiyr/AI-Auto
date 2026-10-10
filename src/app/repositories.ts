@@ -10,9 +10,6 @@ import { createLocalCarPhotoRepository, type CarPhotoRepository } from './car/ca
 import { createLocalCarRepository, type CarRepository } from './car/carStore'
 import { createLocalServiceRepository, type ServiceRepository } from './service/serviceStore'
 
-/** Ключ localStorage, принадлежащий одному пользователю: «ai-auto:car:v1:<userId>» */
-export const userKey = (baseKey: string, userId: string) => `${baseKey}:${userId}`
-
 export interface Repositories {
   car: CarRepository
   service: ServiceRepository

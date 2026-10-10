@@ -9,7 +9,7 @@
 
 import { CAR_PHOTO_STORAGE_KEY } from './car/carPhoto'
 import { CAR_STORAGE_KEY } from './car/carStore'
-import { userKey } from './repositories'
+import { userKey } from './storageKeys'
 import { SERVICE_STORAGE_KEY } from './service/serviceStore'
 
 const LEGACY_KEYS = [SERVICE_STORAGE_KEY, CAR_PHOTO_STORAGE_KEY, CAR_STORAGE_KEY]

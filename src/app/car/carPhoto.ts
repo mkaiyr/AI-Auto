@@ -2,7 +2,7 @@
 // Фото лежит под отдельным ключом — сбой записи не может повредить сам профиль.
 // Позже CarPhotoRepository заменяется загрузкой на сервер.
 
-import { userKey } from '../repositories'
+import { userKey } from '../storageKeys'
 
 export const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 export const MAX_FILE_MB = 15

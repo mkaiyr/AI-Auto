@@ -3,7 +3,7 @@
 // позже можно заменить серверным хранилищем, не трогая страницы и формы.
 
 import { newId } from '../format'
-import { userKey } from '../repositories'
+import { userKey } from '../storageKeys'
 
 export type EngineType = 'petrol' | 'diesel' | 'hybrid' | 'electric' | 'lpg'
 
