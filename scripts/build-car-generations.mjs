@@ -873,7 +873,7 @@ for (const model of models.values()) {
       const image = generation.image && images.get(generation.image)
       if (image) row.i = image
       // рестайлинг должен попадать внутрь лет поколения и после их уточнения по каталогу
-      const faceliftFits = generation.facelift && generation.facelift.from > from && (to === 0 || generation.facelift.from <= to)
+      const faceliftFits = generation.facelift && generation.facelift.from > from && generation.facelift.from <= THIS_YEAR && (to === 0 || generation.facelift.from <= to)
       if (generation.facelift && !faceliftFits && generation.facelift.verified) throw new Error(`Рестайлинг ${model.make} ${model.model} ${generation.facelift.from} вне лет поколения ${from}–${to}`)
       if (faceliftFits) {
         // r — рестайлинг:
