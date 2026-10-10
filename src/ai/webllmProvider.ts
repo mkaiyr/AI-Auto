@@ -47,7 +47,20 @@ let lastSpeed: number | null = null
 let loadToken = 0
 /** Сколько раз загрузка возобновляется сама после обрыва связи: файлов много, и единичный сбой — обычное дело */
 const LOAD_ATTEMPTS = 5
-const isNetworkError = (error: unknown) => /fetch|network|load failed|ERR_|timeout|cache/i.test(error instanceof Error ? error.message : String(error))
+const isNetworkError = (error: unknown) => /fetch|network|load failed|ERR_|timeout/i.test(error instanceof Error ? error.message : String(error))
+/** Ошибка сохранения в кеш: повторять её много раз бессмысленно, если дело в нехватке места */
+const isCacheError = (error: unknown) => /cache/i.test(error instanceof Error ? error.message : String(error))
+
+/** Сколько места, по оценке браузера, осталось в хранилище сайта, МБ; null — браузер не сообщает */
+async function freeStorageMb(): Promise<number | null> {
+  try {
+    const estimate = await navigator.storage?.estimate?.()
+    if (!estimate?.quota) return null
+    return Math.floor((estimate.quota - (estimate.usage ?? 0)) / 1048576)
+  } catch {
+    return null
+  }
+}
 const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 const fullId = (option: ModelOption & { base: string }) => `${option.base}-${halfFloat ? 'q4f16_1' : 'q4f32_1'}-MLC`
@@ -59,7 +72,11 @@ function explain(error: unknown, fallback: string): AssistantError {
   if (/out of memory|device.{0,8}lost|OOM|allocation|D3D12|Vulkan|context.{0,6}lost/i.test(text)) {
     return new AssistantError('Устройству не хватило памяти для модели. Закройте другие вкладки и попробуйте лёгкую модель.')
   }
-  if (/quota|storage/i.test(text)) return new AssistantError('В хранилище браузера не хватает места для файлов модели. Освободите место и попробуйте снова.')
+  if (/quota|storage/i.test(text)) return new AssistantError('В хранилище браузера не хватает места для файлов модели. Освободите место на диске и попробуйте снова.')
+  // Браузер сообщает о нехватке места в своём хранилище той же «сетевой ошибкой», что и об обрыве связи
+  if (/cache/i.test(text)) {
+    return new AssistantError('Не удалось сохранить файлы модели. Чаще всего причина — мало свободного места на диске или в хранилище браузера, реже — обрыв связи. Освободите место и попробуйте снова — уже скачанное сохранится.')
+  }
   if (/fetch|network|load failed|ERR_|timeout/i.test(text)) return new AssistantError('Не удалось скачать файлы модели. Проверьте интернет и попробуйте снова — уже скачанное сохранится.')
   return new AssistantError(`${fallback} (${text.slice(0, 160)})`)
 }
@@ -110,6 +127,13 @@ export const webllmProvider: AssistantProvider = {
       try {
         const webllm = await import('@mlc-ai/web-llm')
         if (cancelled()) throw new AssistantError('Загрузка отменена.')
+        // Места должно хватить на всю модель. Проверка грубая (часть файлов могла скачаться раньше),
+        // поэтому загрузка запрещается только при явной нехватке — меньше половины нужного объёма.
+        const option = optionOf(modelId)
+        const free = await freeStorageMb()
+        if (attempt === 1 && free !== null && free < option.downloadMb / 2 && !(await webllm.hasModelInCache(model).catch(() => false))) {
+          throw new AssistantError(`В хранилище браузера не хватает места: модели нужно около ${option.downloadMb} МБ, доступно около ${Math.max(free, 0)} МБ. Освободите место на диске устройства и попробуйте снова.`)
+        }
         own = new Worker(new URL('./webllm.worker.ts', import.meta.url), { type: 'module' })
         worker = own
         const created = await webllm.CreateWebWorkerMLCEngine(own, model, {
@@ -129,14 +153,17 @@ export const webllmProvider: AssistantProvider = {
         own?.terminate()
         if (worker === own) worker = null
         // Уже скачанные файлы лежат в кеше браузера, поэтому повтор продолжает с того же места
-        if (!(error instanceof AssistantError) && isNetworkError(error) && attempt < LOAD_ATTEMPTS) {
+        if (!(error instanceof AssistantError) && !isCacheError(error) && isNetworkError(error) && attempt < LOAD_ATTEMPTS) {
           console.warn(`[AI Auto] загрузка модели прервалась, попытка ${attempt + 1} из ${LOAD_ATTEMPTS}:`, error)
           await pause(1500 * attempt)
           if (cancelled()) throw new AssistantError('Загрузка отменена.')
           continue
         }
         console.warn('[AI Auto] модель не запустилась:', error)
-        throw error instanceof AssistantError ? error : explain(error, 'Не удалось запустить модель.')
+        if (error instanceof AssistantError) throw error
+        const left = isCacheError(error) ? await freeStorageMb() : null
+        const reason = explain(error, 'Не удалось запустить модель.')
+        throw left === null ? reason : new AssistantError(`${reason.message} Сейчас в хранилище браузера доступно около ${Math.max(left, 0)} МБ.`)
       }
     }
   },
