@@ -353,6 +353,7 @@ export function CarForm({ initial, initialPhoto, onSubmit, onCancel }: CarFormPr
           ? switchLink('Подобрать по году выпуска', () => {
               setManual((current) => ({ ...current, generation: false }))
               patch({ generation: suggestGeneration(values.make, values.model, values.year, '') })
+              setGenerationPicked(false)
             })
           : values.model !== '' && <p className="field__hint">Для этой модели в справочнике нет поколений — укажите код кузова вручную, если знаете.</p>,
       })
