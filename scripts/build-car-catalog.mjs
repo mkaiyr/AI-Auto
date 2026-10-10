@@ -2,7 +2,7 @@
 //
 // Источник — открытая база cars-base (https://github.com/blanzh/carsBase, файл cars.json):
 // марки, модели, годы выпуска, русские названия. Поколений и кодов кузова в ней нет —
-// они ведутся отдельно, в src/app/car/catalog/generations.ts.
+// они собираются отдельно скриптом scripts/build-car-generations.mjs в public/car-generations/.
 //
 // Запуск:  node scripts/build-car-catalog.mjs
 // Запускается вручную, когда нужно обновить каталог. В сборку сайта не входит.
