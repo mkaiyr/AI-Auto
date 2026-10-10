@@ -1,17 +1,18 @@
 import { useCallback, useEffect, useState } from 'react'
+import { errorText } from '../dataErrors'
 import { useRepositories } from '../repositories'
 import type { Car, CarInput } from './carStore'
 
 interface CarState {
-  status: 'loading' | 'ready'
+  /** error — данные не удалось получить (это не то же самое, что «автомобиля нет») */
+  status: 'loading' | 'ready' | 'error'
   car: Car | null
-  /** Сообщение, если хранилище недоступно */
   error: string | null
 }
 
 /** Профиль автомобиля текущего пользователя */
 export function useCar() {
-  const { car: repository, service, photo } = useRepositories()
+  const { car: repository, photo } = useRepositories()
   const [state, setState] = useState<CarState>({ status: 'loading', car: null, error: null })
   const [version, setVersion] = useState(0)
 
@@ -21,17 +22,18 @@ export function useCar() {
       .get()
       .then((car) => alive && setState({ status: 'ready', car, error: null }))
       .catch(
-        () =>
-          alive &&
-          setState({ status: 'ready', car: null, error: 'Не удалось прочитать данные: хранилище браузера недоступно.' }),
+        (error) => alive && setState({ status: 'error', car: null, error: errorText(error, 'Не удалось загрузить автомобиль.') }),
       )
     return () => {
       alive = false
     }
   }, [repository, version])
 
-  /** Перечитать профиль из хранилища (после переноса старых данных в аккаунт) */
-  const reload = useCallback(() => setVersion((current) => current + 1), [])
+  /** Запросить профиль заново (кнопка «Повторить», завершение переноса старых данных) */
+  const reload = useCallback(() => {
+    setState({ status: 'loading', car: null, error: null })
+    setVersion((current) => current + 1)
+  }, [])
 
   const save = useCallback(
     async (input: CarInput) => {
@@ -43,16 +45,15 @@ export function useCar() {
   )
 
   const remove = useCallback(async () => {
-    // история обслуживания и фотография принадлежат автомобилю и удаляются вместе с ним
-    // (на сервере это будет каскадное удаление в базе данных)
     const current = await repository.get()
     if (current) {
-      await service.removeByCar(current.id)
+      // файл фотографии не удаляется вместе со строкой — убираем его явно, до автомобиля
       await photo.remove(current.id)
     }
+    // историю обслуживания сервер удаляет вместе с автомобилем (ON DELETE CASCADE)
     await repository.remove()
     setState({ status: 'ready', car: null, error: null })
-  }, [repository, service, photo])
+  }, [repository, photo])
 
   return { ...state, save, remove, reload }
 }

@@ -3,10 +3,12 @@ import { BODY_LABELS, ENGINE_LABELS } from '../car/carStore'
 import { CarVisual } from '../car/CarVisual'
 import { useCar } from '../car/useCar'
 import { useCarPhoto } from '../car/useCarPhoto'
+import { errorText } from '../dataErrors'
 import { formatNumber, plural } from '../format'
 import { useServiceRecords } from '../service/useServiceRecords'
 import { CarForm } from './CarForm'
-import { LegacyOffer } from './LegacyOffer'
+import { ImportOffer } from './ImportOffer'
+import { PageError, PageLoading } from './PageState'
 
 type Mode = 'view' | 'form' | 'confirm-delete'
 
@@ -26,14 +28,10 @@ export function CarPage() {
   const [mode, setMode] = useState<Mode>('view')
   const [photoError, setPhotoError] = useState<string | null>(null)
   const [deleteError, setDeleteError] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
-  if (status === 'loading') {
-    return (
-      <div className="page">
-        <Eyebrow />
-      </div>
-    )
-  }
+  if (status === 'loading') return <PageLoading eyebrow={<Eyebrow />} />
+  if (status === 'error') return <PageError eyebrow={<Eyebrow />} message={error ?? 'Не удалось загрузить автомобиль.'} onRetry={reload} />
 
   if (mode === 'form') {
     return (
@@ -44,17 +42,15 @@ export function CarPage() {
           initial={car}
           initialPhoto={photo}
           onSubmit={async (input, change) => {
-            // сначала профиль: он маленький и сохраняется надёжно. Фото — отдельным шагом,
-            // его сбой не затрагивает ни профиль, ни прежнюю фотографию
+            // сначала профиль, затем фото отдельным шагом: сбой загрузки фото
+            // не отменяет сохранённые данные автомобиля и не трогает прежнюю фотографию
             const saved = await save(input)
             setPhotoError(null)
             try {
               if (change.type === 'set') await savePhoto(saved.id, change.dataUrl)
               else if (change.type === 'remove') await removePhoto(saved.id)
-            } catch {
-              setPhotoError(
-                'Данные автомобиля сохранены, но фотографию сохранить не удалось: в хранилище браузера не хватает места. Попробуйте другое изображение.',
-              )
+            } catch (cause) {
+              setPhotoError(`Данные автомобиля сохранены, но с фотографией возникла ошибка. ${errorText(cause, 'Попробуйте ещё раз.')}`)
             }
             setMode('view')
           }}
@@ -73,29 +69,28 @@ export function CarPage() {
           Укажите марку, модель, год и пробег, добавьте фото или выберите тип кузова. На этот профиль опираются
           остальные разделы: история обслуживания, расходы, а позже — диагностика и напоминания.
         </p>
-        {error && (
-          <p className="alert" role="alert">
-            {error}
-          </p>
-        )}
         <div className="actions">
           <button className="btn btn--primary" type="button" onClick={() => setMode('form')}>
             Добавить автомобиль
           </button>
         </div>
-        <LegacyOffer onClaimed={reload} />
+        <ImportOffer onImported={reload} />
       </div>
     )
   }
 
   const handleDelete = async () => {
+    if (deleting) return
+    setDeleting(true)
+    setDeleteError(null)
     try {
       await remove()
-      setDeleteError(null)
       setPhotoError(null)
       setMode('view')
-    } catch {
-      setDeleteError('Не удалось удалить данные: хранилище браузера недоступно.')
+    } catch (cause) {
+      setDeleteError(errorText(cause, 'Не удалось удалить автомобиль. Попробуйте ещё раз.'))
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -148,7 +143,7 @@ export function CarPage() {
         )}
       </dl>
 
-      <p className="note">Сохранено {formatDate(car.updatedAt)} · только в этом браузере</p>
+      <p className="note">Сохранено {formatDate(car.updatedAt)} · в вашем аккаунте</p>
 
       {mode === 'confirm-delete' ? (
         <div className="confirm" role="alertdialog" aria-labelledby="confirm-title" aria-describedby="confirm-text">
@@ -156,7 +151,7 @@ export function CarPage() {
             Удалить автомобиль?
           </p>
           <p className="confirm__text" id="confirm-text">
-            Профиль «{car.make} {car.model}» будет стёрт из этого браузера
+            Профиль «{car.make} {car.model}» будет удалён из вашего аккаунта
             {attached.length > 0 && ` вместе с ${attached.join(' и ')}`}. Восстановить данные не получится.
           </p>
           {deleteError && (
@@ -165,10 +160,10 @@ export function CarPage() {
             </p>
           )}
           <div className="actions">
-            <button className="btn btn--danger" type="button" onClick={handleDelete}>
-              Да, удалить
+            <button className="btn btn--danger" type="button" onClick={handleDelete} disabled={deleting}>
+              {deleting ? 'Удаление…' : 'Да, удалить'}
             </button>
-            <button className="btn" type="button" autoFocus onClick={() => setMode('view')}>
+            <button className="btn" type="button" autoFocus onClick={() => setMode('view')} disabled={deleting}>
               Отмена
             </button>
           </div>

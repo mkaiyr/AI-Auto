@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
+import { errorText } from '../dataErrors'
 import { useRepositories } from '../repositories'
 import type { ServiceInput, ServiceRecord } from './serviceStore'
 
 interface ServiceState {
-  status: 'loading' | 'ready'
+  /** error — записи не удалось получить (это не то же самое, что «записей нет») */
+  status: 'loading' | 'ready' | 'error'
   records: ServiceRecord[]
-  /** Сообщение, если хранилище недоступно */
   error: string | null
 }
 
@@ -13,6 +14,7 @@ interface ServiceState {
 export function useServiceRecords(carId: string | null) {
   const { service: repository } = useRepositories()
   const [state, setState] = useState<ServiceState>({ status: 'loading', records: [], error: null })
+  const [version, setVersion] = useState(0)
 
   useEffect(() => {
     if (carId === null) {
@@ -25,15 +27,17 @@ export function useServiceRecords(carId: string | null) {
       .list(carId)
       .then((records) => alive && setState({ status: 'ready', records, error: null }))
       .catch(
-        () =>
-          alive &&
-          setState({ status: 'ready', records: [], error: 'Не удалось прочитать записи: хранилище браузера недоступно.' }),
+        (error) =>
+          alive && setState({ status: 'error', records: [], error: errorText(error, 'Не удалось загрузить историю обслуживания.') }),
       )
     return () => {
       alive = false
     }
-  }, [carId, repository])
+  }, [carId, repository, version])
 
+  const reload = useCallback(() => setVersion((current) => current + 1), [])
+
+  // Список на экране меняется только после подтверждения сервера: при ошибке он остаётся прежним
   const create = useCallback(
     async (input: ServiceInput) => {
       if (carId === null) throw new Error('Автомобиль не добавлен')
@@ -59,5 +63,5 @@ export function useServiceRecords(carId: string | null) {
     [repository],
   )
 
-  return { ...state, create, update, remove }
+  return { ...state, create, update, remove, reload }
 }
