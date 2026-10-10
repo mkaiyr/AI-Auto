@@ -1,0 +1,128 @@
+name: Сборка Android (отладочный APK)
+
+# Собирает отладочный APK приложения AI Auto в облаке. Android Studio на своём компьютере не нужна.
+#
+# Запуск только вручную: вкладка Actions → «Сборка Android (отладочный APK)» → Run workflow.
+# Готовый файл появится внизу страницы запуска в разделе Artifacts под именем AI-Auto-debug-apk
+# и хранится 7 дней.
+#
+# Отладочный APK подписан общеизвестным отладочным ключом Android: он годится для проверки на своём
+# телефоне, но не для Google Play. Ключей подписи и секретов этот процесс не использует и не создаёт.
+#
+# Сайт на GitHub Pages собирается и публикуется отдельным процессом (deploy-pages.yml);
+# этот файл его не затрагивает.
+
+on:
+  workflow_dispatch:
+
+# только чтение репозитория: процесс ничего не публикует и не изменяет
+permissions:
+  contents: read
+
+concurrency:
+  group: android-debug
+  cancel-in-progress: true
+
+jobs:
+  apk:
+    name: Отладочный APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # те же настройки Supabase, что у сборки сайта, могут лежать в окружении github-pages
+    environment: github-pages
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      # Проекту Capacitor 8 нужна Java 21 (см. android/app/capacitor.build.gradle);
+      # Android Gradle Plugin 8.13 и Gradle 8.14 с ней совместимы
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      # Адрес проекта Supabase и публичный ключ встраиваются в приложение при сборке — так же, как в сайт.
+      # Без них APK соберётся, но кабинет покажет «Supabase не настроен», поэтому сборка останавливается.
+      # Секретный ключ (sb_secret_… или service_role) в приложение попасть не должен: он проверяется здесь
+      # и ещё раз в самом приложении (src/lib/supabase.ts). Значения в журнал не выводятся.
+      - name: Проверка настроек Supabase
+        env:
+          SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL || secrets.VITE_SUPABASE_URL || vars.SUPABASE_URL || secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY || secrets.VITE_SUPABASE_ANON_KEY || vars.SUPABASE_ANON_KEY || secrets.SUPABASE_ANON_KEY }}
+        run: |
+          echo "Адрес проекта найден: $([ -n "$SUPABASE_URL" ] && echo да || echo НЕТ)"
+          echo "Публичный ключ найден: $([ -n "$SUPABASE_KEY" ] && echo да || echo НЕТ)"
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_KEY" ]; then
+            echo "::error::Не найдены VITE_SUPABASE_URL или VITE_SUPABASE_ANON_KEY. Они задаются там же, где для сборки сайта: Settings → Secrets and variables → Actions → Variables."
+            exit 1
+          fi
+          case "$SUPABASE_KEY" in
+            sb_secret_*)
+              echo "::error::В VITE_SUPABASE_ANON_KEY указан секретный ключ. В приложение можно встраивать только публичный (anon / publishable)."
+              exit 1
+              ;;
+          esac
+          # ключ старого формата — JWT; роль записана в его средней части
+          payload=$(printf '%s' "$SUPABASE_KEY" | cut -s -d. -f2 | tr '_-' '/+')
+          if [ -n "$payload" ]; then
+            while [ $(( ${#payload} % 4 )) -ne 0 ]; do payload="$payload="; done
+            if printf '%s' "$payload" | base64 -d 2>/dev/null | grep -q '"role"[[:space:]]*:[[:space:]]*"service_role"'; then
+              echo "::error::В VITE_SUPABASE_ANON_KEY указан ключ service_role. В приложение можно встраивать только публичный ключ."
+              exit 1
+            fi
+          fi
+          echo "Ключ не похож на секретный."
+
+      - name: Установка зависимостей
+        run: npm ci
+
+      # Тот же скрипт сборки, что у сайта, но с корневым путём «/»:
+      # внутри приложения сайт лежит в корне, а не в папке /AI-Auto/
+      - name: Сборка веб-приложения
+        run: npm run build
+        env:
+          VITE_BASE_PATH: /
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL || secrets.VITE_SUPABASE_URL || vars.SUPABASE_URL || secrets.SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY || secrets.VITE_SUPABASE_ANON_KEY || vars.SUPABASE_ANON_KEY || secrets.SUPABASE_ANON_KEY }}
+
+      - name: Проверка сборки веб-приложения
+        run: |
+          test -f dist/index.html || { echo "::error::dist/index.html не создан"; exit 1; }
+          # в приложении ресурсы должны подключаться от корня, а не из папки сайта на GitHub Pages
+          if grep -q '/AI-Auto/assets/\|/site2/assets/' dist/index.html; then
+            echo "::error::Веб-приложение собрано с путём сайта, а не с «/»"
+            exit 1
+          fi
+
+      - name: Копирование веб-приложения в Android-проект
+        run: npx cap sync android
+
+      # только отладочная сборка: release APK и AAB здесь не собираются
+      - name: Сборка отладочного APK
+        working-directory: android
+        run: |
+          chmod +x ./gradlew
+          ./gradlew assembleDebug --no-daemon --stacktrace
+
+      - name: Проверка APK
+        run: |
+          apk=android/app/build/outputs/apk/debug/app-debug.apk
+          if [ ! -s "$apk" ]; then
+            echo "::error::APK не найден: $apk"
+            ls -R android/app/build/outputs 2>/dev/null || true
+            exit 1
+          fi
+          cp "$apk" AI-Auto-debug.apk
+          echo "APK создан: $(du -h AI-Auto-debug.apk | cut -f1)"
+
+      - name: Сохранение APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: AI-Auto-debug-apk
+          path: AI-Auto-debug.apk
+          retention-days: 7
+          if-no-files-found: error
