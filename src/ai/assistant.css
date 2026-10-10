@@ -1,0 +1,313 @@
+/* ИИ-помощник: панель запуска, загрузка модели, переписка */
+
+.ai {
+  max-width: 760px;
+  margin-top: clamp(28px, 3.4vw, 44px);
+}
+
+.ai__limits {
+  padding-left: 14px;
+  border-left: 2px solid rgb(var(--burgundy-rgb));
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.ai__status,
+.ai__text {
+  margin-top: 14px;
+  color: var(--text-muted);
+}
+
+.ai__hint {
+  margin-top: 14px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  line-height: 1.7;
+  color: var(--text-dim);
+  overflow-wrap: anywhere;
+}
+
+.ai__hint a,
+.ai__link {
+  color: var(--text-muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.ai__panel {
+  margin-top: 26px;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+}
+
+.ai__panel-title {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.ai__list {
+  margin-top: 14px;
+  padding-left: 18px;
+  list-style: disc;
+  color: var(--text-muted);
+}
+
+.ai__list li + li {
+  margin-top: 6px;
+}
+
+/* ---------- Выбор модели ---------- */
+
+.ai__models {
+  margin-top: 18px;
+  padding: 0;
+  border: 0;
+}
+
+.ai__models legend {
+  padding: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.ai__model {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  margin-top: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  color: var(--text-muted);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.ai__model:has(input:checked) {
+  border-color: var(--line-strong);
+  background: var(--surface);
+}
+
+.ai__model input {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  accent-color: var(--lime);
+}
+
+.ai__model b {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+/* ---------- Загрузка модели ---------- */
+
+.ai__bar {
+  height: 4px;
+  margin-top: 16px;
+  background: var(--line);
+}
+
+.ai__bar span {
+  display: block;
+  height: 100%;
+  background: var(--lime);
+  transition: width 0.3s ease;
+}
+
+/* ---------- Данные автомобиля ---------- */
+
+.ai__context {
+  margin-top: 26px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+}
+
+.ai__context .ai__text {
+  margin-top: 0;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.ai__link {
+  margin-top: 10px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ai__link:hover,
+.ai__hint a:hover {
+  color: var(--text);
+}
+
+.ai__link:disabled {
+  color: var(--text-dim);
+  cursor: default;
+}
+
+/* ---------- Переписка ---------- */
+
+.ai__log {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-height: min(56svh, 560px);
+  margin-top: 26px;
+  padding: 18px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.ai__empty {
+  color: var(--text-dim);
+}
+
+.ai__turn {
+  max-width: 92%;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.ai__turn--user {
+  align-self: flex-end;
+  padding: 10px 14px;
+  background: var(--surface-hover);
+  border: 1px solid var(--line);
+}
+
+.ai__turn--assistant {
+  align-self: flex-start;
+  color: var(--text);
+}
+
+.ai__danger {
+  margin-bottom: 10px;
+  padding: 10px 14px;
+  border: 1px solid rgb(var(--burgundy-rgb));
+  background: rgba(var(--burgundy-rgb), 0.16);
+  font-size: 14px;
+  white-space: normal;
+}
+
+.ai__typing {
+  color: var(--text-dim);
+}
+
+/* ---------- Поле вопроса ---------- */
+
+.ai__form {
+  margin-top: 18px;
+}
+
+.ai__label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.ai__form textarea {
+  display: block;
+  width: 100%;
+  min-height: 64px;
+  margin-top: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--line-strong);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  resize: vertical;
+}
+
+.ai__form textarea:focus-visible {
+  outline: none;
+  border-color: var(--text);
+}
+
+.ai__form textarea::placeholder {
+  color: var(--text-dim);
+}
+
+.ai__form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+  margin-top: 14px;
+}
+
+.ai__form-actions .ai__hint,
+.ai__form-actions .ai__link {
+  margin-top: 0;
+}
+
+/* ---------- Публичная страница помощника ---------- */
+
+.ai-public {
+  min-height: 100svh;
+  background: radial-gradient(ellipse 60% 46% at 100% 0%, rgba(var(--steel-rgb), 0.13), transparent 70%);
+}
+
+.ai-public__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 22px var(--gutter);
+  border-bottom: 1px solid var(--line);
+}
+
+.ai-public__logo {
+  font-weight: 600;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  font-size: 13px;
+}
+
+.ai-public__links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px 20px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.ai-public__links a:hover {
+  color: var(--text);
+}
+
+.ai-public__main {
+  padding: clamp(36px, 6vw, 88px) var(--gutter) 96px;
+}
+
+@media (max-width: 480px) {
+  .ai__turn {
+    max-width: 100%;
+  }
+
+  .ai__form-actions .btn {
+    width: 100%;
+  }
+}
