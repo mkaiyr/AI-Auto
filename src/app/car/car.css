@@ -36,6 +36,57 @@
   color: var(--text-dim);
 }
 
+/* Фотография модели из каталога: проявляется поверх силуэта после загрузки.
+   Приглушённые цвета и затемнение по краям приводят снимки разных авторов к общему виду. */
+.car-visual .car-visual__catalog {
+  opacity: 0;
+  filter: saturate(0.78) contrast(1.05) brightness(0.9);
+  transition: opacity 0.6s ease;
+}
+
+.car-visual--catalog .car-visual__catalog {
+  opacity: 1;
+}
+
+.car-visual--catalog .silhouette {
+  visibility: hidden;
+}
+
+.car-visual--catalog::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(to top, rgba(8, 9, 11, 0.88) 0%, rgba(8, 9, 11, 0.35) 26%, transparent 48%),
+    radial-gradient(120% 90% at 50% 45%, transparent 55%, rgba(8, 9, 11, 0.55) 100%);
+}
+
+.car-visual--catalog figcaption {
+  z-index: 1;
+  color: rgba(243, 243, 240, 0.78);
+}
+
+.car-visual figcaption a {
+  display: block;
+  color: inherit;
+  opacity: 0.72;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.car-visual figcaption a:hover,
+.car-visual figcaption a:focus-visible {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .car-visual .car-visual__catalog {
+    transition: none;
+  }
+}
+
 .silhouette {
   width: min(82%, 680px);
   height: auto;

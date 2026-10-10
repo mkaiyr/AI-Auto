@@ -1,6 +1,8 @@
 import { useRef, useState } from 'react'
 import { BODY_LABELS, ENGINE_LABELS } from '../car/carStore'
 import { CarVisual } from '../car/CarVisual'
+import { pickIllustration } from '../car/catalog/generations'
+import { useGenerations } from '../car/catalog/useGenerations'
 import { useCar } from '../car/useCar'
 import { useCarPhoto } from '../car/useCarPhoto'
 import { errorText } from '../dataErrors'
@@ -23,7 +25,9 @@ const Eyebrow = () => (
 
 export function CarPage() {
   const { status, car, error, save, remove, reload } = useCar()
-  const { photo, save: savePhoto, remove: removePhoto } = useCarPhoto(car?.id ?? null)
+  const { photo, checked: photoChecked, save: savePhoto, remove: removePhoto } = useCarPhoto(car?.id ?? null)
+  // Справочник нужен только для иллюстрации, поэтому запрашивается, когда уже известно, что своего фото нет
+  const generations = useGenerations(car && photoChecked && !photo ? car.make : '')
   const { records } = useServiceRecords(car?.id ?? null)
   const [mode, setMode] = useState<Mode>('view')
   const [photoError, setPhotoError] = useState<string | null>(null)
@@ -108,7 +112,13 @@ export function CarPage() {
   return (
     <div className="page">
       <Eyebrow />
-      <CarVisual photo={photo} body={car.body} alt={`${car.make} ${car.model}`} />
+      <CarVisual
+        photo={photo}
+        body={car.body}
+        alt={`${car.make} ${car.model}`}
+        illustration={pickIllustration(generations?.[car.model] ?? null, car.generation, car.year)}
+        title={[car.make, car.model, car.generation].filter(Boolean).join(' ')}
+      />
 
       {photoError && (
         <p className="alert" role="alert">

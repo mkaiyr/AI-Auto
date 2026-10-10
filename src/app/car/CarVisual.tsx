@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { BODY_LABELS, type BodyType } from './carStore'
+import type { Illustration } from './catalog/generations'
 import './car.css'
 
 // Стилизованные силуэты кузовов: вид сбоку, задняя часть слева.
@@ -88,12 +89,22 @@ interface CarVisualProps {
   photo: string | null
   body: BodyType | null
   alt: string
+  /** Фотография такой же модели из каталога. Показывается, только если своего фото нет */
+  illustration?: Illustration | null
+  /** Что изображено на иллюстрации, например «Toyota Camry XV70» */
+  title?: string
 }
 
-/** Главный визуальный блок профиля: фото автомобиля, а без него — силуэт выбранного кузова */
-export function CarVisual({ photo, body, alt }: CarVisualProps) {
+/**
+ * Главный визуальный блок профиля. По убыванию приоритета: фото пользователя, фотография такой же
+ * модели из каталога, силуэт выбранного кузова. Силуэт виден сразу, а фотография из каталога
+ * проявляется поверх него, когда загрузится; если она не загрузилась, остаётся силуэт.
+ */
+export function CarVisual({ photo, body, alt, illustration = null, title = '' }: CarVisualProps) {
   // адрес фото, которое не удалось загрузить (например, временная ссылка устарела в давно открытой вкладке)
   const [failedPhoto, setFailedPhoto] = useState<string | null>(null)
+  const [loadedImage, setLoadedImage] = useState<string | null>(null)
+  const [failedImage, setFailedImage] = useState<string | null>(null)
 
   if (photo && photo !== failedPhoto) {
     return (
@@ -103,15 +114,41 @@ export function CarVisual({ photo, body, alt }: CarVisualProps) {
     )
   }
 
+  const image = illustration && illustration.image.url !== failedImage ? illustration.image : null
+  const shown = image !== null && image.url === loadedImage
+
   return (
-    <figure className="car-visual">
+    <figure className={shown ? 'car-visual car-visual--catalog' : 'car-visual'}>
       {body && <BodySilhouette type={body} />}
+      {image && (
+        <img
+          className="car-visual__catalog"
+          key={image.url}
+          src={image.url}
+          srcSet={image.srcSet}
+          sizes="(max-width: 600px) 100vw, 960px"
+          alt={`Иллюстрация: ${title}`}
+          decoding="async"
+          referrerPolicy="no-referrer"
+          onLoad={() => setLoadedImage(image.url)}
+          onError={() => setFailedImage(image.url)}
+        />
+      )}
       <figcaption>
-        {photo
-          ? 'Фото не удалось загрузить · обновите страницу'
-          : body
-            ? `Иллюстрация кузова: ${BODY_LABELS[body].toLowerCase()} · это не фото вашего автомобиля`
-            : 'Фото не добавлено · тип кузова не выбран'}
+        {shown && image && illustration ? (
+          <>
+            {illustration.exact ? `Иллюстрация: ${title} · это не фото вашего автомобиля` : `Иллюстрация модели ${title} · поколение и кузов могут отличаться`}
+            <a href={image.page} target="_blank" rel="noopener noreferrer">
+              Фото: {image.author} · {image.licence} · Wikimedia Commons
+            </a>
+          </>
+        ) : photo ? (
+          'Фото не удалось загрузить · обновите страницу'
+        ) : body ? (
+          `Иллюстрация кузова: ${BODY_LABELS[body].toLowerCase()} · это не фото вашего автомобиля`
+        ) : (
+          'Фото не добавлено · тип кузова не выбран'
+        )}
       </figcaption>
     </figure>
   )
