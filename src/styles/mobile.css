@@ -160,8 +160,13 @@ body {
   /* ---------- Формы: поля в виде плашек ---------- */
 
   .form {
-    row-gap: 4px;
+    row-gap: 18px;
     margin-top: 20px;
+  }
+
+  .photo__hint {
+    font-size: 12px;
+    line-height: 1.45;
   }
 
   .field label {
