@@ -54,18 +54,81 @@ const MODEL_NAMES = [
   [/^Пикап$/, 'Pickup'],
 ]
 
-// Модели, статья о которых называется иначе. Проверено вручную: это тот же автомобиль.
+// Модели, статья о которых называется иначе: тот же автомобиль под другим именем или маркой.
+// Список составлен вручную. only — коды поколений, которые продавались именно под этим именем
+// (остальные поколения статьи к модели не относятся). Без only поколения отбираются по годам модели из каталога.
 const ALIASES = {
-  'Lada (ВАЗ)|2121 (4x4)': 'Lada Niva',
-  'Lada (ВАЗ)|Niva Legend': 'Lada Niva',
-  'Lada (ВАЗ)|Niva Travel': 'Chevrolet Niva',
-  'Land Rover|Range Rover': 'Range Rover',
-  'Land Rover|Range Rover Sport': 'Range Rover Sport',
-  'Land Rover|Range Rover Evoque': 'Range Rover Evoque',
-  'Land Rover|Range Rover Velar': 'Range Rover Velar',
-  'Volkswagen|Polo': 'Volkswagen Polo',
-  'УАЗ|Патриот': 'UAZ Patriot',
-  'УАЗ|Хантер': 'UAZ Hunter',
+  'Chery|Tiggo 4': { title: 'Chery Tiggo 5x' },
+  'Chery|Tiggo 4 Pro': { title: 'Chery Tiggo 5x' },
+  'Chery|Tiggo 7 Pro': { title: 'Chery Tiggo 7' },
+  'Chery|Tiggo 8 Pro': { title: 'Chery Tiggo 8' },
+  'Chevrolet|Lacetti': { title: 'Daewoo Lacetti' },
+  'Chevrolet|Niva': { title: 'Lada Niva Travel' },
+  'Daewoo|Matiz': { title: 'Chevrolet Spark', only: ['M100', 'M150'] },
+  'Geely|Atlas': { title: 'Geely Boyue' },
+  'Geely|Coolray': { title: 'Geely Binyue' },
+  'Geely|Monjaro': { title: 'Geely Xingyue L' },
+  'Geely|Okavango': { title: 'Geely Haoyue' },
+  'Geely|Tugella': { title: 'Geely Xingyue' },
+  'Honda|Jazz': { title: 'Honda Fit' },
+  'Honda|Odyssey': { title: 'Honda Odyssey (international)' },
+  'Honda|Vezel': { title: 'Honda HR-V' },
+  'Hyundai|Avante': { title: 'Hyundai Elantra' },
+  'Hyundai|Grand Starex': { title: 'Hyundai Starex', only: ['TQ'] },
+  'Hyundai|H-1': { title: 'Hyundai Starex' },
+  'Hyundai|ix35': { title: 'Hyundai Tucson', only: ['LM'] },
+  'Hyundai|Solaris': { title: 'Hyundai Accent', only: ['RB', 'HC'] },
+  'Infiniti|EX': { title: 'Infiniti QX50', only: ['J50'] },
+  'Infiniti|FX': { title: 'Infiniti QX70' },
+  'Kia|Magentis': { title: 'Kia K5', only: ['MS', 'MG'] },
+  'Kia|Morning': { title: 'Kia Picanto' },
+  'Kia|Optima': { title: 'Kia K5', only: ['MS', 'MG', 'TF', 'JF'] },
+  'Kia|Quoris': { title: 'Kia K9', only: ['KH'] },
+  'Kia|Sedona': { title: 'Kia Carnival' },
+  'Lada (ВАЗ)|2105': { title: 'Lada Riva' },
+  'Lada (ВАЗ)|2107': { title: 'Lada Riva' },
+  'Lada (ВАЗ)|2108': { title: 'Lada Samara' },
+  'Lada (ВАЗ)|2109': { title: 'Lada Samara' },
+  'Lada (ВАЗ)|21099': { title: 'Lada Samara' },
+  'Lada (ВАЗ)|2110': { title: 'Lada 110' },
+  'Lada (ВАЗ)|2113': { title: 'Lada Samara' },
+  'Lada (ВАЗ)|2114': { title: 'Lada Samara' },
+  'Lada (ВАЗ)|2115': { title: 'Lada Samara' },
+  'Lada (ВАЗ)|2121 (4x4)': { title: 'Lada Niva' },
+  'Lada (ВАЗ)|Niva Legend': { title: 'Lada Niva' },
+  'Lada (ВАЗ)|Niva Travel': { title: 'Lada Niva Travel' },
+  'Land Rover|Range Rover': { title: 'Range Rover' },
+  'Land Rover|Range Rover Evoque': { title: 'Range Rover Evoque' },
+  'Land Rover|Range Rover Sport': { title: 'Range Rover Sport' },
+  'Land Rover|Range Rover Velar': { title: 'Range Rover Velar' },
+  'Mercedes-Benz|GL-Класс': { title: 'Mercedes-Benz GLS' },
+  'Mercedes-Benz|M-Класс': { title: 'Mercedes-Benz GLE' },
+  'Mitsubishi|Airtrek': { title: 'Mitsubishi Outlander', only: ['CU'] },
+  'Mitsubishi|L200': { title: 'Mitsubishi Triton' },
+  'Mitsubishi|Montero': { title: 'Mitsubishi Pajero' },
+  'Mitsubishi|Montero Sport': { title: 'Mitsubishi Pajero Sport' },
+  'Nissan|Bluebird Sylphy': { title: 'Nissan Sylphy' },
+  'Nissan|Dualis': { title: 'Nissan Qashqai', only: ['J10'] },
+  'Nissan|March': { title: 'Nissan Micra' },
+  'Nissan|Safari': { title: 'Nissan Patrol' },
+  'Ravon|Matiz': { title: 'Chevrolet Spark', only: ['M100', 'M150'] },
+  'Ravon|Nexia R3': { title: 'Chevrolet Aveo', only: ['T250'] },
+  'Ravon|R2': { title: 'Chevrolet Spark', only: ['M300'] },
+  'Ravon|R4': { title: 'Chevrolet Cobalt' },
+  'Renault|Duster': { title: 'Dacia Duster' },
+  'Renault|Logan': { title: 'Dacia Logan' },
+  'Renault|Sandero': { title: 'Dacia Sandero' },
+  'Toyota|Altezza': { title: 'Lexus IS', only: ['XE10'] },
+  'Toyota|Celsior': { title: 'Lexus LS' },
+  'Toyota|Estima': { title: 'Toyota Previa' },
+  'Toyota|Hilux Surf': { title: 'Toyota 4Runner' },
+  'Toyota|Kluger': { title: 'Toyota Highlander' },
+  'Toyota|Vellfire': { title: 'Toyota Alphard' },
+  'Toyota|Windom': { title: 'Lexus ES' },
+  'Volkswagen|Bora': { title: 'Volkswagen Jetta', only: ['1J'] },
+  'Volkswagen|Teramont': { title: 'Volkswagen Atlas' },
+  'УАЗ|Патриот': { title: 'UAZ Patriot' },
+  'УАЗ|Хантер': { title: 'UAZ Hunter' },
 }
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
@@ -327,13 +390,13 @@ const SKIP_SECTION = /concept|motorsport|racing|rally|prototype|safety|sales|awa
 
 /** Разбирает статью: общая карточка и карточки разделов-поколений */
 function parseArticle(text) {
-  const headings = [...text.matchAll(/^(={2,5})\s*(.+?)\s*\1\s*$/gm)].map((match) => ({ at: match.index, level: match[1].length, title: match[2] }))
+  const headings = [...text.matchAll(/^(={2,5})\s*(.+?)\s*\1[ \t]*(?:<!--.*?-->)?[ \t]*$/gm)].map((match) => ({ at: match.index, level: match[1].length, title: match[2] }))
   const sectionOf = (position) => {
     let current = null
     for (const heading of headings) if (heading.at < position) current = heading
     return current
   }
-  const boxes = findTemplates(text, 'Infobox automobile').map((box) => ({ heading: sectionOf(box.start), params: templateParams(box.body) }))
+  const boxes = findTemplates(text, 'Infobox (?:automobile|electric vehicle)').map((box) => ({ heading: sectionOf(box.start), params: templateParams(box.body) }))
   const top = boxes.find((box) => box.heading === null)?.params ?? null
 
   const generations = []
@@ -354,8 +417,12 @@ function parseArticle(text) {
     const end = headings[index + 1]?.at ?? text.length
     const body = text.slice(heading.at, end)
     if (described.has(heading.at)) return
-    const target = body.match(/\{\{\s*(?:main|main article|see also|further)\s*\|\s*([^|{}]+?)\s*(?:\||\}\})/i)?.[1]
-    if (target) links.push({ heading: heading.title, target: target.replace(/_/g, ' ').replace(/#.*$/, '').trim() })
+    for (const template of body.matchAll(/\{\{\s*(?:main|main article|further)\s*\|([^{}]+)\}\}/gi)) {
+      for (const part of template[1].split('|')) {
+        const target = part.replace(/_/g, ' ').replace(/#.*$/, '').trim()
+        if (target && !target.includes('=')) links.push({ heading: heading.title, target })
+      }
+    }
   })
   return { top, generations, links }
 }
@@ -403,7 +470,7 @@ const normal = (text) => text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').t
 
 function titlesFor(make, model) {
   const alias = ALIASES[`${make}|${model}`]
-  if (alias) return [alias]
+  if (alias) return [alias.title]
   let name = model
   for (const [pattern, replacement] of MODEL_NAMES) name = name.replace(pattern, replacement)
   // «Cruze (HR)», «Passat (North America and China)» — отдельные автомобили, а не общая статья о модели
@@ -435,10 +502,6 @@ for (const item of wanted) {
   const parsed = parseArticle(article.text)
   if (!parsed.top && parsed.generations.length === 0) continue
   // модель без разделов-поколений: единственное поколение описано общей карточкой
-  if (parsed.generations.length === 0 && parsed.links.length === 0 && parsed.top && codesFromField(parsed.top.model_code).length > 0) {
-    const years = parseYears(parsed.top.production) ?? parseYears(parsed.top.model_years)
-    if (years) parsed.generations.push({ heading: '', params: parsed.top, years })
-  }
   models.set(key, { ...item, article: article.title, exact: exact && !ALIASES[key], parsed })
 }
 
@@ -459,7 +522,7 @@ for (const model of models.values()) {
 // а всю линейку — её общие годы и фото нельзя приписывать каждому поколению.
 for (const model of models.values()) {
   const accepted = model.parsed.links.filter((link) => link.accepted)
-  for (const link of accepted) if (accepted.filter((other) => other.target === link.target).length > 1) link.accepted = false
+  for (const link of accepted) if (accepted.filter((other) => other.target === link.target).length > 1) link.shared = true
 }
 const subArticles = await fetchArticles([...subTitles])
 
@@ -473,6 +536,14 @@ for (const [key, model] of models) {
     const article = subArticles.get(link.target)
     if (!article) continue
     const sub = parseArticle(article.text)
+    if (link.shared) {
+      // общая статья о родственной модели («Kia K3» для Cerato): берётся только тот её раздел,
+      // код которого назван в заголовке раздела исходной статьи
+      const wanted = codesFromTitle(link.heading).map((code) => code[0])
+      const match = sub.generations.find((inner) => buildGeneration(inner).codes.some((code) => wanted.includes(code[0])))
+      if (match) list.push({ ...buildGeneration(match), ordinal: ordinalOf(link.heading) })
+      continue
+    }
     const top = sub.top
     const years = top && (parseYears(top.production) ?? parseYears(top.model_years))
     if (!years) continue
@@ -484,6 +555,12 @@ for (const [key, model] of models) {
     for (const inner of sub.generations) {
       if (stripHeading(inner.params.name ?? '').startsWith(model.article + ' (')) list.push(buildGeneration({ ...inner, heading: '' }))
     }
+  }
+
+  // модель без разделов-поколений: единственное поколение описано общей карточкой статьи
+  if (list.length === 0 && model.parsed.top && codesFromField(model.parsed.top.model_code).length > 0) {
+    const years = parseYears(model.parsed.top.production) ?? parseYears(model.parsed.top.model_years)
+    if (years) list.push(buildGeneration({ params: model.parsed.top, years, heading: '' }))
   }
 
   // одно и то же поколение не повторяется: совпадают коды или (без кодов) номер и год начала
@@ -518,11 +595,12 @@ for (const [key, model] of models) {
 
   // статья бывает шире модели каталога (предшественники, общая статья для нескольких названий) —
   // остаются поколения, которые пересекаются с годами выпуска самой модели
-  const kept = unique.filter((generation) => (!model.to || generation.from <= model.to + 1) && (!model.from || (generation.to ?? THIS_YEAR) >= model.from - 1))
+  const only = ALIASES[key]?.only
+  const kept = unique.filter((generation) => !only || generation.codes.some((code) => only.includes(code[0]))).filter((generation) => (!model.to || generation.from <= model.to + 1) && (!model.from || (generation.to ?? THIS_YEAR) >= model.from - 1))
   model.generations = kept
   model.image = imageName(model.parsed.top?.image)
   // без поколений модель остаётся в справочнике только ради фотографии
-  if (kept.length === 0 && !(model.exact && model.image)) {
+  if (kept.length === 0 && !((model.exact || (ALIASES[key] && !only)) && model.image)) {
     models.delete(key)
     continue
   }
