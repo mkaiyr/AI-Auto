@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react'
 import { Link } from '../router'
 import { buildMessages } from './prompt'
-import { classifyQuestion, SAFETY_ANSWER, SAFETY_NOTICE, type SafetyClass } from './safety'
+import { classifyQuestion, describesSymptom, GUARDED_ANSWER, permitsDriving, SAFETY_ANSWER, SAFETY_NOTICE, SYMPTOM_NOTE, type SafetyClass } from './safety'
 import { getAssistantProvider } from './providers'
 import { AssistantError, type ChatMessage, type Support } from './types'
 import './assistant.css'
@@ -25,6 +25,8 @@ type Stage = 'checking' | 'unsupported' | 'idle' | 'loading' | 'ready'
 interface Turn extends ChatMessage {
   /** вопрос затрагивает безопасность: ответ написан заранее, а не моделью, и помечен предупреждением */
   safety?: Exclude<SafetyClass, 'none'>
+  /** вопрос о неполадке: под ответом модели стоит оговорка */
+  symptom?: boolean
 }
 
 const MODEL_KEY = 'ai-auto:assistant-model'
@@ -175,9 +177,21 @@ export function AssistantChat({ loadCarContext }: AssistantChatProps) {
       setTurns([...history, { role: 'assistant', content: SAFETY_ANSWER[safety], safety }])
       return
     }
-    setTurns([...history, { role: 'assistant', content: '' }])
+    const symptom = describesSymptom(question)
+    setTurns([...history, { role: 'assistant', content: '', symptom }])
     setGenerating(true)
-    const write = (content: string) => setTurns([...history, { role: 'assistant', content }])
+    // Ответ проверяется по мере появления: разрешение ехать дальше модель давать не вправе
+    let guarded = false
+    const write = (content: string) => {
+      if (guarded) return
+      if (permitsDriving(content)) {
+        guarded = true
+        provider.stop()
+        setTurns([...history, { role: 'assistant', content: GUARDED_ANSWER, safety: 'danger' }])
+        return
+      }
+      setTurns([...history, { role: 'assistant', content, symptom }])
+    }
     try {
       const answer = await provider.generate(buildMessages(history, car?.text ?? null), write)
       write(answer.trim() === '' ? 'Ответ не получен. Попробуйте переформулировать вопрос.' : answer)
@@ -356,6 +370,7 @@ export function AssistantChat({ loadCarContext }: AssistantChatProps) {
                 <div key={index} className="ai__turn ai__turn--assistant">
                   {turn.safety && <p className="ai__danger">{SAFETY_NOTICE[turn.safety]}</p>}
                   <p>{turn.content === '' ? <span className="ai__typing">ИИ думает…</span> : plain(turn.content)}</p>
+                  {turn.symptom && turn.content !== '' && <p className="ai__note">{SYMPTOM_NOTE}</p>}
                 </div>
               ),
             )}

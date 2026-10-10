@@ -205,6 +205,15 @@
   white-space: normal;
 }
 
+.ai__note {
+  margin-top: 10px;
+  padding-left: 12px;
+  border-left: 2px solid rgb(var(--burgundy-rgb));
+  color: var(--text-muted);
+  font-size: 13px;
+  white-space: normal;
+}
+
 .ai__typing {
   color: var(--text-dim);
 }
