@@ -82,7 +82,7 @@
 - Changan CS55 [пок. 1] 2017–2024: рестайлинг с 2018, фото «Changan CS55 facelift 001.jpg»
 - Changan CS75 [C928] 2024–н.в.: рестайлинг с 2026, фото «Changan CS75 Plus III facelift 002.jpg»
 - Changan Eado [пок. 3] 2023–н.в.: рестайлинг с 2025, фото обновлённой версии нет
-- Changan Raeton Plus [CC] 2017–2022: рестайлинг с 2020, фото «Changan Raeton CC facelift 001.jpg»
+- Changan Raeton Plus [CC] 2017–2022: рестайлинг с 2020, фото обновлённой версии нет
 - Chery Tiggo 7 [T15] 2016–2020: рестайлинг с 2018, фото обновлённой версии нет
 - Chery Tiggo 7 Pro [T15] 2016–2020: рестайлинг с 2018, фото обновлённой версии нет
 - Chery Tiggo 9 [T10] 2023–н.в.: рестайлинг с 2026, фото «Chery Tiggo 9 2026 facelift 004.jpg»
@@ -161,7 +161,7 @@
 - GMC Terrain [пок. 2] 2017–2024: рестайлинг с 2022, фото обновлённой версии нет
 - Haval F7 [F7] 2018–2024: рестайлинг с 2022, фото обновлённой версии нет
 - Haval H6 [пок. 3] 2020–н.в.: рестайлинг с 2024, фото обновлённой версии нет
-- Haval H6 [H6L] 2023–н.в.: рестайлинг с 2025, фото «Haval Xiaolong Max facelift 001.jpg»
+- Haval H6 [H6L] 2023–н.в.: рестайлинг с 2025, фото обновлённой версии нет
 - Haval M6 [пок. 1] 2017–2021: рестайлинг с 2019, фото обновлённой версии нет
 - Honda Accord [SY/SZ/AC/AD] 1981–1985: рестайлинг с 1983, фото обновлённой версии нет
 - Honda Accord [CB7] 1989–1993: рестайлинг с 1991, фото обновлённой версии нет
@@ -212,7 +212,7 @@
 - Hyundai Kona [OS] 2017–2023: рестайлинг с 2020, фото «Hyundai Kona Facelift IMG 5343.jpg»
 - Hyundai Mistra [CF] 2013–2020: рестайлинг с 2017, фото обновлённой версии нет
 - Hyundai Sonata [LF] 2014–2023: рестайлинг с 2017, фото обновлённой версии нет
-- Hyundai Tucson [LM] 2009–2022: рестайлинг с 2013, фото «Hyundai ix35 FIFA World Cup Edition (Facelift) – Frontansicht, 5. April 2014, Düsseldorf.jpg»
+- Hyundai Tucson [LM] 2009–2022: рестайлинг с 2013, фото обновлённой версии нет
 - Isuzu D-Max [RG01] 2019–н.в.: рестайлинг с 2023, фото обновлённой версии нет
 - Isuzu MU-X [RJ] 2020–н.в.: рестайлинг с 2024, фото «Isuzu MU-X LS-M (II, Facelift) – f 02012026.jpg»
 - Jaguar XK [X150] 2005–2014: рестайлинг с 2011, фото обновлённой версии нет
@@ -444,7 +444,7 @@
 
 —
 
-## Отброшенные фотографии — 5
+## Отброшенные фотографии: год не совпадает — 5
 
 Год в имени файла не попадает в годы выпуска поколения — вероятно, на снимке другое поколение.
 
@@ -453,6 +453,217 @@
 - Haval H6 [H6] 2015–2018 ← 2020 Haval H6 Coupe Blue Label.jpg
 - Haval H6 Coupe [пок. 1] 2015–2018 ← 2020 Haval H6 Coupe Blue Label.jpg
 - McLaren W1 [P18] 2026–н.в. ← 2024 McLaren W1 SP25.jpg
+
+## Отброшенные фотографии: названа другая модель — 206
+
+Имя файла называет другую модель той же марки и не называет эту. Вместо снимка показывается общее фото модели или силуэт.
+
+- Aion V [пок. 1] ← 2021 GAC Aion V Plus front.jpg (названа модель V Plus)
+- Aston Martin DBS [V8] ← 1974 Aston Martin V8 Vantage.jpg (названа модель V8 Vantage)
+- Audi 80 [S2] ← Audi S2 Wikipedia.JPG (названа модель S2)
+- Audi 80 [8C] ← 1995 Audi RS2 Avant LC25.jpg (названа модель RS 2)
+- Audi A6 [4G] ← 2013 Audi A7 (4G) 3.0 TDI S line quattro sedan (2017-01-15) 01.jpg (названа модель A7)
+- Audi Coupe [S2] ← Audi S2 Wikipedia.JPG (названа модель S2)
+- Audi S8 [D3/4E] ← 2003-2005 Audi A8 (4E) 4.2 quattro sedan (2011-01-05).jpg (названа модель A8)
+- Audi S8 [D4/4H] ← 2012 Audi A8 (4H) 4.2 quattro sedan (2018-10-12) 01.jpg (названа модель A8)
+- Audi S8 [D5/4N] ← 2018 Audi A8 50 TDi Quattro Automatic 3.0 Front.jpg (названа модель A8)
+- BMW 3 серии [NA0/NA8/ZA0] ← BMW i3 50 xDrive First Edition (NA0) – f2 20082026.jpg (названа модель i3)
+- BMW X5 [G65/G78] ← BMW iX5 60 xDrive (G65) – f 20082026.jpg (названа модель iX5)
+- BYD Tang [BYD] ← BYD Datang 004.jpg (названа модель Datang)
+- BYD Yuan [SC3E] ← BYD Atto 2 IAA 2025 DSC 2131.jpg (названа модель Atto 2)
+- Cadillac Sixty Special (общее фото модели) ← Cadillac Fleetwood, 1975.png
+- Cadillac Sixty Special [пок. 9] ← Cadillac Fleetwood (Gibeau Orange Julep).jpg (названа модель Fleetwood)
+- Changan Lamore (общее фото модели) ← Changan Yida 006.jpg
+- Chery Q22 (общее фото модели) ← 2009 Chery Karry Youyou, front 8.8.18.jpg
+- Chery Tiggo 7 [T1EJ] ← Chery Explore 06 001 (cropped).jpg (названа модель Explore 06)
+- Chery Tiggo 7 Pro [T1EJ] ← Chery Explore 06 001 (cropped).jpg (названа модель Explore 06)
+- Chevrolet C/K [пок. 2] ← 1970 Chevrolet C10 Pickup (cropped).jpg (названа модель C-10)
+- Chevrolet Malibu [пок. 3] ← 1970 Chevrolet Chevelle SS 396 Sport Coupe, front left, 06-08-2024.jpg (названа модель Chevelle)
+- Chevrolet Spark [M200/M250] ← 2007 Chevrolet Matiz SE 1.0 Front.jpg (названа модель Matiz)
+- Chevrolet Van [пок. 4] ← 2024 Chevrolet Express LT 3500 Extended, 12-29-2025.jpg (названа модель Express)
+- Chrysler Fifth Avenue [TP] ← 79-81 Chrysler New Yorker 5th Avenue.jpg (названа модель New Yorker)
+- Chrysler New Yorker [LHS] ← 2nd Chrysler LHS.jpg (названа модель LHS)
+- Dacia 1310 [CN2/CN3] ← 1994 Dacia 1410 (CN2) front view.jpg (названа модель 1410)
+- Daihatsu Boon [M300/AC10] ← Daihatsu Sirion front 20081202.jpg (названа модель Sirion)
+- Daihatsu Rugger (общее фото модели) ← Daihatsu Taft (front), Jakarta.jpg
+- DS 3 (общее фото модели) ← DS 3 Crossback PureTech 155 EAT8 So Chic – f 25072020.jpg
+- Ferrari Testarossa [TR] ← 1992 Ferrari 512 TR Petersen Automotive Museum.jpg (названа модель 512 TR)
+- Fiat 124 Sport Spider (общее фото модели) ← Fiat 124 Spider turquoise.jpg
+- Ford Transit Connect [пок. 3] ← Ford Tourneo Connect Active (3rd generation) Leonberg 2022 1X7A0445.jpg (названа модель Tourneo Connect)
+- Ford Windstar [пок. 3] ← 2004 Ford Freestar SE, front 3.11.20.jpg (названа модель Freestar)
+- Forthing Lingzhi Plus (общее фото модели) ← Forthing M7 IMG003.jpg
+- Geely Emgrand L [FE-5] ← 2018 Geely Emgrand GL (facelift).jpg (названа модель Emgrand GL)
+- Geely EX5 (общее фото модели) ← Geely Galaxy E5 003 (cropped).jpg
+- Geely EX5 [E245] ← Geely Galaxy E5 003 (cropped).jpg (названа модель Galaxy E5)
+- Geely Xingyue L (общее фото модели) ← Geely Monjaro (cropped).jpg
+- Geely Xingyue L [KX11] ← Geely Monjaro (cropped).jpg (названа модель Monjaro)
+- Haval F7 [пок. 2] ← 2021 Haval Shenshou.jpg (названа модель Shenshou)
+- Haval H6 [H6L] ← Haval Xiaolong Max 001.jpg (названа модель Xiaolong)
+- Honda CR-X [пок. 3] ← 1994 Honda Civic del Sol Si.jpg (названа модель Civic)
+- Honda Elevate (общее фото модели) ← 2026 Honda WR-V Prestige (Colombia) front view.jpg
+- Honda Elevate [DG5] ← 2026 Honda WR-V Prestige (Colombia) front view.jpg (названа модель WR-V)
+- Honda Fit (общее фото модели) ← Honda Jazz Hybrid Executive (IV) – f 18102020.jpg
+- Honda Fit [GE6/GE7/GE8/GE9/GG1/GG2/GG3/GG4] ← 2008-2010 Honda Jazz (GE) hatchback (2011-10-25).jpg (названа модель Jazz)
+- Honda Fit [GK3/GK4/GK5/GK6/GK7/GH7/GP5/GP6] ← 2017 Honda Jazz EX Navi i-VTEC CVT 1.3 Front.jpg (названа модель Jazz)
+- Honda Fit [GR1/GR2/GR3/GR4/GR5/GR6/GR7/GR8] ← 2020 Honda Jazz SE i-MMD CVT 1.5 Front.jpg (названа модель Jazz)
+- Honda HR-V [RZ] ← Honda ZR-V e-HEV Advance – f 14072024.jpg (названа модель ZR-V)
+- Honda Vezel [RZ] ← Honda ZR-V e-HEV Advance – f 14072024.jpg (названа модель ZR-V)
+- Hyundai Accent [X3] ← 1996 Hyundai Excel (X3) GLX sedan (2015-06-25) 01 (cropped).jpg (названа модель Excel)
+- Hyundai Elantra [CN8] ← Hyundai Avante 2.0 Inspiration CN8 Atlas White (7).jpg (названа модель Avante)
+- Hyundai Excel [X3] ← 2019 Hyundai Accent 1.6L, front 10.8.19.jpg (названа модель Accent)
+- Hyundai Grandeur [TG] ← Hyundai Azera, Front Left.jpg (названа модель Azera)
+- Hyundai H-1 [A1] ← 1998 Hyundai H200 2.4 TD panel van (cropped).jpg (названа модель H200)
+- Hyundai Santro [FF/MX] ← Hyundai Atos 1.0 GL 2000.jpg (названа модель Atos)
+- Hyundai Santro [AH2] ← Hyundai Atos 1.1 Plus 2022.jpg (названа модель Atos)
+- Hyundai Starex [A1] ← 1998 Hyundai H200 2.4 TD panel van (cropped).jpg (названа модель H200)
+- Hyundai Tiburon [RD] ← 1998 Hyundai Coupe (RD) FX coupe (2015-08-07) 01.jpg (названа модель Coupe)
+- Hyundai Tiburon [GK] ← 2004 Hyundai Coupe SE 1.6 Front.jpg (названа модель Coupe)
+- Hyundai Tucson [LM] ← 2010 Hyundai ix35 (LM) Elite wagon 02.jpg (названа модель ix35)
+- Infiniti QX80 [Z62] ← 2011 Infiniti QX56 -- 04-08-2011.jpg (названа модель QX56)
+- Isuzu MU (общее фото модели) ← 2001-2003 Isuzu Rodeo.jpg
+- Isuzu MU [UCS55/UCS69GW] ← 1st-Isuzu-Rodeo.jpg (названа модель Rodeo)
+- Isuzu MU [UER25FW/UES25FW/UES73FW] ← Isuzu-Rodeo-Sport.jpg (названа модель Rodeo)
+- Isuzu MU-X [MU-7] ← ISUZU MU-7.jpg (названа модель MU-7)
+- Isuzu Piazza (общее фото модели) ← 1987 Isuzu Impulse RS Turbo in Pure White, front left, 11-05-2022.jpg
+- Jeep Wagoneer [XJ] ← Jeep Cherokee 2-door.jpg (названа модель Cherokee)
+- Jeep Wagoneer [ZJ] ← 1993-1995 Jeep Grand Cherokee -- 03-30-2012.JPG (названа модель Grand Cherokee)
+- Kia Cadenza [VG] ← 0 Kia K7 (VG) 3.jpg (названа модель K7)
+- Kia Carnival [VQ] ← 2007 Kia Sedona LS 3.0 Front.jpg (названа модель Sedona)
+- Kia Forte (общее фото модели) ← Kia K3 BD FL Snow White Pearl (13) (cropped).jpg
+- Kia Forte [TD] ← Kia Cerato (II) – f 02012026.jpg (названа модель Cerato)
+- Kia Forte [YD] ← 2015 Kia Cerato (YD MY16) Si hatchback (2018-10-19) 01.jpg (названа модель Cerato)
+- Kia Forte [BD] ← 2020 Kia Cerato S hatchback front.jpg (названа модель Cerato)
+- Kia K5 [MS] ← 01-02 Kia Optima.jpg (названа модель Optima)
+- Kia K5 [MG] ← 2008 Kia Magentis LS 2.0.jpg (названа модель Magentis)
+- Kia K5 [JF] ← 2016 Kia Optima SI front.jpg (названа модель Optima)
+- Kia K9 [KH] ← 2012 Kia Quoris (KH) sedan (2012-10-26) (cropped).jpg (названа модель Quoris)
+- Kia Magentis [MS] ← 01-02 Kia Optima.jpg (названа модель Optima)
+- Kia Optima [MG] ← 2008 Kia Magentis LS 2.0.jpg (названа модель Magentis)
+- Kia Sephia [пок. 1] ← 1997 Kia Mentor GLX hatchback (2015-07-09) 01.jpg (названа модель Mentor)
+- Kia Sephia [пок. 2] ← 1998-2000 Kia Mentor GLX sedan (2011-11-08).jpg (названа модель Mentor)
+- Kia Sephia [DC] ← 2001 Kia Rio (DC) LS hatchback (2015-11-13) 01 (cropped).jpg (названа модель Rio)
+- Kia Sephia [JB] ← 2005-2009 Kia Rio (JB) hatchback 02.jpg (названа модель Rio)
+- Lamborghini Aventador [LPI] ← 2022 Lamborghini Countach.jpg (названа модель Countach)
+- Lincoln Z (общее фото модели) ← 2022 Chang'an-Lincoln Zephyr.jpg
+- Lotus Elise [340R] ← Lotus 340R-01.jpg (названа модель 340R)
+- Lynk & Co 02 [E335] ← Lynk & Co Z20 007.jpg (названа модель Z20)
+- Lynk & Co 10 (общее фото модели) ← Lynk & Co Z10 006.jpg
+- Lynk & Co 10 [E371] ← (CHN-Zhejiang) Private Lynk & Co Z10 浙AC6K811 2024-12-15.jpg (названа модель Z10)
+- Mazda 3 [BK] ← 2003-2006 Mazda Axela Sport (cropped).jpg (названа модель Axela)
+- Mazda Capella (общее фото модели) ← Mazda 626 front 20071204.jpg
+- Mazda Capella [CB] ← 1980 Mazda 626 Front.jpg (названа модель 626)
+- Mazda Capella [GC] ← 1985 Mazda 626 (GC Series 2) Super Deluxe sedan (25041581313).jpg (названа модель 626)
+- Mazda Capella [GD/GV] ← 1988 Mazda 626 (GD) Turbo hatchback (5153051707) (cropped).jpg (названа модель 626)
+- Mazda Capella [GE] ← 1993 Mazda 626 (GE) V6 sedan (2011-10-25) 01.jpg (названа модель 626)
+- Mazda Capella [GF/GW] ← 1999 Mazda 626 (GF) Limited sedan (2010-07-08).jpg (названа модель 626)
+- Mazda CX-6e (общее фото модели) ← Mazda EZ-60 EREV China 2026-03-16.jpg
+- Mazda CX-6e [J90K] ← Mazda EZ-60 EREV China 2026-03-16.jpg (названа модель EZ-60)
+- Mazda Demio (общее фото модели) ← 2000 Mazda 121 (DW Series 2) Metro Shades hatchback (2016-01-04) 01 (cropped).jpg
+- Mazda Familia (общее фото модели) ← 2003 Mazda 323 (BJ II) Protegé Shades sedan (2015-08-07) 01.jpg
+- Mazda Familia [FA4] ← Mazda 323 1980.jpg (названа модель 323)
+- Mazda Familia [BF] ← Mazda 323 front 20080220.jpg (названа модель 323)
+- Mazda Familia [BG] ← 1995 Mazda 323 (BG Series 2) 1.6 sedan (2015-07-15) 01.jpg (названа модель 323)
+- Mazda Familia [CB] ← Mazda-Lantis.JPG (названа модель Lantis)
+- Mazda Luce [HC] ← 1987-1989 Mazda 929 (HC) sedan (2011-04-28) 01.jpg (названа модель 929)
+- Mazda Sentia [HD] ← Mazda 929 .jpg (названа модель 929)
+- McLaren 720S [750S] ← 2023 McLaren 750S 1.jpg (названа модель 750S)
+- Mercedes-Benz S-Класс [W111/W112] ← Mercedes-Benz W111 Ilmenau.jpg (названа модель W111)
+- MG 6 (общее фото модели) ← MG 6 Pro 004 (cropped).jpg
+- Mitsubishi Delica [пок. 2] ← 1984 Mitsubishi L300 campervan.jpg (названа модель L300)
+- Mitsubishi L200 [K50/K60/K70] ← Mitsubishi Strada 201.JPG (названа модель Strada)
+- Mitsubishi Mirage [A150] ← 1979 Mitsubishi Colt 1200 GL (2) (cropped).jpg (названа модель Colt)
+- Mitsubishi Mirage [C10] ← 1988 Mitsubishi Colt 1.5 GLX Automatic (cropped).jpg (названа модель Colt)
+- Mitsubishi Mirage [C50/C60] ← Mitsubishi Lancer (ca 1990) at Schaffen-Diest (2018).jpg (названа модель Lancer)
+- Mitsubishi Mirage [CA/CC/CB/CD] ← 1995 Mitsubishi Colt 1.5 GLi Automatic (2) (cropped).jpg (названа модель Colt)
+- Mitsubishi Montero Sport [K80/K90/PA] ← 1998-2000 Mitsubishi Challenger (PA) wagon 02.jpg (названа модель Challenger)
+- Mitsubishi Pajero iO (общее фото модели) ← Mitsubishi Pajero Pinin front 20100525.jpg
+- Mitsubishi Pajero Sport [K80/K90/PA] ← 1998-2000 Mitsubishi Challenger (PA) wagon 02.jpg (названа модель Challenger)
+- Mitsubishi RVR [ASX] ← Mitsubishi ASX (2019) IMG 6615.jpg (названа модель ASX)
+- Mitsubishi Triton [K00/K10/K20/K30] ← Mitsubishi L200 4WD.JPG (названа модель L200)
+- Mitsubishi Triton [K50/K60/K70] ← Mitsubishi Strada 201.JPG (названа модель Strada)
+- Nissan 180SX [RS13U] ← Nissan 200SX Schaffen Diest 2019.jpg (названа модель 200SX)
+- Nissan 370Z (общее фото модели) ← 2012-2017 Nissan Fairlady Z.jpg
+- Nissan AD [Y10] ← Nissan Sunny California 001.JPG (названа модель Sunny)
+- Nissan Almera [G10/N16] ← 2000-2003 NISSAN BLUEBIRD SYLPHY.jpg (названа модель Bluebird)
+- Nissan Almera [G11] ← 2005 Nissan Bluebird-Sylphy 03.jpg (названа модель Bluebird)
+- Nissan Bluebird [T12/T72] ← '90-'91 Nissan Stanza.jpg (названа модель Stanza)
+- Nissan Bluebird Sylphy [B17] ← 2013 Nissan Sentra SR front left.jpg (названа модель Sentra)
+- Nissan Cefiro [A33] ← 1999-2001 Nissan Maxima (A33) ST sedan 01.jpg (названа модель Maxima)
+- Nissan Cefiro [J31] ← 2008 Nissan Teana 01.JPG (названа модель Teana)
+- Nissan Kait (общее фото модели) ← 2026 Nissan Kicks e-Power SV (Thailand) front view.jpg
+- Nissan Kait [P15] ← 2026 Nissan Kicks e-Power SV (Thailand) front view.jpg (названа модель Kicks)
+- Nissan Micra [K12] ← Nissan March K12 005 (cropped).JPG (названа модель March)
+- Nissan Prairie [M12] ← 1999 Nissan Liberty (cropped).jpg (названа модель Liberty)
+- Nissan Pulsar [N10/N11] ← Nissan Cherry in Autumn 1981.jpg (названа модель Cherry)
+- Nissan Pulsar [N12] ← Nissan Cherry per UK nomenclature first registered sep 1984 1270cc.JPG (названа модель Cherry)
+- Nissan Pulsar [B17] ← 2024 Nissan Sentra (B18) DSC 3754.jpg (названа модель Sentra)
+- Nissan Pulsar [N16] ← NISSAN BLUEBIRD SYLPHY G11.jpg (названа модель Bluebird)
+- Nissan Pulsar [C12] ← Nissan Tiida C11 003.JPG (названа модель Tiida)
+- Nissan Sunny [N13] ← 1990 Nissan Pulsar Q (35611811390).jpg (названа модель Pulsar)
+- Nissan Sunny [N14] ← 1993 Nissan Pulsar (N14 CBU) LX 5-door hatchback (2015-07-14) 01.jpg (названа модель Pulsar)
+- Nissan Sunny [N16] ← NISSAN BLUEBIRD SYLPHY G11.jpg (названа модель Bluebird)
+- Nissan Sunny [N17] ← Nissan Almera in Thailand.jpg (названа модель Almera)
+- Nissan Sunny [N18/N19] ← 2020 Nissan Almera VLT Turbo front view (Malaysia) 01.png (названа модель Almera)
+- Nissan Sylphy [B17] ← 2013 Nissan Sentra SR front left.jpg (названа модель Sentra)
+- Nissan Sylphy [B18] ← 2020 Nissan Sentra SV, front 10.22.20.jpg (названа модель Sentra)
+- Nissan Sylphy [B19] ← 2026 Nissan Sentra front view.jpg (названа модель Sentra)
+- Nissan Teana [L33] ← 2015 Nissan Altima in Java Metallic, front left, 10-11-2025.jpg (названа модель Altima)
+- Nissan Teana [L34] ← 2019 Nissan Altima SR AWD, front 9.30.19.jpg (названа модель Altima)
+- Nissan Tiida [C13] ← 2018 Nissan Pulsar Tekna DIG-T CVT 1.2 Front.jpg (названа модель Pulsar)
+- Oldsmobile 442 [пок. 5] ← 1970 Oldsmobile Cutlass Supreme Holiday Coupe, front right, 06-21-2023.jpg (названа модель Cutlass)
+- Ora Good Cat (общее фото модели) ← GWM Ora 03 – f 12102025.jpg
+- Ora Good Cat [ES11] ← GWM Ora 03 – f 12102025.jpg (названа модель 03)
+- Roewe D7 [M7] ← Roewe M7 005.jpg (названа модель M7)
+- SsangYong Rodius [пок. 2] ← 00 ssangyong korandoturismo 1.jpg (названа модель Korando Turismo)
+- Subaru XT (общее фото модели) ← 1985 Subaru Alcyone VR Turbo 4WD.jpg
+- Suzuki Celerio [пок. 1] ← 1994-1997 Suzuki Alto.jpg (названа модель Alto)
+- Suzuki Cultus [SA] ← 1984 Suzuki Swift GL 3-door hatchback.jpg (названа модель Swift)
+- Suzuki Cultus [SF] ← Suzuki Swift 1.0 GA Tropical front.jpg (названа модель Swift)
+- Suzuki Jimny [SJ30/JA11/JB31] ← Suzuki Samurai SJ410 photographed in Sérres, Greece.jpg (названа модель Samurai)
+- Suzuki Solio [MA63S/MA64S/MA34S] ← 2003 Suzuki Wagon R+ GL Automatic 1.2 Front.jpg (названа модель Wagon R)
+- Suzuki Vitara [ET/TA] ← Suzuki Sidekick 2-door.jpg (названа модель Sidekick)
+- Tata Telcoline (общее фото модели) ← Tata Xenon DLE 2013 (41656884701).jpg
+- Tata Telcoline [пок. 2] ← Tata Xenon DLE 2.2L Dicor 2010 (14519082971).jpg (названа модель Xenon)
+- Toyota 4Runner [N120/N130] ← 1993 Toyota Hilux Surf SSR-X in Grey, front left.jpg (названа модель Hilux)
+- Toyota Aqua [NHP10] ← 2012 Toyota Prius c (NHP10R) hatchback (2015-07-03) 01.jpg (названа модель Prius)
+- Toyota Aurion [XV50] ← 2014 Toyota Camry (ASV50R) Atara S sedan.jpg (названа модель Camry)
+- Toyota Auris [E210] ← 2018 Toyota Corolla (MZEA12R) Ascent Sport hatchback (2018-11-02) 01.jpg (названа модель Corolla)
+- Toyota Belta (общее фото модели) ← Toyota Yaris sedan.jpg
+- Toyota Belta [XP90] ← Toyota Yaris sedan.jpg (названа модель Yaris)
+- Toyota Camry [V50] ← Toyota Vista V50 (cropped).jpg (названа модель Vista)
+- Toyota Comfort [NTP10] ← Toyota jpntaxi greencab 1434.JPG (названа модель JPN Taxi)
+- Toyota Corona [T220] ← 2011 Toyota Avensis in Aspen Grey, front left, 06-06-2025.jpg (названа модель Avensis)
+- Toyota Highlander [XU50] ← 2015 Toyota Kluger (GSU55R) GX wagon (2015-11-11) 01.jpg (названа модель Kluger)
+- Toyota Highlander [XU70] ← 2023 Toyota Kluger GX front.jpg (названа модель Kluger)
+- Toyota Ipsum (общее фото модели) ← 2003-2010 Toyota Avensis Verso (ACM21R) GLX wagon (2011-07-17).jpg
+- Toyota Lite Ace (общее фото модели) ← 1997-1999 Toyota TownAce (KR42R) van 01.jpg
+- Toyota Lite Ace [R10] ← Toyota Town Ace Wagon 001.JPG (названа модель Town Ace)
+- Toyota Lite Ace [R20/R30] ← Toyota TownAce (1819429213).jpg (названа модель Town Ace)
+- Toyota Lite Ace [R40/R50] ← 1996 Toyota Townace-Noah 01.jpg (названа модель Town Ace)
+- Toyota Mark II [X50/X60] ← 1982-1984 Toyota Cressida (MX62) GL sedan 01.jpg (названа модель Cressida)
+- Toyota Platz (общее фото модели) ← Toyota-Echo-sedan.jpg
+- Toyota Previa (общее фото модели) ← 2016 Toyota Estima.jpg
+- Toyota Previa [XR30/XR40] ← Toyota Estima L X-Limited.jpg (названа модель Estima)
+- Toyota Ractis (общее фото модели) ← Toyota Verso-S 1.33 VVT-i Life – Frontansicht (1), 31. März 2011, Mettmann.jpg
+- Toyota Ractis [XP120] ← Toyota Verso-S 1.33 VVT-i Life – Frontansicht (2), 31. März 2011, Mettmann.jpg (названа модель Verso)
+- Toyota Sprinter [E70] ← Toyota Corolla KE70, Bangladesh. (29466858966) (cropped).jpg (названа модель Corolla)
+- Toyota Sprinter Carib [AE95G] ← 1989 Toyota Corolla (AE95R) SR5 station wagon (2011-12-05).jpg (названа модель Corolla)
+- Toyota Sprinter Trueno [TE71] ← 1979-1981 Toyota Corolla Levin.jpg (названа модель Corolla)
+- Toyota Succeed [XP50] ← Toyota Probox DX in Silver Metallic, front left.jpg (названа модель Probox)
+- Toyota Succeed [XP160] ← 2018 Toyota Probox Van DX Comfort in White, front right.jpg (названа модель Probox)
+- Toyota Vios [AC100] ← 2022 Toyota Yaris ATIV 1.2 Premium Luxury (2).jpg (названа модель Yaris)
+- Toyota Vitz (общее фото модели) ← 2017 Toyota Yaris L 5-door, front right, 08-25-2024.jpg
+- Toyota Vitz [XP10] ← 2000 Toyota Echo (NCP10R) 3-door hatchback (2015-07-03) 01.jpg (названа модель Echo)
+- Toyota Vitz [XP90] ← Toyota Yaris (II) – Frontansicht, 13. Juni 2011, Wuppertal.jpg (названа модель Yaris)
+- Toyota Vitz [XP130] ← Toyota Yaris (XP130) – Frontansicht, 21. Juli 2012, Heiligenhaus (cropped).jpg (названа модель Yaris)
+- Volkswagen Jetta [1J] ← 2003 Volkswagen Bora S TDi 1.9 Front.jpg (названа модель Bora)
+- Volkswagen Magotan [B8] ← 2017 Volkswagen Passat SE Business TDi BM 2.0.jpg (названа модель Passat)
+- Volkswagen Sagitar [1B] ← 2013 Volkswagen Jetta GLI Autobahn in Deep Black Metallic, Front Right, 12-25-2021.jpg (названа модель Jetta)
+- Volkswagen Sagitar [A7] ← 2019 Volkswagen Jetta S 1.4T R-Line in Habañero Orange Metallic, front right.jpg (названа модель Jetta)
+- Volkswagen Transporter [T3] ← 1984-1986 Volkswagen Caravelle (253) CL van (2015-12-07) 01.jpg (названа модель Caravelle)
+- Volkswagen Transporter [T5] ← 2004-2010 Volkswagen Multivan TDI van 01.jpg (названа модель Multivan)
+- Volkswagen Type 2 [T3] ← 1984-1986 Volkswagen Caravelle (253) CL van (2015-12-07) 01.jpg (названа модель Caravelle)
+- Zastava Skala (общее фото модели) ← Zastava Yugo 311 1116cc.jpg
 
 ## Ручные исправления данных — 1
 
