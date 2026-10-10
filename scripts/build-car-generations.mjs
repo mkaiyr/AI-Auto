@@ -220,9 +220,8 @@ function parseYears(value) {
     const lineOpen = OPEN_END.test(line)
     if (from === null) {
       from = years[0]
-      // один год без тире — известно только начало выпуска
-      to = lineOpen ? null : years.length > 1 || !/–|-| to /.test(line) && false ? Math.max(...years) : undefined
-      if (!lineOpen && years.length === 1 && !/[–-]/.test(line)) to = undefined
+      // один год в строке — известно только начало выпуска, окончание определяется позже
+      to = lineOpen ? null : years.length > 1 ? Math.max(...years) : undefined
     }
     open ||= lineOpen
     min = min === null ? Math.min(...years) : Math.min(min, ...years)
