@@ -130,6 +130,28 @@ const CORRECTIONS = {
   'Nissan|Almera': { split: [{ code: 'G15', from: 2012, to: 2018 }] },
 }
 
+// Рестайлинги, проверенные вручную. Рестайлинг — не новое поколение: код кузова тот же, меняются
+// внешность и годы. В справочник попадают только подтверждённые случаи; остальные поколения с разделом
+// «Facelift» в статье лишь помечаются (см. FACELIFT_HEADING), даты для них не выдумываются.
+//   code  — код поколения, к которому относится рестайлинг;
+//   from  — первый год, когда обновлённая версия выпускалась или продавалась;
+//   image — фотография именно обновлённой версии (файл Wikimedia Commons из раздела «Facelift» статьи).
+const FACELIFTS = {
+  'Hyundai|Sonata': [
+    {
+      // Обновлённая Sonata DN8 («Sonata The Edge») показана 26 марта 2023 года на Seoul Mobility Show,
+      // в Северной Америке представлена 30 августа 2023 года (en.wikipedia.org/wiki/Hyundai_Sonata, раздел
+      // «Eighth generation → Facelift»); официальные продажи в Казахстане — с октября 2023 года.
+      code: 'DN8',
+      from: 2023,
+      image: '2024 Hyundai Sonata (facelift), front.jpg',
+    },
+  ],
+}
+
+/** Подзаголовок, говорящий о рестайлинге поколения */
+const FACELIFT_HEADING = /facelift|refresh|restyl|mid-cycle|\bLCI\b|life cycle impulse/i
+
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 // ---------- запросы к API с кешем ----------
@@ -407,7 +429,13 @@ function parseArticle(text) {
     if (!box.heading || SKIP_SECTION.test(stripHeading(box.heading.title))) continue
     const years = parseYears(box.params.production) ?? parseYears(box.params.model_years)
     if (!years) continue
-    generations.push({ heading: box.heading.title, params: box.params, years })
+    // есть ли внутри раздела поколения подраздел о рестайлинге
+    const startIndex = headings.indexOf(box.heading)
+    let facelifted = false
+    for (let index = startIndex + 1; index < headings.length && headings[index].level > box.heading.level; index++) {
+      if (FACELIFT_HEADING.test(stripHeading(headings[index].title))) facelifted = true
+    }
+    generations.push({ heading: box.heading.title, params: box.params, years, facelifted })
     described.add(box.heading.at)
   }
 
@@ -425,7 +453,9 @@ function parseArticle(text) {
       }
     }
   })
-  return { top, generations, links }
+  // для отдельной статьи о поколении: раздел о рестайлинге где угодно в статье
+  const facelifted = headings.some((heading) => FACELIFT_HEADING.test(stripHeading(heading.title)))
+  return { top, generations, links, facelifted }
 }
 
 /** Первый источник, в котором нашлись коды: от самого точного к самому общему */
@@ -461,6 +491,7 @@ function buildGeneration(source) {
     from: years.from,
     to: years.to,
     image: imageName(params.image),
+    facelifted: Boolean(source.facelifted),
   }
 }
 
@@ -551,7 +582,7 @@ for (const [key, model] of models) {
     // «Mercedes-Benz W124» — код стоит прямо в названии статьи
     const tail = article.title.split(' ').pop()
     const title = isCode(tail) && /\d/.test(tail) ? `(${tail})` : article.title
-    list.push(buildGeneration({ params: top, years, heading: link.heading, title }))
+    list.push(buildGeneration({ params: top, years, heading: link.heading, title, facelifted: sub.facelifted }))
     // в статье о поколении описано и следующее: «Volkswagen Passat (B7)» внутри статьи о B6
     for (const inner of sub.generations) {
       if (stripHeading(inner.params.name ?? '').startsWith(model.article + ' (')) list.push(buildGeneration({ ...inner, heading: '' }))
@@ -615,6 +646,11 @@ for (const [key, model] of models) {
   const only = ALIASES[key]?.only
   const kept = unique.filter((generation) => !only || generation.codes.some((code) => only.includes(code[0]))).filter((generation) => (!model.to || generation.from <= model.to + 1) && (!model.from || (generation.to ?? THIS_YEAR) >= model.from - 1))
   model.generations = kept
+  for (const fix of FACELIFTS[key] ?? []) {
+    const target = kept.find((generation) => generation.codes.some((item) => item[0] === fix.code))
+    if (!target) throw new Error(`Рестайлинг ${key} ${fix.code}: поколение не найдено в данных`)
+    target.facelift = { from: fix.from, image: fix.image }
+  }
 
   // Пропуск в нумерации (I, II, VIII…) означает, что часть поколений в статье не описана карточкой.
   // Для такой модели единственный найденный вариант не обязательно верный — форма не подставляет его сама.
@@ -642,7 +678,10 @@ console.log('4. Лицензии фотографий (Wikimedia Commons)')
 const files = new Set()
 for (const model of models.values()) {
   if (model.image) files.add(model.image)
-  for (const generation of model.generations) if (generation.image) files.add(generation.image)
+  for (const generation of model.generations) {
+    if (generation.image) files.add(generation.image)
+    if (generation.facelift?.image) files.add(generation.facelift.image)
+  }
 }
 const FREE_LICENCE = /^(CC BY(-SA)? \d(\.\d)?( [a-z-]+)?|CC0|Public domain|PDM)/i
 const images = new Map()
@@ -691,7 +730,7 @@ for (const model of models.values()) {
   const entry = {
     // статья-источник
     s: model.article.replace(/ /g, '_'),
-    // поколение: o — номер (0 — не указан), c — коды [код, примечание о кузове],
+    // поколение: o — номер (0 — не указан), c — коды [код, примечание о кузове], r и x — рестайлинг (см. ниже),
     // f/t — годы выпуска по всем рынкам (t: 0 — выпускается), i — фотография [путь, автор, лицензия]
     g: model.generations.map((generation) => {
       // годы поколения не выходят за годы выпуска самой модели по каталогу (с запасом в один год):
@@ -701,6 +740,14 @@ for (const model of models.values()) {
       const row = { o: generation.ordinal, c: generation.codes, f: from, t: to }
       const image = generation.image && images.get(generation.image)
       if (image) row.i = image
+      if (generation.facelift) {
+        // r — подтверждённый рестайлинг: [год начала, фотография обновлённой версии]
+        const restyled = generation.facelift.image && images.get(generation.facelift.image)
+        row.r = restyled ? [generation.facelift.from, restyled] : [generation.facelift.from]
+      } else if (generation.facelifted) {
+        // x — в источнике у поколения есть раздел о рестайлинге, но в справочнике он не выделен
+        row.x = 1
+      }
       return row
     }),
   }

@@ -13,7 +13,7 @@ import {
 import { validateCar, type CarFormErrors, type CarFormValues } from '../car/carValidation'
 import { CarVisual } from '../car/CarVisual'
 import { findMake, findModel, loadCatalog, POPULAR_MAKES, searchKey, type CatalogMake } from '../car/catalog/catalog'
-import { generationOptions, optionsForYear, pickIllustration, type GenerationOption } from '../car/catalog/generations'
+import { generationOptions, generationTitle, optionsForYear, pickIllustration, type GenerationOption } from '../car/catalog/generations'
 import { useGenerations } from '../car/catalog/useGenerations'
 import { errorText } from '../dataErrors'
 import { Combobox, type ComboOption } from './Combobox'
@@ -374,6 +374,13 @@ export function CarForm({ initial, initialPhoto, onSubmit, onCancel }: CarFormPr
   // выбранный вариант остаётся в списке, даже если не совпадает с годом: значение не должно пропасть молча
   const listed = selected && !candidates.includes(selected) ? [selected, ...candidates] : candidates
   const sameGeneration = candidates.length > 1 && candidates.every((item) => item.generation === candidates[0].generation)
+  /** год рестайлинга: выпускались и прежняя, и обновлённая версия одного поколения */
+  const bothVersions = sameGeneration && candidates.some((item) => item.restyled) && candidates.some((item) => !item.restyled)
+  /** рестайлинг у выбранного поколения был, но в справочнике он не выделен отдельным вариантом */
+  const faceliftNote =
+    selected && selected.generation.faceliftUnlisted
+      ? ' У этого поколения был рестайлинг; в справочнике он отдельно не выделен — уточнить версию можно ручным вводом.'
+      : ''
   const generationLabel = (
     <>
       Поколение / код кузова <span>необязательно</span>
@@ -391,10 +398,14 @@ export function CarForm({ initial, initialPhoto, onSubmit, onCancel }: CarFormPr
             ? partial
               ? 'В справочнике описаны не все поколения этой модели. Выберите вариант, только если он ваш, или введите код вручную.'
               : selected
-                ? 'Определено по году выпуска: в этом году выпускалось одно поколение.'
+                ? selected.restyled
+                  ? 'Определено по году выпуска: в этом году выпускалась только обновлённая версия (рестайлинг).'
+                  : 'Определено по году выпуска: в этом году выпускалось одно поколение.'
                 : 'В этом году выпускалось одно поколение — выберите его, если оно ваше.'
-            : sameGeneration
-              ? 'Поколение определено по году. У разных кузовов разные коды — выберите свой.'
+            : bothVersions
+              ? `В ${year} году выпускались и версия до рестайлинга, и обновлённая — выберите свою.`
+              : sameGeneration
+                ? 'Поколение определено по году. У разных кузовов разные коды — выберите свой.'
               : selected
                 ? `В ${year} году выпускалось несколько поколений — проверьте, что выбрано ваше.`
                 : `В ${year} году выпускалось несколько поколений — выберите своё.`
@@ -450,6 +461,7 @@ export function CarForm({ initial, initialPhoto, onSubmit, onCancel }: CarFormPr
         <p className="field__hint" id="car-generation-hint">
           {generationDropped && 'Прежний вариант не подходит к новому году. '}
           {generationHint}
+          {faceliftNote}
         </p>
       )}
       {switchLink('Ввести вручную', () => setManual((current) => ({ ...current, generation: true })))}
@@ -470,7 +482,7 @@ export function CarForm({ initial, initialPhoto, onSubmit, onCancel }: CarFormPr
           body={body}
           alt="Предпросмотр фотографии автомобиля"
           illustration={illustration}
-          title={[values.make, values.model, illustration?.exact && values.generation].filter(Boolean).join(' ')}
+          title={[values.make, values.model, illustration?.exact && generationTitle(values.generation)].filter(Boolean).join(' ')}
         />
         <div className="photo__controls">
           <label className="btn photo__upload">

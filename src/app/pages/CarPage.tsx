@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { BODY_LABELS, ENGINE_LABELS } from '../car/carStore'
 import { CarVisual } from '../car/CarVisual'
-import { pickIllustration } from '../car/catalog/generations'
+import { generationTitle, pickIllustration } from '../car/catalog/generations'
 import { useGenerations } from '../car/catalog/useGenerations'
 import { useCar } from '../car/useCar'
 import { useCarPhoto } from '../car/useCarPhoto'
@@ -119,7 +119,7 @@ export function CarPage() {
         body={car.body}
         alt={`${car.make} ${car.model}`}
         illustration={illustration}
-        title={[car.make, car.model, illustration?.exact && car.generation].filter(Boolean).join(' ')}
+        title={[car.make, car.model, illustration?.exact && car.generation && generationTitle(car.generation)].filter(Boolean).join(' ')}
       />
 
       {photoError && (
@@ -146,7 +146,7 @@ export function CarPage() {
         {car.generation && (
           <div className="spec">
             <dt>Поколение</dt>
-            <dd>{car.generation}</dd>
+            <dd>{generationTitle(car.generation)}</dd>
           </div>
         )}
         <div className="spec">

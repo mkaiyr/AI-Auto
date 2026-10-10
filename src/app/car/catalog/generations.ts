@@ -34,6 +34,10 @@ export interface Generation {
   /** null — выпускается */
   to: number | null
   image: CarImage | null
+  /** подтверждённый рестайлинг: год начала и фотография обновлённой версии */
+  facelift: { from: number; image: CarImage | null } | null
+  /** в источнике у поколения описан рестайлинг, но в справочнике он не выделен: годы и фото не подтверждены */
+  faceliftUnlisted: boolean
 }
 
 export interface ModelGenerations {
@@ -54,6 +58,11 @@ export interface GenerationOption {
   generation: Generation
   /** тип кузова, если код относится к одному кузову */
   body: BodyType | null
+  /** годы выпуска именно этого варианта: у рестайлинга они свои */
+  from: number
+  to: number | null
+  /** true — обновлённая версия того же поколения */
+  restyled: boolean
 }
 
 export type MakeGenerations = Record<string, ModelGenerations>
@@ -65,6 +74,8 @@ interface RawGeneration {
   f: number
   t: number
   i?: RawImage
+  r?: [number, RawImage?]
+  x?: number
 }
 interface RawModel {
   s: string
@@ -124,6 +135,8 @@ export function loadGenerations(make: string): Promise<MakeGenerations> {
               from: row.f,
               to: row.t || null,
               image: toImage(row.i),
+              facelift: row.r ? { from: row.r[0], image: toImage(row.r[1]) } : null,
+              faceliftUnlisted: row.x === 1,
             })),
           }
         }
@@ -142,7 +155,13 @@ export function loadGenerations(make: string): Promise<MakeGenerations> {
 const ROMAN = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI']
 const roman = (ordinal: number) => ROMAN[ordinal] ?? String(ordinal)
 
-export const generationYears = (item: Generation) => `${item.from}–${item.to ?? 'н. в.'}`
+export const generationYears = (item: { from: number; to: number | null }) => `${item.from}–${item.to ?? 'н. в.'}`
+
+/** Пометка обновлённой версии в сохраняемом значении: «DN8 FL» */
+const RESTYLED_SUFFIX = ' FL'
+
+/** Как показать сохранённое значение человеку: «DN8 FL» → «DN8 FL (рестайлинг)» */
+export const generationTitle = (value: string) => (value.endsWith(RESTYLED_SUFFIX) ? `${value} (рестайлинг)` : value)
 
 const NOTE_BODIES: [string, BodyType][] = [
   ['седан', 'sedan'],
@@ -162,36 +181,53 @@ const MAX_JOINED = 3
 /**
  * Варианты для списка. У поколения их несколько, если разным кузовам присвоены разные коды
  * (F30 — седан, F31 — универсал); иначе вариант один и коды записаны вместе.
+ *
+ * Поколение с подтверждённым рестайлингом делится на два варианта с одним кодом кузова:
+ * «DN8 · до рестайлинга · 2019–2023» и «DN8 FL (рестайлинг) · 2023–н. в.». Это не два поколения:
+ * у обоих вариантов одно и то же поле generation.
  */
 export function generationOptions(model: ModelGenerations | null): GenerationOption[] {
   const options: GenerationOption[] = []
-  const add = (option: GenerationOption) => {
-    if (!options.some((other) => other.value === option.value)) options.push(option)
-  }
   for (const generation of model?.items ?? []) {
-    const years = generationYears(generation)
     const number = generation.ordinal > 0 ? `${roman(generation.ordinal)} поколение` : ''
-    const { codes } = generation
+    const { codes, facelift } = generation
+    // [сохраняемое значение, название в списке, тип кузова]
+    const variants: [string, string, BodyType | null][] = []
     if (codes.length > 1 && codes.some((item) => item.note !== '')) {
-      for (const { code, note } of codes) {
-        add({ value: code, label: [note ? `${code} — ${note}` : code, number, years].filter(Boolean).join(' · '), generation, body: bodyOf(note) })
-      }
+      for (const { code, note } of codes) variants.push([code, note ? ` — ${note}` : '', bodyOf(note)])
     } else if (codes.length > 0 && (codes.length <= MAX_JOINED || generation.ordinal === 0)) {
-      const value = codes.slice(0, MAX_JOINED).map((item) => item.code).join('/')
-      add({ value, label: [value, number, years].filter(Boolean).join(' · '), generation, body: bodyOf(codes[0].note) })
+      variants.push([codes.slice(0, MAX_JOINED).map((item) => item.code).join('/'), '', bodyOf(codes[0].note)])
     } else if (generation.ordinal > 0) {
       // кодов нет или их слишком много для одного значения — поколение называется по номеру
       const list = codes.length > 0 ? ` (${codes.slice(0, MAX_JOINED).map((item) => item.code).join(', ')}…)` : ''
-      add({ value: roman(generation.ordinal), label: `${number}${list} · ${years}`, generation, body: null })
+      variants.push([roman(generation.ordinal), ` поколение${list}`, null])
+    }
+    for (const [value, suffix, body] of variants) {
+      const named = value === roman(generation.ordinal) && suffix.startsWith(' поколение')
+      const add = (option: Omit<GenerationOption, 'generation' | 'body' | 'label'>, name: string, note: string) => {
+        if (options.some((other) => other.value === option.value)) return
+        const label = [name, note, named ? '' : number, generationYears(option)].filter(Boolean).join(' · ')
+        options.push({ ...option, label, generation, body })
+      }
+      if (!facelift) {
+        add({ value, from: generation.from, to: generation.to, restyled: false }, value + suffix, '')
+        continue
+      }
+      // в год рестайлинга выпускались обе версии, поэтому годы вариантов пересекаются на этот год
+      add({ value, from: generation.from, to: facelift.from, restyled: false }, value + suffix, 'до рестайлинга')
+      add({ value: value + RESTYLED_SUFFIX, from: facelift.from, to: generation.to, restyled: true }, `${generationTitle(value + RESTYLED_SUFFIX)}${suffix}`, '')
     }
   }
   return options
 }
 
-export const coversYear = (generation: Generation, year: number) => year >= generation.from && (generation.to === null || year <= generation.to)
+export const coversYear = (item: { from: number; to: number | null }, year: number) => year >= item.from && (item.to === null || year <= item.to)
 
-/** Варианты, которые выпускались в указанном году. Несколько — значит, год переходный или у кузовов разные коды */
-export const optionsForYear = (options: GenerationOption[], year: number) => options.filter((option) => coversYear(option.generation, year))
+/** Варианты, которые выпускались в указанном году. Несколько — значит, год переходный, был рестайлинг или у кузовов разные коды */
+export const optionsForYear = (options: GenerationOption[], year: number) => options.filter((option) => coversYear(option, year))
+
+/** Фотография варианта: у обновлённой версии своя; если её нет, снимок до рестайлинга за неё не выдаётся */
+const optionImage = (option: GenerationOption) => (option.restyled ? option.generation.facelift?.image ?? null : option.generation.image)
 
 /** Поколение по сохранённому значению: точное совпадение с вариантом списка или с одним из кодов */
 export function findGeneration(model: ModelGenerations | null, stored: string | null): Generation | null {
@@ -214,13 +250,23 @@ export interface Illustration {
  */
 export function pickIllustration(model: ModelGenerations | null, generation: string | null, year: number | null): Illustration | null {
   if (!model) return null
-  const chosen = findGeneration(model, generation)
-  if (chosen?.image) return { image: chosen.image, exact: true }
+  const options = generationOptions(model)
+  const option = generation ? options.find((item) => item.value === generation) : undefined
+  if (option) {
+    const image = optionImage(option)
+    if (image) return { image, exact: true }
+    // обновлённая версия без собственного снимка: показываем поколение, но не выдаём за точное фото
+    if (option.generation.image) return { image: option.generation.image, exact: false }
+  }
+  const chosen = option ? option.generation : findGeneration(model, generation)
+  if (!option && chosen?.image) return { image: chosen.image, exact: true }
   if (year !== null && !chosen) {
-    const byYear = model.items.filter((item) => item.image && coversYear(item, year))
-    // в переходный год ближе всего по времени поколение, которое началось позже остальных
+    const byYear = options.filter((item) => coversYear(item, year) && optionImage(item))
+    const images = new Set(byYear.map((item) => optionImage(item)?.url))
+    // в переходный год ближе всего по времени вариант, который начался позже остальных
     const nearest = byYear.sort((a, b) => b.from - a.from)[0]
-    if (nearest?.image) return { image: nearest.image, exact: byYear.length === 1 && !model.partial }
+    const image = nearest && optionImage(nearest)
+    if (image) return { image, exact: images.size === 1 && !model.partial }
   }
   return model.image ? { image: model.image, exact: false } : null
 }
