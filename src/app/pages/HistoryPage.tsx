@@ -9,6 +9,7 @@ import { CATEGORY_LABELS, type ServiceRecord } from '../service/serviceStore'
 import { useServiceRecords } from '../service/useServiceRecords'
 import { PageError, PageLoading } from './PageState'
 import { ServiceForm } from './ServiceForm'
+import { toast } from '../toast'
 import './history.css'
 
 type Mode = { type: 'list' } | { type: 'form'; record: ServiceRecord | null }
@@ -91,6 +92,7 @@ export function HistoryPage() {
           onSubmit={async (input) => {
             if (record) await update(record.id, input)
             else await create(input)
+            toast(record ? 'Запись сохранена' : 'Запись добавлена')
             setMode({ type: 'list' })
           }}
           onCancel={() => setMode({ type: 'list' })}
@@ -107,6 +109,7 @@ export function HistoryPage() {
     setDeleteError(null)
     try {
       await remove(id)
+      toast('Запись удалена')
       setConfirmId(null)
     } catch (cause) {
       setDeleteError(errorText(cause, 'Не удалось удалить запись. Попробуйте ещё раз.'))

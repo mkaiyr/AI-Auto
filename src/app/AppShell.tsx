@@ -8,6 +8,7 @@ import { ExpensesPage } from './pages/ExpensesPage'
 import { HistoryPage } from './pages/HistoryPage'
 import { AssistantSection } from './pages/AssistantSection'
 import { SoonPage } from './pages/SoonPage'
+import { Toaster } from './toast'
 import './AppShell.css'
 import './pages/pages.css'
 
@@ -122,6 +123,7 @@ export function AppShell({ path }: { path: string }) {
           <SoonPage key={section.id} section={section} index={index} />
         )}
       </main>
+      <Toaster />
     </div>
   )
 }

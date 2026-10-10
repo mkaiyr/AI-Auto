@@ -12,6 +12,7 @@ import { useServiceRecords } from '../service/useServiceRecords'
 import { CarForm } from './CarForm'
 import { ImportOffer } from './ImportOffer'
 import { PageError, PageLoading } from './PageState'
+import { toast } from '../toast'
 
 type Mode = 'view' | 'form' | 'confirm-delete'
 
@@ -61,6 +62,7 @@ export function CarPage() {
             } catch (cause) {
               setPhotoError(`Данные автомобиля сохранены, но с фотографией возникла ошибка. ${errorText(cause, 'Попробуйте ещё раз.')}`)
             }
+            toast(car ? 'Изменения сохранены' : 'Автомобиль добавлен')
             setMode('view')
           }}
           onCancel={() => setMode('view')}
@@ -100,6 +102,7 @@ export function CarPage() {
     setDeleteError(null)
     try {
       await remove()
+      toast('Автомобиль удалён')
       setPhotoError(null)
       setMode('view')
     } catch (cause) {

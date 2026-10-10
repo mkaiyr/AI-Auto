@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { Link } from '../router'
 import { useIsMobile } from '../useIsMobile'
 import { AssistantChat } from './AssistantChat'
+import { AssistantChatMobile } from './AssistantChatMobile'
 import '../app/pages/pages.css'
 
 /** Публичная страница ИИ-помощника: доступна без входа, об автомобиле посетителя ничего не знает */
@@ -23,6 +24,11 @@ export function AssistantPage() {
         </nav>
       </header>
       <main className="ai-public__main">
+        {mobile ? (
+          <div className="page">
+            <AssistantChatMobile owner="public" />
+          </div>
+        ) : (
         <div className="page">
           <p className="page__eyebrow">ИИ-помощник</p>
           <h1 className="page__title">Спросите об автомобиле</h1>
@@ -33,6 +39,7 @@ export function AssistantPage() {
           </p>
           <AssistantChat />
         </div>
+        )}
       </main>
     </div>
   )

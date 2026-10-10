@@ -8,6 +8,12 @@ export function PageLoading({ eyebrow }: { eyebrow: ReactNode }) {
       <p className="note" role="status">
         Загрузка…
       </p>
+      {/* на телефоне вместо пустого экрана — очертания будущих карточек */}
+      <div className="skeleton only-mobile" aria-hidden="true">
+        <span />
+        <span />
+        <span />
+      </div>
     </div>
   )
 }

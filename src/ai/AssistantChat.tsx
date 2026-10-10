@@ -38,7 +38,7 @@ const SLOW_SPEED = 4
 const MAX_QUESTION = 1000
 
 /** Какая модель уже запускалась в этом браузере: её файлы, скорее всего, лежат в кеше */
-function rememberedModel(): string | null {
+export function rememberedModel(): string | null {
   try {
     return window.localStorage.getItem(MODEL_KEY)
   } catch {
@@ -46,7 +46,7 @@ function rememberedModel(): string | null {
   }
 }
 
-function rememberModel(id: string | null) {
+export function rememberModel(id: string | null) {
   try {
     if (id) window.localStorage.setItem(MODEL_KEY, id)
     else window.localStorage.removeItem(MODEL_KEY)
