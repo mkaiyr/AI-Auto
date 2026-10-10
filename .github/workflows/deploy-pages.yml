@@ -38,6 +38,22 @@ jobs:
         id: pages
         uses: actions/configure-pages@v5
 
+      # Значения принимаются и с вкладки Variables, и с вкладки Secrets.
+      # Без них сайт соберётся, но кабинет покажет «Supabase не настроен»,
+      # поэтому публикация останавливается с понятной ошибкой.
+      - name: Проверка настроек Supabase
+        env:
+          SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL || secrets.VITE_SUPABASE_URL }}
+          SUPABASE_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY || secrets.VITE_SUPABASE_ANON_KEY }}
+        run: |
+          missing=""
+          [ -z "$SUPABASE_URL" ] && missing="$missing VITE_SUPABASE_URL"
+          [ -z "$SUPABASE_KEY" ] && missing="$missing VITE_SUPABASE_ANON_KEY"
+          if [ -n "$missing" ]; then
+            echo "::error::Не заданы переменные:$missing. Добавьте их в Settings → Secrets and variables → Actions → вкладка Variables и запустите публикацию снова."
+            exit 1
+          fi
+
       - run: npm ci
 
       - name: Сборка
@@ -45,8 +61,8 @@ jobs:
         env:
           # папка сайта берётся из имени репозитория, поэтому переименование ничего не ломает
           VITE_BASE_PATH: ${{ steps.pages.outputs.base_path }}/
-          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL || secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY || secrets.VITE_SUPABASE_ANON_KEY }}
 
       - uses: actions/upload-pages-artifact@v3
         with:
