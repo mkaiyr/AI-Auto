@@ -49,7 +49,8 @@ export async function cloudGenerate(
     })
   } catch (cause) {
     if (signal.aborted) return ''
-    throw new AssistantError('Нет связи с сервером. Проверьте интернет и повторите.', { cause })
+    // так же выглядит и неразвёрнутая функция: браузер не получает от неё разрешения на запрос
+    throw new AssistantError('Сервер ИИ не отвечает. Проверьте интернет и повторите.', { cause })
   }
 
   if (!response.ok || !response.body) {
