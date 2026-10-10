@@ -5,12 +5,12 @@
 
 ## Сводка
 
-- марок с данными: 267; моделей: 2568, из них с поколениями: 1309
-- поколений: 3456; кодов кузова: 3706
-- рестайлингов: проверенных вручную 1, определённых по разделу статьи (не проверены) 424; поколений с предупреждением «рестайлинг был, год неизвестен» 1623
-- фотографий: 5561 (моделей 2406, поколений 3060, рестайлингов 95)
-- лицензии: CC BY-SA 4.0 — 2404; Public domain — 901; CC BY-SA 3.0 — 778; CC0 — 495; CC BY 2.0 — 396; CC BY-SA 3.0 de — 264; CC BY-SA 2.0 — 135; CC BY 4.0 — 86; CC BY 3.0 — 62; CC BY-SA 2.5 — 10; CC BY-SA 2.0 de — 10; CC BY 2.5 — 10; CC BY-SA 2.5 my — 6; CC BY 2.0 it — 2; CC BY-SA 3.0 it — 1; CC BY-SA 3.0 lu — 1
-- модель-годы с 1990 года: один вариант (возможен автовыбор) 13127, несколько или неполный список (выбирает пользователь) 3900, ни одного 1565
+- марок с данными: 267; моделей: 2567, из них с поколениями: 1302
+- поколений: 3442; кодов кузова: 3657
+- рестайлингов: проверенных вручную 1, определённых по разделу статьи (не проверены) 410; поколений с предупреждением «рестайлинг был, год неизвестен» 1634
+- фотографий: 5549 (моделей 2406, поколений 3050, рестайлингов 93)
+- лицензии: CC BY-SA 4.0 — 2401; Public domain — 900; CC BY-SA 3.0 — 778; CC0 — 493; CC BY 2.0 — 394; CC BY-SA 3.0 de — 263; CC BY-SA 2.0 — 135; CC BY 4.0 — 84; CC BY 3.0 — 61; CC BY-SA 2.5 — 10; CC BY-SA 2.0 de — 10; CC BY 2.5 — 10; CC BY-SA 2.5 my — 6; CC BY 2.0 it — 2; CC BY-SA 3.0 it — 1; CC BY-SA 3.0 lu — 1
+- модель-годы с 1990 года: один вариант (возможен автовыбор) 13120, несколько или неполный список (выбирает пользователь) 3876, ни одного 1487
 - сверено с cars-base моделей: 156
 
 ## Конец выпуска раньше начала — 0
@@ -31,24 +31,13 @@
 
 —
 
-## Рестайлинг вне лет поколения — 14
+## Рестайлинг вне лет поколения — 3
 
 Год рестайлинга не попадает в годы выпуска поколения.
 
 - BYD Seal 06 [EUH/EUE] 2025–н. в.: рестайлинг 2027
-- Changan Raeton Plus [CC] 2021–2022: рестайлинг 2020
-- Chery Tiggo 7 Pro [T15] 2019–2020: рестайлинг 2018
 - Chevrolet Trax [9BQC] 2023–н. в.: рестайлинг 2027
-- Citroen C3 Aircross [C3] 2016–2021: рестайлинг 2015
-- DS 3 [D34] 2018–2020: рестайлинг 2022
-- Geely Haoyue [пок. 2] 2023–2023: рестайлинг 2026
-- Honda BR-V [DG1] 2020–2026: рестайлинг 2019
-- Kia Sedona [KA4] 2020–2022: рестайлинг 2023
 - Lincoln Nautilus [CDX707] 2023–н. в.: рестайлинг 2027
-- Mercedes-Benz CLK-Класс [C207/A207] 2009–2011: рестайлинг 2013
-- Nissan Caravan [NV350/E26] 2012–2013: рестайлинг 2022
-- Toyota Aygo [AB70] 2022–2023: рестайлинг 2025
-- Toyota Kluger [XU50] 2013–2014: рестайлинг 2016
 
 ## Нумерация не совпадает с порядком лет — 2
 
@@ -57,7 +46,7 @@
 - Nissan Tiida: поколение 3 начато в 2003, раньше поколения 2 (2011)
 - Oldsmobile 442: поколение 5 начато в 1967, раньше поколения 3 (1973)
 
-## Соседние поколения выпускались вместе больше 5 лет — 150
+## Соседние поколения выпускались вместе больше 5 лет — 151
 
 Обычно это продлённый выпуск на отдельных рынках (мировые годы), иногда — ошибка разбора. В эти годы форма предлагает оба варианта.
 
@@ -197,6 +186,7 @@
 - Toyota Vios: поколения 1 (2002–2014) и 2 (2007–2013) выпускались вместе 6 лет
 - Toyota Vitz: поколения 1 (1999–2012) и 2 (2005–2016) выпускались вместе 7 лет
 - Toyota Vitz: поколения 2 (2005–2016) и 3 (2010–2020) выпускались вместе 6 лет
+- Toyota Yaris: поколения 3 (2013–н. в.) и 4 (2020–н. в.) выпускались вместе 6 лет
 - Volkswagen Caddy: поколения 1 (1979–2007) и 2 (1996–2008) выпускались вместе 11 лет
 - Volkswagen Caddy: поколения 3 (2003–н. в.) и 4 (2020–н. в.) выпускались вместе 6 лет
 - Volkswagen Gol: поколения 2 (1994–2014) и 3 (2008–2014) выпускались вместе 6 лет
@@ -212,10 +202,11 @@
 - Volkswagen Type 2: поколения 1 (1950–1975) и 2 (1967–1980) выпускались вместе 8 лет
 - Wuling Sunshine: поколения 1 (2011–2023) и 2 (2011–2022) выпускались вместе 11 лет
 
-## Выпуск дольше 20 лет — 74
+## Выпуск дольше 20 лет — 75
 
 Лицензионное производство или ошибка разбора дат.
 
+- Audi S8 [A8] 1995–2026
 - Chevrolet Aveo [T200/T250] 2002–2023
 - Chevrolet Lacetti [J200] 2003–2024
 - Chevrolet Suburban [пок. 5] 1960–1989
@@ -328,10 +319,10 @@
 - Mazda Demio: номера поколений 1, 4
 - Mitsubishi Lancer: номера поколений 1, 2, 8, 9, 10
 - Nissan Sunny: номера поколений 2, 4, 5, 6, 7, 8, 9
+- Nissan Tiida: номера поколений 1, 2, 3
 - Oldsmobile 442: номера поколений 1, 2, 3, 5
-- Spyker C8: номера поколений 1, 3
 
-## Один код у двух поколений — 24
+## Один код у двух поколений — 23
 
 Код мог быть общим на самом деле (Audi 8E у B6 и B7) или попал не туда.
 
@@ -349,7 +340,6 @@
 - Oldsmobile Cutlass: код 3A у поколений 1973–1977 и 1978–1988
 - Proton Saga: код BT у поколений 2010–2012 и 2011–2016
 - Proton Saga: код BT у поколений 2011–2016 и 2016–н. в.
-- Spyker C8: код 12S у поколений 2000–2012 и 2016–н. в.
 - Toyota Hilux: код N160 у поколений 1997–2006 и 1998–2004
 - Toyota Hilux: код N190 у поколений 1997–2006 и 1998–2004
 - Toyota Hilux: код AN110 у поколений 2015–н. в. и 2023–н. в.
@@ -360,74 +350,31 @@
 - Vauxhall Victor: код VX4 у поколений 1963–1967 и 1967–1972
 - Vauxhall Victor: код VX4 у поколений 1967–1972 и 1972–1978
 
-## Код похож на название модели, комплектации или двигателя — 46
+## Код похож на название модели, комплектации или двигателя — 3
 
 Проверить, действительно ли это код кузова.
 
-- Alpina B3 [B3/D3/F30/F31] 2013–2019: «B3»
-- Alpina B5 [B5/D5/G30/G31] 2017–2024: «B5»
-- Aston Martin DBS [V8] 1969–1989: «V8»
-- Aston Martin Virage [V8] 1989–2000: «V8»
-- Audi A5 [B10/A5/A5L] 2024–н. в.: «A5»
-- Audi R8 [R8/4S] 2014–2024: «R8»
-- Audi S3 [S3/8Y] 2020–н. в.: «S3»
-- BMW M3 [G80/M3/G81] 2020–н. в.: «M3»
-- BMW M5 [M5/G90/G99] 2024–н. в.: «M5»
-- BMW M6 [M6/F06/F12/F13] 2012–2019: «M6»
-- Buick GL8 [GL8/ES] 2016–н. в.: «GL8»
-- BYD F3 [BYD/F3] 2012–2020: «F3»
-- Changan CS55 [CS55] 2021–2024: «CS55»
-- Changan CS75 [CS75] 2019–2026: «CS75»
-- Chevrolet Impala [SS] 1994–1996: «SS»
-- Citroen C4 [C4] 2014–2024: «C4»
-- Citroen C6 [C6] 2016–2023: «C6»
-- Dongfeng A9 [A9] 2016–2019: «A9»
-- Ferrari F430 [F430] 2007–2010: «F430»
-- Forthing Yacht [V6] 2026–н. в.: «V6»
 - Genesis G90 [RS4] 2021–н. в.: «RS4»
-- Genesis GV80 [JX1/JX1C/GV80] 2020–н. в.: «GV80»
-- Haval F7 [F7] 2018–2024: «F7»
-- Haval H1 [H1] 2014–2019: «H1»
-- Haval H6 [H6] 2015–2018: «H6»
-- Haval M6 [M6] 2020–н. в.: «M6»
-- Honda Civic [SL/SS/VC/WD] 1979–1983: «SS»
 - Honda HR-V [RV3/RV4/RV5/RV6/RS1] 2021–н. в.: «RS1»
-- Honda NSX [NSX/NC1] 2016–2023: «NSX»
-- Honda S2000 [S2000/AP2] 2003–2009: «S2000»
 - Honda Vezel [RV3/RV4/RV5/RV6/RS1] 2021–н. в.: «RS1»
-- Infiniti QX50 [J55/QX50/QX55] 2017–2025: «QX50»
-- Jaguar XJ [XJ] 2020–2020: «XJ»
-- Jaguar XJS [HE/V12] 1981–1991: «V12»
-- Jaguar XJS [XJS] 1991–1996: «XJS»
-- Mazda RX-8 [RX-8/RE] 2003–2006: «RX-8»
-- McLaren F1 [F1] 1997–2000: «F1»
-- Mercedes-Benz CLS [CLS/C257] 2018–2023: «CLS»
-- MG MGA [MG/MGA] 1960–1962: «MGA»
-- MG MGB [MGB/V8] 1973–1976: «MGB»
-- MG MGB [MGB/V8] 1973–1976: «V8»
-- Mitsubishi L200 [L200] 1985–1986: «L200»
-- Nissan AD [AD/Y12] 2006–2025: «AD»
-- Renault Samsung SM3 [SM3] 2011–2020: «SM3»
-- Spyker C8 [C8/12S] 2016–н. в.: «C8»
-- Volvo S60 [S60] 2018–н. в.: «S60»
 
 ## Код из cars-base не найден у нас — 11
 
 Расхождение с независимым источником: другой способ записи кода, пропущенное поколение или ошибка.
 
 - Audi A6: в cars-base «IV (C7) Рестайлинг», у нас коды 4A, 4B, 4F, 4G, 4K, 4L
+- Audi S8: в cars-base «III (D4) Рестайлинг», у нас коды A8
 - BMW iX3: в cars-base «I (G08)», у нас коды NA5, NA6
 - Hyundai Tiburon: в cars-base «I (RC)», у нас коды RD, GK
 - Mazda Demio: в cars-base «II (DY)», у нас коды DW
 - Mercedes-Benz CLK-Класс: в cars-base «II (W209) Рестайлинг», у нас коды C208, A208, C209, A209, C207, A207
-- Mercedes-Benz E-Класс: в cars-base «I (W124)», у нас коды W210, S210, VF210, V210, W211, S211, W212, S212, C207, A207, W213, C238
 - Mercedes-Benz G-Класс: в cars-base «I (W460; W461)», у нас коды W460, W463, W465
 - Mitsubishi Colt: в cars-base «II (C10)», у нас коды Z20, Z30
 - Skoda Octavia: в cars-base «III (A7)», у нас коды 1U, 1Z, 5E, NX
 - Toyota Celsior: в cars-base «I (F10)», у нас коды XF10, XF20, XF30, XF40
 - Toyota Ipsum: в cars-base «I (M10)», у нас коды XM10, XM20
 
-## Фотография: в имени файла нет ни модели, ни кода — 236
+## Фотография: в имени файла нет ни модели, ни кода — 235
 
 Имя файла не подтверждает, что на снимке эта модель (часто там просто комплектация: «BMW 318d»).
 
@@ -435,7 +382,6 @@
 - Audi 80 [F103] 1971–1972 ← Audi_75_in_Rothenburg.jpg
 - Audi Coupe [8G] 1991–1997 ← Disfrutando_del_paisaje.JPG
 - Audi RS 4 [B7/8E] 2006–2008 ← 2005-03-04_Motorshow_Geneva_052_(cropped).JPG
-- Audi S8 [D2/4D] 1995–2002 ← A8_white.jpg
 - BMW 1 серии [F40] 2019–2024 ← 2019_BMW_118i_SE_1.5_Front.jpg
 - BMW 3 серии [F30/F31/F34/F35] 2011–2018 ← 2012_BMW_318d_Sport_Automatic_2.0.jpg
 - BMW 3 серии [G20/G21/G28] 2018–2026 ← 2019_BMW_318d_SE_Automatic_2.0_Front.jpg
@@ -500,7 +446,7 @@
 - Honda Fit [GK3/GK4/GK5/GK6/GK7/GH7/GP5/GP6] 2013–2022 ← 2017_Honda_Jazz_EX_Navi_i-VTEC_CVT_1.3_Front.jpg
 - Honda Fit [GR1/GR2/GR3/GR4/GR5/GR6/GR7/GR8] 2020–н. в. ← 2020_Honda_Jazz_SE_i-MMD_CVT_1.5_Front.jpg
 - Honda Jazz [GD1/GD2/GD3/GD4/GD5/GE1/GE2/GE3] 2001–2008 ← 2001-2004_Honda_Fit.jpg
-- Honda NSX [NSX/NC1] 2016–2023 ← Honda,_Paris_Motor_Show_2018,_Paris_(1Y7A1625)_(cropped).jpg
+- Honda NSX [NC1] 2016–2023 ← Honda,_Paris_Motor_Show_2018,_Paris_(1Y7A1625)_(cropped).jpg
 - Honda Vezel [RU1/RU2/RU3/RU4/RU5] 2013–2022 ← 2018_Honda_HR-V_VTi-S_wagon_(2018-08-27)_01.jpg
 - Honda Vezel [RV3/RV4/RV5/RV6/RS1] 2021–н. в. ← Honda_HR-V_eHEV_Advance_(III)_–_f_31122023.jpg
 - Hyundai Avante [J1] 1994–1998 ← Hyundai_Lantra_1.8_GT_16V_(cropped).jpg
@@ -541,13 +487,13 @@
 - Mazda MX-5 [NA] 1989–1997 ← Eunos.jpg
 - Mazda Premacy [CR] 2004–2010 ← 06-07_Mazda5_.jpg
 - Mazda Premacy [CW] 2010–2018 ← 2012_Mazda5_Sport_in_Liquid_Silver,_front_left.jpg
-- McLaren F1 [F1] 1997–2000 ← 2015-03-03_Geneva_Motor_Show_5805.JPG
 - Mercedes-Benz B-Класс [W245] 2005–2011 ← Mercedes_Benz_B_170_silver_vl.jpg
 - Mercedes-Benz C-Класс [W201] 1992–1993 ← 1987-Mercedes_Benz-190E-2.3.jpg
 - Mercedes-Benz CL-Класс [C215] 1998–2006 ← 2003-Mercedes-Benz-CL55-AMG.jpg
 - Mercedes-Benz CL-Класс [C216] 2006–2014 ← Mercedes-Benz_CL500_(7125915093).jpg
 - Mercedes-Benz CLK-Класс [C209/A209] 2001–2009 ← Mercedes_CLK200Kompressor_Sportpaket_front.JPG
 - Mercedes-Benz CLK-Класс [C207/A207] 2009–2011 ← 2011_Mercedes-Benz_E250_Sport_CDi_BlueEFFICIENCY_Coupe_2.1_Front.jpg
+- Mercedes-Benz E-Класс [W124] 1991–1997 ← 1988_Mercedes-Benz_300d_Diesel_Automatic_3.0_Front.jpg
 - Mercedes-Benz E-Класс [C207/A207] 2009–2017 ← 2011_Mercedes-Benz_E250_Sport_CDi_BlueEFFICIENCY_Coupe_2.1_Front.jpg
 - Mercedes-Benz E-Класс [W213/C238/A238] 2016–2023 ← 2019_Mercedes-Benz_E220d_SE_Automatic_2.0_Front.jpg
 - Mercedes-Benz G-Класс [W460] 1979–1991 ← 1986_280GE.jpg
@@ -560,6 +506,7 @@
 - Mercedes-Benz SL-Класс [W198/W121] 1954–1963 ← Mercedes_(1240346857).jpg
 - Mercedes-Benz SL-Класс [R129] 1989–2001 ← 1991_Mercedes_300SL-24_Automatic_3.0_Front.jpg
 - Mercedes-Benz SLK-Класс [R170] 1996–2004 ← SLK200K.jpg
+- Mercedes-Benz SLK-Класс [R171] 2004–2011 ← 2007_Mercedes-Benz_SLK_280,_front_right,_09-09-2023.jpg
 - Mercedes-Benz SLK-Класс [R172] 2011–2017 ← 2015_Mercedes-Benz_SLK250_AMG_Sport_CDi_BlueTec_2.1_Front.jpg
 - Mercedes-Benz Vito [W447] 2014–н. в. ← Mercedes-Benz_V_250_BlueTEC_Edition_1_Lang_(V_447)_–_Frontansicht,_18._Oktober_2015,_Ratingen.jpg
 - Mercedes-Benz W186 [W189] 1957–1958 ← 1962_Mercedes-Benz_300d_Adenauer_in_Elfenbein,_front_left_(Waveny_Park).jpg
@@ -610,7 +557,6 @@
 - Ravon R2 [M300] 2015–2021 ← Chevrolet_Spark_LS+_1.2_–_Frontansicht,_26._Juni_2011,_Mettmann.jpg
 - Ravon R4 [пок. 2] 2015–2021 ← Chevrolet_Cobalt_2013_in_Russia.JPG
 - Renault Symbol [пок. 1] 1999–2010 ← Renault_Thalia_in_Krakow.jpg
-- Renault Samsung SM3 [SM3] 2011–2020 ← Renault_Fluence_Z.E._–_Frontansicht,_25._Februar_2012,_Düsseldorf.jpg
 - Rover P6 [SC/TC] 1963–1973 ← Rover_2000_Automatic_registered_April_1969_1978cc.jpg
 - Saipa Shahin [SP100] 2020–н. в. ← شاهین_سایپا.jpg
 - Smart Fortwo [C450/A450/R450] 1998–2007 ← Smart_City-Coupé_passion_front.jpg
